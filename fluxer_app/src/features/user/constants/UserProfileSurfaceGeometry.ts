@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {remFromPx} from '@app/features/theme/layout/RemFromPx';
-import {getStatusGeometry} from '@app/features/ui/constants/AvatarStatusGeometry';
 
 type CssLengthVariables = Record<`--${string}`, string>;
 
 const PROFILE_POPOUT_AVATAR_SIZE_PX = 80;
 const PROFILE_MODAL_AVATAR_SIZE_PX = 96;
-const PROFILE_POPOUT_AVATAR_BORDER_PX = getStatusGeometry(PROFILE_POPOUT_AVATAR_SIZE_PX).borderWidth;
-const PROFILE_MODAL_AVATAR_BORDER_PX = getStatusGeometry(PROFILE_MODAL_AVATAR_SIZE_PX).borderWidth;
+// Delight: no ring/notch around profile avatars — the avatar sits straight on the banner edge.
+const PROFILE_POPOUT_AVATAR_BORDER_PX = 0;
+const PROFILE_MODAL_AVATAR_BORDER_PX = 0;
 const PROFILE_POPOUT_AVATAR_LEFT_PX = 10;
 // Delight: compact banners with the avatar centred on the banner's bottom edge.
 const PROFILE_POPOUT_BANNER_HEIGHT_PX = 90;
@@ -34,7 +34,7 @@ export const PROFILE_POPOUT_BANNER_AVATAR_CUTOUT = {
 	viewBoxHeightPx: PROFILE_POPOUT_GEOMETRY.bannerHeightPx,
 	cx: PROFILE_POPOUT_AVATAR_LEFT_PX + PROFILE_POPOUT_AVATAR_OUTER_RADIUS_PX,
 	cy: PROFILE_POPOUT_AVATAR_TOP_PX + PROFILE_POPOUT_AVATAR_OUTER_RADIUS_PX,
-	r: PROFILE_POPOUT_AVATAR_OUTER_RADIUS_PX,
+	r: 0,
 } as const;
 
 // Delight: the full profile modal shows a Discord-style profile card column (~370px wide) next to its tabs; the
@@ -55,7 +55,7 @@ export const PROFILE_MODAL_BANNER_AVATAR_CUTOUT = {
 	viewBoxHeightPx: PROFILE_MODAL_GEOMETRY.bannerViewBoxHeightPx,
 	cx: PROFILE_MODAL_GEOMETRY.avatarLeftPx + PROFILE_MODAL_AVATAR_OUTER_RADIUS_PX,
 	cy: PROFILE_MODAL_GEOMETRY.bannerViewBoxHeightPx,
-	r: PROFILE_MODAL_AVATAR_OUTER_RADIUS_PX,
+	r: 0,
 } as const;
 
 export const PROFILE_POPOUT_OUTER_WIDTH_PX =

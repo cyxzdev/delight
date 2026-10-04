@@ -76,8 +76,9 @@
 }
 
 .avatarBorder {
-	border: 0.25rem solid var(--background-primary);
-	background-color: var(--background-primary);
+	/* Delight: no ring/notch around the avatar. */
+	border: 0;
+	background-color: transparent;
 	width: fit-content;
 }
 

@@ -37,7 +37,7 @@
 	--profile-popout-content-height: 32.5rem;
 	--profile-popout-border-width: 0.15625rem;
 	--profile-popout-avatar-size: 5rem;
-	--profile-popout-avatar-border: 0.2rem;
+	--profile-popout-avatar-border: 0rem;
 	--profile-popout-avatar-left: 0.625rem;
 	--profile-popout-avatar-top: 3.4375rem;
 	--profile-popout-banner-height: 6.5625rem;
@@ -62,7 +62,7 @@
 	--profile-skeleton-radius: var(--profile-modal-inner-radius, 0.25rem);
 	--profile-skeleton-banner-aspect: 20 / 7;
 	--profile-skeleton-avatar-size: var(--profile-modal-avatar-size, 7.5rem);
-	--profile-skeleton-avatar-border: var(--profile-modal-avatar-border, 0.3rem);
+	--profile-skeleton-avatar-border: var(--profile-modal-avatar-border, 0rem);
 	--profile-skeleton-avatar-top: calc(var(--profile-modal-avatar-top, -4.05rem) * var(--profile-modal-scale, 1));
 	--profile-skeleton-avatar-left: calc(var(--profile-modal-avatar-left, 1rem) * var(--profile-modal-scale, 1));
 	--profile-skeleton-content-padding-inline: calc(1rem * var(--profile-modal-scale, 1));
