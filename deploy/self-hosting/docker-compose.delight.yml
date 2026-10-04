@@ -3,3 +3,18 @@ services:
   app-proxy:
     volumes:
       - ../../fluxer_app/dist:/srv/app/static:ro
+  static-proxy:
+    volumes:
+      - ../../delight/avatars/0.png:/srv/fluxer-static/avatars/0.png:ro
+      - ../../delight/avatars/1.png:/srv/fluxer-static/avatars/1.png:ro
+      - ../../delight/avatars/2.png:/srv/fluxer-static/avatars/2.png:ro
+      - ../../delight/avatars/3.png:/srv/fluxer-static/avatars/3.png:ro
+      - ../../delight/avatars/4.png:/srv/fluxer-static/avatars/4.png:ro
+      - ../../delight/avatars/5.png:/srv/fluxer-static/avatars/5.png:ro
+      - ../../delight/web/favicon-16x16.png:/srv/fluxer-static/web/favicon-16x16.png:ro
+      - ../../delight/web/favicon-32x32.png:/srv/fluxer-static/web/favicon-32x32.png:ro
+      - ../../delight/web/apple-touch-icon.png:/srv/fluxer-static/web/apple-touch-icon.png:ro
+      - ../../delight/web/android-chrome-192x192.png:/srv/fluxer-static/web/android-chrome-192x192.png:ro
+      - ../../delight/web/android-chrome-512x512.png:/srv/fluxer-static/web/android-chrome-512x512.png:ro
+      - ../../delight/web/mstile-150x150.png:/srv/fluxer-static/web/mstile-150x150.png:ro
+      - ../../delight/web/favicon.ico:/srv/fluxer-static/web/favicon.ico:ro
