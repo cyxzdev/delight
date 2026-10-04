@@ -1,0 +1,24 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+.strip {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: var(--layout-titlebar-height);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	user-select: none;
+}
+
+.label {
+	max-width: 50%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--text-primary-muted);
+}

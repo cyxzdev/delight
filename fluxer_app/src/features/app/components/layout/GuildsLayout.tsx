@@ -38,6 +38,7 @@ import {GuildFolderItem} from '@app/features/app/components/layout/sidebar_nav/G
 import {resolveDMListItemUnreadState} from '@app/features/app/components/layout/sidebar_nav/GuildListDMItem';
 import {GuildListItem} from '@app/features/app/components/layout/sidebar_nav/GuildListItem';
 import {HelpButton} from '@app/features/app/components/layout/sidebar_nav/HelpButton';
+import {WindowTitleStrip} from '@app/features/app/components/layout/WindowTitleStrip';
 import {
 	DragItemType,
 	DropPlacement,
@@ -2286,6 +2287,7 @@ export const GuildsLayout = observer(({children}: {children: React.ReactNode}) =
 			style={resolveGuildsLayoutSidebarStyle(mobileLayout.enabled, SidebarWidth.cssValue)}
 			data-flx="app.guilds-layout.guilds-layout"
 		>
+			{!isVoiceCallFullscreenActive && !mobileLayout.enabled && <WindowTitleStrip key="title-strip" />}
 			{!isVoiceCallFullscreenActive && (!mobileLayout.enabled || showGuildListOnMobile) && (
 				<GuildList key="guild-list" data-flx="app.guilds-layout.guild-list" />
 			)}

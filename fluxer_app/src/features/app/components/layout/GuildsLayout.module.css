@@ -8,6 +8,8 @@
 	--layout-header-height: 3rem;
 	--layout-user-area-height: 3.375rem;
 	--layout-frame-radius: 0.75rem;
+	/* Empty strip above the app, like Discord's window title bar. */
+	--layout-titlebar-height: 2rem;
 	--user-area-box-inset-block-end: 0px;
 	--layout-user-area-overlay-height: 0px;
 	--layout-user-area-reserved-height: 0px;
@@ -23,7 +25,14 @@
 	width: 100%;
 	min-width: 0;
 	max-width: 100%;
+	box-sizing: border-box;
+	padding-top: var(--layout-titlebar-height);
 	background-color: var(--background-primary);
+}
+
+.guildsLayoutFullscreen,
+.guildsLayoutContainerMobile {
+	--layout-titlebar-height: 0px;
 }
 
 .guildsLayoutReserveSpace {
