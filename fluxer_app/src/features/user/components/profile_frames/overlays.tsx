@@ -192,7 +192,7 @@ export const CandleOverlay: FrameOverlay = ({width, height, idPrefix}) => {
 	);
 };
 
-// ---------- Eclipse: the corona breathes; a couple of glints on the clouds ----------
+// ---------- Eclipse ("Blazing Sun"): a bright sun breaking through the smoke, covering the artwork's black disc ----------
 
 const SUN = {x: 0.4965, y: -0.1697, r: 0.0335};
 
@@ -201,14 +201,37 @@ export const EclipseOverlay: FrameOverlay = ({width, idPrefix}) => {
 	const cx = SUN.x * u;
 	const cy = SUN.y * u;
 	const r = SUN.r * u;
+	const rays = Array.from({length: 12}, (_, i) => {
+		const a = (i / 12) * Math.PI * 2;
+		const long = i % 2 === 0;
+		const r0 = r * 1.5;
+		const r1 = r * (long ? 2.7 : 2.1);
+		return {
+			x0: cx + Math.cos(a) * r0,
+			y0: cy + Math.sin(a) * r0,
+			x1: cx + Math.cos(a) * r1,
+			y1: cy + Math.sin(a) * r1,
+			long,
+		};
+	});
 	return (
-		<g className={styles.screen}>
+		<>
 			<defs>
-				<radialGradient id={`${idPrefix}-corona`}>
-					<stop offset="0" stopColor="#ffd27a" stopOpacity="0" />
-					<stop offset="0.36" stopColor="#ffd27a" stopOpacity="0" />
-					<stop offset="0.42" stopColor="#fff1c9" stopOpacity="0.85" />
-					<stop offset="0.55" stopColor="#ffb547" stopOpacity="0.4" />
+				<radialGradient id={`${idPrefix}-sun`}>
+					<stop offset="0" stopColor="#fffef6" />
+					<stop offset="0.45" stopColor="#fff2c2" />
+					<stop offset="0.8" stopColor="#ffd36a" />
+					<stop offset="1" stopColor="#ffb340" />
+				</radialGradient>
+				<radialGradient id={`${idPrefix}-rim`}>
+					<stop offset="0" stopColor="#ffb340" />
+					<stop offset="0.78" stopColor="#ff9a2e" />
+					<stop offset="0.9" stopColor="#ff7d1f" stopOpacity="0.85" />
+					<stop offset="1" stopColor="#ff6a14" stopOpacity="0" />
+				</radialGradient>
+				<radialGradient id={`${idPrefix}-glow`}>
+					<stop offset="0" stopColor="#ffd36b" stopOpacity="0.75" />
+					<stop offset="0.45" stopColor="#ffab3a" stopOpacity="0.35" />
 					<stop offset="1" stopColor="#ff8a1f" stopOpacity="0" />
 				</radialGradient>
 				<radialGradient id={`${idPrefix}-haze`}>
@@ -216,9 +239,19 @@ export const EclipseOverlay: FrameOverlay = ({width, idPrefix}) => {
 					<stop offset="1" stopColor="#ff9d2e" stopOpacity="0" />
 				</radialGradient>
 			</defs>
-			<ellipse cx={cx} cy={cy + r * 1.4} rx={r * 6} ry={r * 2.6} fill={`url(#${idPrefix}-haze)`} className={styles.pulse} style={timing(5200, -1200)} />
-			<circle cx={cx} cy={cy} r={r * 2.4} fill={`url(#${idPrefix}-corona)`} className={styles.pulse} style={timing(3600, 0)} />
-		</g>
+			<g className={styles.screen}>
+				<ellipse cx={cx} cy={cy + r * 1.4} rx={r * 6} ry={r * 2.6} fill={`url(#${idPrefix}-haze)`} className={styles.pulse} style={timing(5200, -1200)} />
+				<circle cx={cx} cy={cy} r={r * 3.2} fill={`url(#${idPrefix}-glow)`} className={styles.pulse} style={timing(3600, 0)} />
+				<g stroke="#ffe3a0" strokeLinecap="round" className={styles.pulse} style={timing(4200, -600)}>
+					{rays.map((ray, i) => (
+						<line key={i} x1={ray.x0} y1={ray.y0} x2={ray.x1} y2={ray.y1} strokeWidth={ray.long ? r * 0.22 : r * 0.14} opacity={ray.long ? 0.75 : 0.5} />
+					))}
+				</g>
+			</g>
+			{/* Solid sun over the artwork's dark centre and ring: hot core, soft fiery rim. */}
+			<circle cx={cx} cy={cy} r={r * 1.62} fill={`url(#${idPrefix}-rim)`} />
+			<circle cx={cx} cy={cy} r={r * 1.3} fill={`url(#${idPrefix}-sun)`} />
+		</>
 	);
 };
 

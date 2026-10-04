@@ -75,9 +75,9 @@ const DEFINITIONS: Record<ProfileFrameId, Omit<ProfileFrameDefinition, 'id'>> = 
 		Overlay: CandleOverlay,
 	},
 	eclipse: {
-		name: msg({message: 'Eclipse', comment: 'Name of a profile frame: a black sun over amber smoke clouds.'}),
+		name: msg({message: 'Blazing Sun', comment: 'Name of a profile frame: a bright sun breaking through amber smoke clouds.'}),
 		description: msg({
-			message: 'A black sun with a blazing corona rises from billowing amber smoke.',
+			message: 'A blazing sun breaks through billowing amber smoke.',
 			comment: 'Short description of the Eclipse profile frame.',
 		}),
 		pieces: [
