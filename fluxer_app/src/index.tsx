@@ -11,6 +11,7 @@ import '@app/app/globals.css';
 import '@app/features/theme/styles/generated/color-system.css';
 import '@app/features/theme/styles/generated/message-layout.css';
 import '@app/features/theme/styles/preflight.css';
+import '@app/app/delight/delight.css';
 import {resolveDomainMigrationSide} from '@app/features/app/domain_migration/DomainMigrationCore';
 import {runDomainMigrationPreMount} from '@app/features/app/domain_migration/DomainMigrationPreMount';
 import {Logger} from '@app/features/platform/utils/AppLogger';

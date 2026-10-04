@@ -295,11 +295,11 @@ const LIGHT_CODE_TOKENS: Array<TokenDef> = [
 ];
 const CONFIG: Config = {
 	families: {
-		neutralDark: {hue: 258, saturation: 10, useSaturationFactor: true},
+		neutralDark: {hue: 0, saturation: 0, useSaturationFactor: true},
 		neutralLight: {hue: 220, saturation: 10, useSaturationFactor: true},
-		brand: {hue: 242, saturation: 70, useSaturationFactor: true},
+		brand: {hue: 270, saturation: 42, useSaturationFactor: true},
 		link: {hue: 198, saturation: 92, useSaturationFactor: true},
-		accentPurple: {hue: 278, saturation: 85, useSaturationFactor: true},
+		accentPurple: {hue: 270, saturation: 42, useSaturationFactor: true},
 		statusOnline: {hue: 152, saturation: 72, useSaturationFactor: true},
 		legacyDark: {hue: 220, saturation: 13, useSaturationFactor: true},
 		legacyLink: {hue: 210, saturation: 100, useSaturationFactor: true},
@@ -315,7 +315,7 @@ const CONFIG: Config = {
 	scales: {
 		darkSurface: {
 			family: 'neutralDark',
-			range: [5, 24],
+			range: [5, 15],
 			curve: 'easeOut',
 			stops: [
 				{name: '--background-primary', position: 0},
@@ -350,7 +350,7 @@ const CONFIG: Config = {
 		},
 		darkText: {
 			family: 'neutralDark',
-			range: [60, 96],
+			range: [40, 90],
 			curve: 'easeInOut',
 			stops: [
 				{name: '--text-tertiary-secondary', position: 0},
@@ -457,8 +457,8 @@ hsl(258, calc(10% * var(--saturation-factor)), 2%) 10%
 			{name: '--control-button-active-text', value: 'var(--text-primary)'},
 			{name: '--control-button-danger-text', hue: 1, saturation: 77, useSaturationFactor: true, lightness: 60},
 			{name: '--control-button-danger-hover-bg', hue: 1, saturation: 77, useSaturationFactor: true, lightness: 20},
-			{name: '--brand-primary', family: 'brand', lightness: 55},
-			{name: '--brand-secondary', family: 'brand', saturation: 60, lightness: 49},
+			{name: '--brand-primary', family: 'brand', lightness: 50},
+			{name: '--brand-secondary', family: 'brand', saturation: 42, lightness: 45},
 			{name: '--brand-primary-light', family: 'brand', saturation: 100, lightness: 84},
 			{name: '--brand-primary-fill', hue: 0, saturation: 0, lightness: 100},
 			{name: '--status-online', family: 'statusOnline', lightness: 40},
@@ -476,21 +476,21 @@ hsl(258, calc(10% * var(--saturation-factor)), 2%) 10%
 			{name: '--text-link', family: 'link', lightness: 70},
 			{name: '--text-on-brand-primary', hue: 0, saturation: 0, lightness: 98},
 			...DARK_CODE_TOKENS,
-			{name: '--text-selection', hue: 198, saturation: 92, useSaturationFactor: true, lightness: 70, alpha: 0.35},
+			{name: '--text-selection', hue: 270, saturation: 42, useSaturationFactor: true, lightness: 50, alpha: 0.4},
 			{name: '--markup-mention-text', value: 'var(--text-link)'},
 			{name: '--markup-mention-fill', value: 'color-mix(in srgb, var(--text-link) 20%, transparent)'},
 			{name: '--markup-mention-border', family: 'link', lightness: 70, alpha: 0.3},
 			{name: '--markup-jump-link-text', value: 'var(--text-link)'},
 			{name: '--markup-jump-link-fill', value: 'color-mix(in srgb, var(--text-link) 12%, transparent)'},
 			{name: '--markup-jump-link-hover-fill', value: 'color-mix(in srgb, var(--text-link) 20%, transparent)'},
-			{name: '--markup-everyone-text', hue: 250, saturation: 80, useSaturationFactor: true, lightness: 75},
+			{name: '--markup-everyone-text', hue: 270, saturation: 50, useSaturationFactor: true, lightness: 78},
 			{
 				name: '--markup-everyone-fill',
 				value: 'color-mix(in srgb, hsl(250, calc(80% * var(--saturation-factor)), 75%) 18%, transparent)',
 			},
 			{
 				name: '--markup-everyone-border',
-				hue: 250,
+				hue: 270,
 				saturation: 80,
 				useSaturationFactor: true,
 				lightness: 75,
@@ -520,8 +520,8 @@ hsl(0, calc(0% * var(--saturation-factor)), 100%) 100%,
 hsl(245, calc(100% * var(--saturation-factor)), 80%) 40%
 )`,
 			},
-			{name: '--button-primary-fill', hue: 139, saturation: 55, useSaturationFactor: true, lightness: 44},
-			{name: '--button-primary-active-fill', hue: 136, saturation: 60, useSaturationFactor: true, lightness: 38},
+			{name: '--button-primary-fill', hue: 270, saturation: 42, useSaturationFactor: true, lightness: 50},
+			{name: '--button-primary-active-fill', hue: 270, saturation: 42, useSaturationFactor: true, lightness: 44},
 			{name: '--button-primary-text', hue: 0, saturation: 0, lightness: 100},
 			{name: '--button-secondary-fill', hue: 0, saturation: 0, lightness: 100, alpha: 0.1, useSaturationFactor: false},
 			{
@@ -561,7 +561,7 @@ hsl(245, calc(100% * var(--saturation-factor)), 80%) 40%
 			{name: '--bg-table-row-even', value: 'var(--background-secondary)'},
 			{name: '--border-color', family: 'neutralDark', lightness: 50, alpha: 0.2},
 			{name: '--border-color-hover', family: 'neutralDark', lightness: 50, alpha: 0.3},
-			{name: '--border-color-focus', hue: 198, saturation: 92, useSaturationFactor: true, lightness: 70, alpha: 0.45},
+			{name: '--border-color-focus', hue: 270, saturation: 42, useSaturationFactor: true, lightness: 60, alpha: 0.6},
 			{name: '--accent-primary', value: 'var(--brand-primary)'},
 			{name: '--accent-success', value: 'var(--status-online)'},
 			{name: '--accent-warning', value: 'var(--status-idle)'},
@@ -614,14 +614,14 @@ hsl(245, calc(100% * var(--saturation-factor)), 80%) 40%
 			{name: '--text-selection', hue: 210, saturation: 90, useSaturationFactor: true, lightness: 50, alpha: 0.2},
 			{name: '--markup-mention-border', family: 'link', lightness: 45, alpha: 0.4},
 			{name: '--markup-jump-link-fill', value: 'color-mix(in srgb, var(--text-link) 8%, transparent)'},
-			{name: '--markup-everyone-text', hue: 250, saturation: 70, useSaturationFactor: true, lightness: 45},
+			{name: '--markup-everyone-text', hue: 270, saturation: 42, useSaturationFactor: true, lightness: 45},
 			{
 				name: '--markup-everyone-fill',
 				value: 'color-mix(in srgb, hsl(250, calc(70% * var(--saturation-factor)), 45%) 12%, transparent)',
 			},
 			{
 				name: '--markup-everyone-border',
-				hue: 250,
+				hue: 270,
 				saturation: 70,
 				useSaturationFactor: true,
 				lightness: 45,

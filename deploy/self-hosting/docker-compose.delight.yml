@@ -1,0 +1,5 @@
+# Delight: serve our own build of fluxer_app (../../fluxer_app/dist) instead of the one baked into the image.
+services:
+  app-proxy:
+    volumes:
+      - ../../fluxer_app/dist:/srv/app/static:ro
