@@ -90,10 +90,12 @@ interface UserProfileBadgesProps {
 	profile: Profile | null;
 	isModal?: boolean;
 	isMobile?: boolean;
+	/** Delight: compact chip for the username line. */
+	inline?: boolean;
 }
 
 export const UserProfileBadges: React.FC<UserProfileBadgesProps> = observer(
-	({user, profile, isModal = false, isMobile = false}) => {
+	({user, profile, isModal = false, isMobile = false, inline = false}) => {
 		const {i18n} = useLingui();
 		const selfHosted = RuntimeConfig.isSelfHosted();
 		const showPremium = shouldShowPremiumFeatures();
@@ -202,11 +204,17 @@ export const UserProfileBadges: React.FC<UserProfileBadgesProps> = observer(
 		if (badges.length === 0) {
 			return null;
 		}
-		const containerClassName = isModal
-			? clsx(styles.containerModal, isMobile ? styles.containerModalMobile : styles.containerModalDesktop)
-			: styles.containerPopout;
-		const badgeClassName = isModal && isMobile ? styles.badgeMobile : styles.badgeDesktop;
-		const delightBadgeClassName = isModal ? styles.delightBadgeModal : styles.delightBadgePopout;
+		const containerClassName = inline
+			? styles.containerInline
+			: isModal
+				? clsx(styles.containerModal, isMobile ? styles.containerModalMobile : styles.containerModalDesktop)
+				: styles.containerPopout;
+		const badgeClassName = inline ? styles.badgeInline : isModal && isMobile ? styles.badgeMobile : styles.badgeDesktop;
+		const delightBadgeClassName = inline
+			? styles.delightBadgeInline
+			: isModal
+				? styles.delightBadgeModal
+				: styles.delightBadgePopout;
 		const isDesktopInteractions = !isMobile;
 		const renderInteractiveWrapper = (
 			url: string | undefined,

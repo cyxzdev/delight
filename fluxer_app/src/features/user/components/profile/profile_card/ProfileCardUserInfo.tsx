@@ -27,6 +27,8 @@ interface ProfileCardUserInfoProps {
 	onUsernameClick?: () => void;
 	actions?: React.ReactNode;
 	usernameActions?: React.ReactNode;
+	/** Delight: badges shown inline after the username, like Discord. */
+	badges?: React.ReactNode;
 }
 
 export const ProfileCardUserInfo: React.FC<ProfileCardUserInfoProps> = observer(
@@ -42,6 +44,7 @@ export const ProfileCardUserInfo: React.FC<ProfileCardUserInfoProps> = observer(
 		onUsernameClick,
 		actions,
 		usernameActions,
+		badges,
 	}) => {
 		const displayNameRef = useRef<HTMLButtonElement>(null);
 		const isDisplayNameOverflowing = useTextOverflow(displayNameRef, {
@@ -118,6 +121,11 @@ export const ProfileCardUserInfo: React.FC<ProfileCardUserInfoProps> = observer(
 							</button>
 						</FocusRing>
 						{usernameActions}
+						{badges && (
+							<span className={styles.inlineBadges} data-flx="user.profile.profile-card.profile-card-user-info.inline-badges">
+								{badges}
+							</span>
+						)}
 					</div>
 				)}
 				{pronouns && (

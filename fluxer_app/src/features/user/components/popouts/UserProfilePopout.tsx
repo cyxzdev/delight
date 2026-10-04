@@ -300,13 +300,6 @@ export const UserProfilePopout: React.FC<UserProfilePopoutProps> = observer(
 							onBannerContextMenu={handleBannerContextMenu}
 							data-flx="user.user-profile-popout.profile-card-banner"
 						/>
-						{!isWebhook && (
-							<UserProfileBadges
-								user={user}
-								profile={profile}
-								data-flx="user.user-profile-popout.user-profile-badges"
-							/>
-						)}
 						<ProfileCardContent isWebhook={isWebhook} data-flx="user.user-profile-popout.profile-card-content">
 							{showProfileDataWarning && (
 								<div className={styles.profileDataWarning} data-flx="user.user-profile-popout.profile-data-warning">
@@ -319,6 +312,7 @@ export const UserProfilePopout: React.FC<UserProfilePopoutProps> = observer(
 								</div>
 							)}
 							<ProfileCardUserInfo
+								badges={!isWebhook ? <UserProfileBadges user={user} profile={profile} inline /> : undefined}
 								displayName={displayName}
 								displayNameClassName={styles.profileDisplayName}
 								user={user}

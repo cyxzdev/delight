@@ -256,13 +256,9 @@ export const ProfilePreview: React.FC<ProfilePreviewProps> = observer(
 							onAvatarClick={openMockProfile}
 							data-flx="user.profile.profile-preview.profile-card-banner"
 						/>
-						<UserProfileBadges
-							user={previewUser}
-							profile={mockProfile}
-							data-flx="user.profile.profile-preview.user-profile-badges"
-						/>
 						<ProfileCardContent data-flx="user.profile.profile-preview.profile-card-content">
 							<ProfileCardUserInfo
+								badges={<UserProfileBadges user={previewUser} profile={mockProfile} inline />}
 								displayName={displayName}
 								user={previewUser}
 								pronouns={pronouns}

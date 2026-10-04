@@ -539,13 +539,9 @@ export const UserAreaPopout = observer(() => {
 						onAvatarClick={openUserProfile}
 						data-flx="app.floating.user-area-popout.profile-card-banner"
 					/>
-					<UserProfileBadges
-						user={currentUser}
-						profile={profile}
-						data-flx="app.floating.user-area-popout.user-profile-badges"
-					/>
 					<ProfileCardContent isWebhook={false} data-flx="app.floating.user-area-popout.profile-card-content">
 						<ProfileCardUserInfo
+								badges={<UserProfileBadges user={currentUser} profile={profile} inline />}
 							displayName={displayName}
 							user={currentUser}
 							pronouns={profileData?.pronouns}
