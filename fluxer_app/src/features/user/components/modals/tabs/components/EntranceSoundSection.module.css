@@ -73,10 +73,7 @@
 	box-sizing: border-box;
 	flex-direction: column;
 	gap: 0.5rem;
-	border: 0.0625rem solid var(--entrance-sound-border);
-	border-radius: 0.5rem;
-	background: var(--entrance-sound-surface);
-	padding: 0.625rem;
+	padding: 0;
 }
 
 .scopeSectionHeader {

@@ -284,7 +284,7 @@ export const FriendListItem: React.FC<FriendListItemProps> = observer((props) =>
 						icon: (
 							<CheckIcon
 								weight="bold"
-								size={remFromPx(20)}
+								size={remFromPx(16)}
 								data-flx="channel.friends.friend-list-item.get-friend-actions.check-icon"
 							/>
 						),
@@ -296,7 +296,7 @@ export const FriendListItem: React.FC<FriendListItemProps> = observer((props) =>
 						icon: (
 							<XIcon
 								weight="bold"
-								size={remFromPx(20)}
+								size={remFromPx(16)}
 								data-flx="channel.friends.friend-list-item.get-friend-actions.x-icon"
 							/>
 						),
@@ -311,7 +311,7 @@ export const FriendListItem: React.FC<FriendListItemProps> = observer((props) =>
 						icon: (
 							<XIcon
 								weight="bold"
-								size={remFromPx(20)}
+								size={remFromPx(16)}
 								data-flx="channel.friends.friend-list-item.get-friend-actions.x-icon--2"
 							/>
 						),
@@ -360,7 +360,7 @@ export const FriendListItem: React.FC<FriendListItemProps> = observer((props) =>
 				<div className={styles.friendInfo} data-flx="channel.friends.friend-list-item.friend-info">
 					<StatusAwareAvatar
 						user={user}
-						size={36}
+						size={32}
 						status={status}
 						data-flx="channel.friends.friend-list-item.status-aware-avatar"
 					/>

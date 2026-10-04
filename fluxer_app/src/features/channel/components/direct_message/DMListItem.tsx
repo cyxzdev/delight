@@ -243,7 +243,9 @@ const ResolvedDMListItem = observer(function ResolvedDMListItem({
 		const isCurrentUser = lastMessage.author.id === currentUser?.id;
 		const authorPrefix = isCurrentUser
 			? `${i18n._(YOU_DESCRIPTOR)}: `
-			: `${NicknameUtils.getNickname(lastMessage.author, null, channel.id)}: `;
+			: isGroupDM
+				? `${NicknameUtils.getNickname(lastMessage.author, null, channel.id)}: `
+				: '';
 		if (lastMessage.type !== MessageTypes.DEFAULT && lastMessage.type !== MessageTypes.REPLY) {
 			const systemText = SystemMessageUtils.stringify(lastMessage, i18n);
 			if (systemText) {
@@ -584,7 +586,7 @@ const ResolvedDMListItem = observer(function ResolvedDMListItem({
 									data-flx="channel.direct-message.dm-list-item.dm-item-custom-status--2"
 								/>
 							)}
-							{isGroupDM && (
+							{isGroupDM && !messagePreview && (
 								<span
 									className={clsx(styles.dmItemSubtext, styles.dmItemMembersSubtext)}
 									data-flx="channel.direct-message.dm-list-item.dm-item--2"
@@ -598,7 +600,7 @@ const ResolvedDMListItem = observer(function ResolvedDMListItem({
 									)}
 								</span>
 							)}
-							{!isGroupDM && messagePreview && (
+							{messagePreview && (
 								<span
 									className={styles.dmItemSubtext}
 									data-flx="channel.direct-message.dm-list-item.dm-item-subtext--2"
@@ -607,6 +609,35 @@ const ResolvedDMListItem = observer(function ResolvedDMListItem({
 								</span>
 							)}
 						</div>
+						{(relativeTime || unreadState.shouldShowUnreadIndicator || mentionCount > 0) && (
+							<div
+								className={styles.dmItemMeta}
+								aria-hidden
+								data-flx="channel.direct-message.dm-list-item.dm-item-meta"
+							>
+								{relativeTime && (
+									<span
+										className={styles.dmItemTimestamp}
+										data-flx="channel.direct-message.dm-list-item.dm-item-timestamp--2"
+									>
+										{relativeTime}
+									</span>
+								)}
+								{mentionCount > 0 ? (
+									<span
+										className={styles.dmItemMentionBadge}
+										data-flx="channel.direct-message.dm-list-item.dm-item-mention-badge"
+									>
+										{mentionCount > 99 ? '99+' : mentionCount}
+									</span>
+								) : unreadState.shouldShowUnreadIndicator ? (
+									<span
+										className={styles.dmItemUnreadDot}
+										data-flx="channel.direct-message.dm-list-item.dm-item-unread-dot"
+									/>
+								) : null}
+							</div>
+						)}
 						<FocusRing offset={-2} data-flx="channel.direct-message.dm-list-item.focus-ring--3">
 							<button
 								type="button"

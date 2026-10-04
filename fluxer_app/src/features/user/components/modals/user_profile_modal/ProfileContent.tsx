@@ -30,6 +30,7 @@ export const ProfileContent: React.FC<ProfileContentProps> = observer(
 			<div className={userProfileModalStyles.profileContent} data-flx="user.user-profile-modal.profile-content.div">
 				<div
 					className={userProfileModalStyles.profileContentHeader}
+					data-profile-sections=""
 					data-flx="user.user-profile-modal.profile-content.div--2"
 				>
 					<VoiceActivitySection

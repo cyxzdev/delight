@@ -147,8 +147,8 @@ export const Notifications: FC<NotificationsProps> = observer(
 					)
 				: i18n._(NO_PUSH_SUBSCRIPTIONS_REGISTERED_YET_DESCRIPTOR);
 		return (
-			<div className={styles.container} data-flx="user.notifications-tab.notifications.container">
-				<div className={styles.switchesContainer} data-flx="user.notifications-tab.notifications.switches-container">
+			<div className={styles.container} data-settings-rows="" data-flx="user.notifications-tab.notifications.container">
+				<div className={styles.switchesContainer} data-settings-rows="" data-flx="user.notifications-tab.notifications.switches-container">
 					<Switch
 						label={
 							isDesktop()

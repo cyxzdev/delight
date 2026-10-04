@@ -74,6 +74,7 @@ export const SettingsTabSection: React.FC<SettingsTabSectionProps> = ({
 		<div
 			id={id}
 			className={clsx(styles.subsection, className)}
+			data-settings-subsection=""
 			data-flx="app.settings-tab-layout.settings-tab-section.subsection"
 		>
 			{(title || description || actions) && (
@@ -117,7 +118,7 @@ export const SettingsTabSection: React.FC<SettingsTabSectionProps> = ({
 					)}
 				</div>
 			)}
-			<div className={sectionStyles.subsectionContent} data-flx="app.settings-tab-layout.settings-tab-section.div--2">
+			<div className={sectionStyles.subsectionContent} data-settings-card-host="" data-flx="app.settings-tab-layout.settings-tab-section.div--2">
 				{children}
 			</div>
 		</div>

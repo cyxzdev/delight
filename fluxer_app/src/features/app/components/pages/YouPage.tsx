@@ -12,6 +12,11 @@ import {StatusAwareAvatar} from '@app/features/ui/components/StatusAwareAvatar';
 import {NoteEditSheet} from '@app/features/user/components/modals/NoteEditSheet';
 import {UserSettingsModal} from '@app/features/user/components/modals/UserSettingsModal';
 import {UserProfileBadges} from '@app/features/user/components/popouts/UserProfileBadges';
+import {
+	ProfileEffect,
+	profileEffectHostClassName,
+} from '@app/features/user/components/profile_effects/ProfileEffect';
+import {getProfileEffect} from '@app/features/user/utils/ProfileEffects';
 import {UserProfileBio, UserProfileMembershipInfo} from '@app/features/user/components/popouts/UserProfileShared';
 import {normalizeCustomStatus} from '@app/features/user/state/CustomStatus';
 import UserNote from '@app/features/user/state/UserNote';
@@ -76,10 +81,17 @@ export const YouPage = observer(({onAvatarClick}: YouPageProps) => {
 			<div className={styles.container} data-flx="app.you-page.container">
 				<Scroller key="you-page-scroller" data-flx="app.you-page.scroller">
 					<div
-						style={{paddingBottom: 'calc(60px + env(safe-area-inset-bottom, 0px) + 1rem)'}}
+						className={profileEffectHostClassName}
+						style={{paddingBottom: 'calc(60px + env(safe-area-inset-bottom, 0px) + 1rem)', minHeight: '100%'}}
 						data-flx="app.you-page.div"
 					>
-						<div ref={bannerHoverRef} className={styles.banner} data-flx="app.you-page.banner">
+						<ProfileEffect effect={getProfileEffect(user)} radius={0} data-flx="app.you-page.profile-effect" />
+						<div
+							ref={bannerHoverRef}
+							className={styles.banner}
+							data-profile-effect-banner=""
+							data-flx="app.you-page.banner"
+						>
 							{bannerUrl ? (
 								<div
 									className={styles.bannerImage}
@@ -95,6 +107,7 @@ export const YouPage = observer(({onAvatarClick}: YouPageProps) => {
 								type="button"
 								onClick={onAvatarClick}
 								className={styles.avatarButton}
+								data-profile-effect-avatar=""
 								aria-label={i18n._(OPEN_AVATAR_DESCRIPTOR)}
 								data-flx="app.you-page.avatar-button.avatar-click"
 							>

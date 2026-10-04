@@ -3,6 +3,8 @@
 import {DesktopSettingsView} from '@app/features/app/components/dialogs/components/DesktopSettingsView';
 import {MobileSettingsView} from '@app/features/app/components/dialogs/components/MobileSettingsView';
 import * as Modal from '@app/features/app/components/dialogs/Modal';
+import {openDeveloperPortal} from '@app/features/developers/DeveloperPortalNavigation';
+import {DeveloperPortalPaths} from '@app/features/developers/DeveloperPortalPaths';
 import {SettingsModalContainer} from '@app/features/app/components/dialogs/shared/SettingsModalLayout';
 import {ComponentBus} from '@app/features/platform/utils/ComponentBus';
 import * as PlutoniumPageCommands from '@app/features/premium/commands/PlutoniumPageCommands';
@@ -29,6 +31,13 @@ import {useLingui} from '@lingui/react/macro';
 import {observer} from 'mobx-react-lite';
 import type React from 'react';
 import {useCallback, useEffect, useMemo, useState} from 'react';
+
+// Delight: developer tabs live in the full-page developer portal.
+const DEVELOPER_PORTAL_TAB_PATHS: Partial<Record<UserSettingsTabType, string>> = {
+	applications: DeveloperPortalPaths.APPLICATIONS,
+	embed_debugger: DeveloperPortalPaths.EMBED_DEBUGGER,
+	component_gallery: DeveloperPortalPaths.COMPONENT_GALLERY,
+};
 
 interface UserSettingsModalProps {
 	initialTab?: UserSettingsTabType;
@@ -121,6 +130,11 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = observer(
 		);
 		const handleDesktopTabSelect = useCallback(
 			(tabType: UserSettingsTabType) => {
+				const portalPath = DEVELOPER_PORTAL_TAB_PATHS[tabType];
+				if (portalPath) {
+					openDeveloperPortal(portalPath);
+					return;
+				}
 				if (plutoniumPageEnabled && tabType === 'plutonium') {
 					PlutoniumPageCommands.openPlutoniumPage();
 					return;
@@ -145,6 +159,13 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = observer(
 			handleClose();
 		}, [handleClose, handleMobileBack, isMobile]);
 		useEffect(() => {
+			const portalPath = normalizedInitialTab ? DEVELOPER_PORTAL_TAB_PATHS[normalizedInitialTab] : undefined;
+			if (portalPath && !isMobile) {
+				openDeveloperPortal(portalPath);
+			}
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+		}, []);
+		useEffect(() => {
 			const resolvedTab = resolveVisibleTab(selectedTab);
 			if (resolvedTab !== selectedTab) {
 				setSelectedTab(resolvedTab);
@@ -155,6 +176,11 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = observer(
 				const {tab, section} = (args ?? {}) as {tab?: string; section?: string};
 				if (plutoniumPageEnabled && tab === 'plutonium') {
 					PlutoniumPageCommands.openPlutoniumPage();
+					return;
+				}
+				const portalPath = tab ? DEVELOPER_PORTAL_TAB_PATHS[tab as UserSettingsTabType] : undefined;
+				if (portalPath) {
+					openDeveloperPortal(portalPath);
 					return;
 				}
 				if (tab && typeof tab === 'string') {

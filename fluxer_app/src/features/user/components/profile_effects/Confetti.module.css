@@ -1,0 +1,37 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* Paper tumbling: squash horizontally so a flat piece looks like it flips over. */
+.flutter {
+	transform-box: fill-box;
+	transform-origin: 50% 50%;
+	animation: flutter var(--dur, 900ms) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes flutter {
+	from {
+		transform: scaleX(1);
+	}
+	to {
+		transform: scaleX(0.15);
+	}
+}
+
+/* Streamers sway a little from where they hang. */
+.streamer {
+	transform-box: fill-box;
+	transform-origin: 50% 0%;
+	animation: streamer 3.6s ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes streamer {
+	from {
+		transform: rotate(-4deg);
+	}
+	to {
+		transform: rotate(4deg);
+	}
+}
+
+[data-pfx-static] :is(.flutter, .streamer) {
+	animation: none;
+}

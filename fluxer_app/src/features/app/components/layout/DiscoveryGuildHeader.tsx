@@ -16,12 +16,12 @@ export function DiscoveryGuildHeader() {
 	return (
 		<div
 			className={guildHeaderStyles.headerContainer}
-			style={{height: remFromPx(56)}}
+			style={{height: remFromPx(48), minHeight: remFromPx(48), borderBottomColor: 'var(--background-modifier-accent)'}}
 			data-flx="app.discovery-guild-header.div"
 		>
 			<div
 				className={guildHeaderStyles.headerContent}
-				style={{cursor: 'default'}}
+				style={{cursor: 'default', height: '100%'}}
 				data-flx="app.discovery-guild-header.div--2"
 			>
 				<h1 className={styles.headerTitle} data-flx="app.discovery-guild-header.header-title">

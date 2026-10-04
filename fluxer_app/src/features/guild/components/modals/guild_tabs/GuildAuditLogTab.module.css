@@ -13,15 +13,15 @@
 }
 
 .pageTitle {
-	font-size: 1.125rem;
-	font-weight: 650;
+	font-size: 0.9375rem;
+	font-weight: 600;
 	color: var(--text-primary);
 	margin: 0;
 }
 
 .pageSubtitle {
-	font-size: 0.9rem;
-	color: var(--text-primary-muted);
+	font-size: 0.8125rem;
+	color: var(--text-tertiary);
 	margin: 0;
 }
 
@@ -159,14 +159,26 @@
 .entryList {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-2);
+	gap: 0;
+	border-radius: var(--settings-card-radius, 0.625rem);
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	background-color: var(--settings-card-background, var(--background-secondary-alt));
+	overflow: hidden;
 }
 
 .auditLog {
-	border-radius: var(--radius-xl);
-	border: 0.0625rem solid var(--background-modifier-accent);
-	background-color: var(--background-textarea);
-	overflow: hidden;
+	position: relative;
+	background: transparent;
+}
+
+.auditLog + .auditLog::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 3.25rem;
+	right: 0;
+	height: 0.0625rem;
+	background: var(--settings-border-color, var(--background-modifier-accent));
 }
 
 .auditLog strong {

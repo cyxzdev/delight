@@ -229,3 +229,51 @@
 	color: var(--text-link);
 	text-decoration: underline;
 }
+
+/* Delight: permission categories are grouped list cards with hairlines between rows. */
+.roleCategoryDivider,
+.categoryDivider {
+	display: none;
+}
+
+.roleCategoryContainer,
+.categoryContainer {
+	gap: 0.375rem;
+}
+
+.roleCategoryTitle,
+.categoryTitle {
+	margin: 0;
+	padding: 0 0.125rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: none;
+	letter-spacing: 0;
+	color: var(--text-tertiary);
+}
+
+.roleCategoryPermissions,
+.categoryPermissions,
+.roleCategoryPermissionsGrid,
+.categoryPermissionsGrid {
+	gap: 0;
+	padding: 0.125rem var(--settings-card-padding-inline, 0.875rem);
+	border-radius: var(--settings-card-radius, 0.625rem);
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	background: var(--settings-card-background, var(--background-secondary-alt));
+}
+
+.roleCategoryPermissionsGrid,
+.categoryPermissionsGrid {
+	column-gap: 1.5rem;
+}
+
+.roleCategoryPermissions > *,
+.categoryPermissions > * {
+	padding-block: 0.375rem;
+}
+
+.roleCategoryPermissions > * + *,
+.categoryPermissions > * + * {
+	border-top: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+}

@@ -94,7 +94,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
 					</p>
 				) : null}
 			</div>
-			<div className={styles.sectionContent} data-flx="app.settings-section.section-content">
+			<div className={styles.sectionContent} data-settings-card-host="" data-flx="app.settings-section.section-content">
 				{children}
 			</div>
 		</section>

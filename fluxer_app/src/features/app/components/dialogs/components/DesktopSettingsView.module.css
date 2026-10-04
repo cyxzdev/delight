@@ -125,3 +125,9 @@
 	white-space: nowrap;
 	color: var(--text-primary);
 }
+
+.externalIcon {
+	margin-left: auto;
+	color: var(--text-tertiary);
+	flex: 0 0 auto;
+}

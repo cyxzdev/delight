@@ -64,7 +64,7 @@ export const InviteAcceptModalPreview = observer(function InviteAcceptModalPrevi
 	}, [guild.id, guild.splash, hasClearedSplash, previewSplashUrl]);
 	return (
 		<Modal.Root
-			size="large"
+			size="small"
 			className={styles.root}
 			centered
 			onClose={handleDismiss}

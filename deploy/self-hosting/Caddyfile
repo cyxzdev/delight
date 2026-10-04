@@ -33,6 +33,11 @@
 		reverse_proxy livekit:7880
 	}
 
+	# Delight sidecar (delight/service): profile effects and other Delight-only per-user state.
+	handle_path /delight/* {
+		reverse_proxy delight-svc:3000
+	}
+
 	handle {$FLUXER_ADMIN_BASE_PATH:/admin} {
 		rewrite * /
 		reverse_proxy admin:8080

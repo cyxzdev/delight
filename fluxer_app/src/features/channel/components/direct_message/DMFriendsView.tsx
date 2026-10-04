@@ -25,7 +25,7 @@ import {useFluxerDocumentTitle} from '@app/features/window/hooks/useFluxerDocume
 import {RelationshipTypes} from '@fluxer/constants/src/UserConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
-import {MagnifyingGlassIcon, UsersThreeIcon} from '@phosphor-icons/react';
+import {MagnifyingGlassIcon, UserPlusIcon, UsersThreeIcon} from '@phosphor-icons/react';
 import {clsx} from 'clsx';
 import {observer} from 'mobx-react-lite';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
@@ -90,6 +90,14 @@ const TabButton = observer(
 						{...props}
 					>
 						<div className={styles.tabContent} data-flx="channel.direct-message.dm-friends-view.tab-content">
+							{primary && (
+								<UserPlusIcon
+									weight="bold"
+									className={styles.tabIcon}
+									aria-hidden
+									data-flx="channel.direct-message.dm-friends-view.tab-icon"
+								/>
+							)}
 							{label}
 							{badge !== undefined && badge > 0 && (
 								<MentionBadge mentionCount={badge} data-flx="channel.direct-message.dm-friends-view.mention-badge" />
@@ -182,19 +190,16 @@ export const DMFriendsView: React.FC = observer(() => {
 	const FriendsHeaderContent = (
 		<div className={styles.headerContent} data-flx="channel.direct-message.dm-friends-view.header-content">
 			{!mobileLayout.enabled && (
-				<>
-					<div className={styles.titleSection} data-flx="channel.direct-message.dm-friends-view.title-section">
-						<UsersThreeIcon
-							weight="fill"
-							className={styles.titleIcon}
-							data-flx="channel.direct-message.dm-friends-view.title-icon"
-						/>
-						<span className={styles.titleText} data-flx="channel.direct-message.dm-friends-view.title-text">
-							{i18n._(MY_FRIENDS_DESCRIPTOR)}
-						</span>
-					</div>
-					<div className={styles.divider} data-flx="channel.direct-message.dm-friends-view.divider" />
-				</>
+				<div className={styles.titleSection} data-flx="channel.direct-message.dm-friends-view.title-section">
+					<UsersThreeIcon
+						weight="fill"
+						className={styles.titleIcon}
+						data-flx="channel.direct-message.dm-friends-view.title-icon"
+					/>
+					<span className={styles.titleText} data-flx="channel.direct-message.dm-friends-view.title-text">
+						{i18n._(MY_FRIENDS_DESCRIPTOR)}
+					</span>
+				</div>
 			)}
 			<div className={styles.tabsWrapper} data-flx="channel.direct-message.dm-friends-view.tabs-wrapper">
 				<Scroller
@@ -211,43 +216,45 @@ export const DMFriendsView: React.FC = observer(() => {
 						aria-label={i18n._(FRIENDS_SECTIONS_DESCRIPTOR)}
 						data-flx="channel.direct-message.dm-friends-view.tabs-inner"
 					>
-						<TabButton
-							ref={(el) => {
-								tabRefs.current[0] = el;
-							}}
-							tab="online"
-							activeTab={activeTab}
-							onClick={setActiveTab}
-							label={i18n._(ONLINE_DESCRIPTOR)}
-							panelId="dm-friends-panel-online"
-							onKeyDown={(e) => handleKeyDown(e, 0)}
-							data-flx="channel.direct-message.dm-friends-view.tab-button.set-active-tab"
-						/>
-						<TabButton
-							ref={(el) => {
-								tabRefs.current[1] = el;
-							}}
-							tab="all"
-							activeTab={activeTab}
-							onClick={setActiveTab}
-							label={i18n._(ALL_DESCRIPTOR)}
-							panelId="dm-friends-panel-all"
-							onKeyDown={(e) => handleKeyDown(e, 1)}
-							data-flx="channel.direct-message.dm-friends-view.tab-button.set-active-tab--2"
-						/>
-						<TabButton
-							ref={(el) => {
-								tabRefs.current[2] = el;
-							}}
-							tab="pending"
-							activeTab={activeTab}
-							onClick={setActiveTab}
-							label={i18n._(PENDING_DESCRIPTOR)}
-							panelId="dm-friends-panel-pending"
-							badge={pendingCount}
-							onKeyDown={(e) => handleKeyDown(e, 2)}
-							data-flx="channel.direct-message.dm-friends-view.tab-button.set-active-tab--3"
-						/>
+						<div className={styles.segmented} data-flx="channel.direct-message.dm-friends-view.segmented">
+							<TabButton
+								ref={(el) => {
+									tabRefs.current[0] = el;
+								}}
+								tab="online"
+								activeTab={activeTab}
+								onClick={setActiveTab}
+								label={i18n._(ONLINE_DESCRIPTOR)}
+								panelId="dm-friends-panel-online"
+								onKeyDown={(e) => handleKeyDown(e, 0)}
+								data-flx="channel.direct-message.dm-friends-view.tab-button.set-active-tab"
+							/>
+							<TabButton
+								ref={(el) => {
+									tabRefs.current[1] = el;
+								}}
+								tab="all"
+								activeTab={activeTab}
+								onClick={setActiveTab}
+								label={i18n._(ALL_DESCRIPTOR)}
+								panelId="dm-friends-panel-all"
+								onKeyDown={(e) => handleKeyDown(e, 1)}
+								data-flx="channel.direct-message.dm-friends-view.tab-button.set-active-tab--2"
+							/>
+							<TabButton
+								ref={(el) => {
+									tabRefs.current[2] = el;
+								}}
+								tab="pending"
+								activeTab={activeTab}
+								onClick={setActiveTab}
+								label={i18n._(PENDING_DESCRIPTOR)}
+								panelId="dm-friends-panel-pending"
+								badge={pendingCount}
+								onKeyDown={(e) => handleKeyDown(e, 2)}
+								data-flx="channel.direct-message.dm-friends-view.tab-button.set-active-tab--3"
+							/>
+						</div>
 						<TabButton
 							ref={(el) => {
 								tabRefs.current[3] = el;

@@ -208,8 +208,9 @@ export const DMWelcomeSection: React.FC<DMWelcomeSectionProps> = observer(functi
 				return null;
 		}
 	};
+	const mutualFriendCount = profile?.mutualFriends?.length ?? 0;
 	const renderMutualGuilds = () => {
-		if (!hasMutualGuilds) return null;
+		if (!hasMutualGuilds && mutualFriendCount === 0) return null;
 		return (
 			<div
 				className={styles.mutualGuildsContainer}
@@ -217,7 +218,7 @@ export const DMWelcomeSection: React.FC<DMWelcomeSectionProps> = observer(functi
 			>
 				{mutualGuildRecords.length > 0 && (
 					<AvatarStack
-						size={32}
+						size={20}
 						maxVisible={3}
 						data-flx="channel.direct-message.dm-welcome-section.render-mutual-guilds.avatar-stack"
 					>
@@ -232,7 +233,7 @@ export const DMWelcomeSection: React.FC<DMWelcomeSectionProps> = observer(functi
 									name={guild.name}
 									icon={guild.icon}
 									className={styles.guildIcon}
-									sizePx={32}
+									sizePx={20}
 									data-flx="channel.direct-message.dm-welcome-section.render-mutual-guilds.guild-icon"
 								/>
 							</div>
@@ -243,69 +244,100 @@ export const DMWelcomeSection: React.FC<DMWelcomeSectionProps> = observer(functi
 					className={styles.mutualGuildsText}
 					data-flx="channel.direct-message.dm-welcome-section.render-mutual-guilds.mutual-guilds-text"
 				>
-					{plural(
-						{count: mutualGuildCount},
-						{
-							one: '# mutual community',
-							other: '# mutual communities',
-						},
+					{hasMutualGuilds &&
+						plural(
+							{count: mutualGuildCount},
+							{
+								one: '# mutual community',
+								other: '# mutual communities',
+							},
+						)}
+					{hasMutualGuilds && mutualFriendCount > 0 && (
+						<span className={styles.metaDot} aria-hidden data-flx="channel.direct-message.dm-welcome-section.meta-dot">
+							·
+						</span>
 					)}
+					{mutualFriendCount > 0 &&
+						plural(
+							{count: mutualFriendCount},
+							{
+								one: '# mutual friend',
+								other: '# mutual friends',
+							},
+						)}
 				</span>
 			</div>
 		);
 	};
 	return (
 		<div className={styles.welcomeSection} data-flx="channel.direct-message.dm-welcome-section.welcome-section">
-			<div className={styles.profileSection} data-flx="channel.direct-message.dm-welcome-section.profile-section">
-				<FocusRing offset={-2} data-flx="channel.direct-message.dm-welcome-section.focus-ring">
-					<button
-						type="button"
-						onClick={openFullProfile}
-						onContextMenu={handleUserContextMenu}
-						className={styles.avatarButton}
-						data-flx="channel.direct-message.dm-welcome-section.avatar-button.open-full-profile"
-					>
-						<StatusAwareAvatar
-							user={user}
-							size={80}
-							showOffline={true}
-							data-flx="channel.direct-message.dm-welcome-section.status-aware-avatar"
-						/>
-					</button>
-				</FocusRing>
-				<FocusRing offset={-2} data-flx="channel.direct-message.dm-welcome-section.focus-ring--2">
-					<button
-						type="button"
-						onClick={openFullProfile}
-						onContextMenu={handleUserContextMenu}
-						className={styles.usernameButton}
-						data-flx="channel.direct-message.dm-welcome-section.username-button.open-full-profile"
-					>
-						<span className={styles.username} data-flx="channel.direct-message.dm-welcome-section.username">
+			<div className={styles.card} data-flx="channel.direct-message.dm-welcome-section.card">
+				<div className={styles.profileSection} data-flx="channel.direct-message.dm-welcome-section.profile-section">
+					<FocusRing offset={-2} data-flx="channel.direct-message.dm-welcome-section.focus-ring">
+						<button
+							type="button"
+							onClick={openFullProfile}
+							onContextMenu={handleUserContextMenu}
+							className={styles.avatarButton}
+							data-flx="channel.direct-message.dm-welcome-section.avatar-button.open-full-profile"
+						>
+							<StatusAwareAvatar
+								user={user}
+								size={56}
+								showOffline={true}
+								data-flx="channel.direct-message.dm-welcome-section.status-aware-avatar"
+							/>
+						</button>
+					</FocusRing>
+					<div className={styles.identity} data-flx="channel.direct-message.dm-welcome-section.identity">
+						<div className={styles.nameRow} data-flx="channel.direct-message.dm-welcome-section.name-row">
+							<FocusRing offset={-2} data-flx="channel.direct-message.dm-welcome-section.focus-ring--2">
+								<button
+									type="button"
+									onClick={openFullProfile}
+									onContextMenu={handleUserContextMenu}
+									className={styles.usernameButton}
+									data-flx="channel.direct-message.dm-welcome-section.username-button.open-full-profile"
+								>
+									<span className={styles.username} data-flx="channel.direct-message.dm-welcome-section.username">
+										{displayName}
+									</span>
+								</button>
+							</FocusRing>
+							<UserProfileBadges
+								user={user}
+								profile={profile}
+								isModal={true}
+								isMobile={mobileLayout.enabled}
+								data-flx="channel.direct-message.dm-welcome-section.user-profile-badges"
+							/>
+						</div>
+						<span className={styles.tag} data-flx="channel.direct-message.dm-welcome-section.tag">
 							{fluxerTag}
 						</span>
-					</button>
-				</FocusRing>
-				<UserProfileBadges
-					user={user}
-					profile={profile}
-					isModal={true}
-					isMobile={mobileLayout.enabled}
-					data-flx="channel.direct-message.dm-welcome-section.user-profile-badges"
-				/>
-			</div>
-			<p className={styles.welcomeText} data-flx="channel.direct-message.dm-welcome-section.welcome-text">
-				<Trans>
-					Say hi to <strong data-flx="channel.direct-message.dm-welcome-section.strong">{ph({displayName})}</strong>.
-					Your DM starts here.
-				</Trans>
-			</p>
-			{(hasMutualGuilds || shouldShowActionButton) && (
+					</div>
+				</div>
+				<p className={styles.welcomeText} data-flx="channel.direct-message.dm-welcome-section.welcome-text">
+					<Trans>
+						Say hi to <strong data-flx="channel.direct-message.dm-welcome-section.strong">{ph({displayName})}</strong>.
+						Your DM starts here.
+					</Trans>
+				</p>
 				<div className={styles.actionSection} data-flx="channel.direct-message.dm-welcome-section.action-section">
 					{renderMutualGuilds()}
-					{shouldShowActionButton && renderActionButton()}
+					<div className={styles.actionButtons} data-flx="channel.direct-message.dm-welcome-section.action-buttons">
+						<Button
+							variant="secondary"
+							small={true}
+							onClick={openFullProfile}
+							data-flx="channel.direct-message.dm-welcome-section.button.open-full-profile"
+						>
+							<Trans>View profile</Trans>
+						</Button>
+						{shouldShowActionButton && renderActionButton()}
+					</div>
 				</div>
-			)}
+			</div>
 		</div>
 	);
 });

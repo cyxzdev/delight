@@ -11,7 +11,7 @@
 	position: relative;
 	overflow: hidden;
 	--settings-edge-gutter: clamp(1rem, 3vw, 1.5rem);
-	--settings-surface-background: var(--form-surface-background);
+	--settings-surface-background: var(--background-secondary-alt);
 	--settings-panel-background: color-mix(in srgb, var(--form-surface-background) 88%, var(--background-primary));
 	--settings-border-color: var(--background-modifier-accent);
 	--settings-hover-background: var(--surface-interactive-hover-bg);
@@ -25,7 +25,10 @@
 	--settings-danger-text: color-mix(in srgb, var(--status-danger) 78%, var(--text-primary) 22%);
 	--settings-danger-background: color-mix(in srgb, var(--status-danger) 6%, var(--surface-interactive-hover-bg));
 	--settings-danger-border-color: color-mix(in srgb, var(--status-danger) 32%, transparent);
-	--settings-control-radius: 0.5rem;
+	--settings-control-radius: 0.4375rem;
+	--settings-card-radius: 0.625rem;
+	--settings-card-background: var(--background-secondary-alt);
+	--settings-card-padding-inline: 0.875rem;
 	--settings-sidebar-item-border-width: 0.0625rem;
 	--settings-sidebar-item-padding-inline: 0.625rem;
 	--settings-sidebar-item-icon-size: 1.25rem;
@@ -163,10 +166,10 @@
 }
 
 .desktopSidebar {
-	flex: 0 0 clamp(15.75rem, 24svw, 20rem);
+	flex: 0 0 clamp(14.5rem, 22svw, 16.5rem);
 	display: flex;
 	border-right: 0.0625rem solid var(--settings-border-color);
-	background: var(--settings-surface-background);
+	background: var(--background-secondary);
 	overflow: hidden;
 	position: relative;
 }
@@ -174,7 +177,7 @@
 .desktopSidebarInner {
 	display: flex;
 	flex-direction: column;
-	padding: 1rem 0.75rem 0;
+	padding: 0.75rem 0.625rem 0;
 	gap: 0.25rem;
 	height: 100%;
 	flex: 1 1 auto;
@@ -226,11 +229,11 @@
 	position: sticky;
 	top: 0;
 	z-index: 10;
-	height: 3.75rem;
+	height: 3rem;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0 1rem;
+	padding: 0 0.625rem 0 1.25rem;
 	flex-shrink: 0;
 	background: var(--background-secondary);
 	border-bottom: 0.0625rem solid var(--settings-border-color);
@@ -247,32 +250,8 @@
 .desktopScrollInner {
 	width: 100%;
 	margin: 0 auto;
-	padding: 0 var(--settings-edge-gutter);
-	max-width: clamp(40rem, 90%, 50rem);
-}
-
-@media screen and (min-width: 1024px) {
-	.desktopScrollInner {
-		max-width: clamp(46.25rem, 85%, 60rem);
-	}
-}
-
-@media screen and (min-width: 1440px) {
-	.desktopScrollInner {
-		max-width: clamp(51.25rem, 80%, 65rem);
-	}
-}
-
-@media screen and (min-width: 1920px) {
-	.desktopScrollInner {
-		max-width: clamp(56.25rem, 75%, 70rem);
-	}
-}
-
-@media screen and (min-width: 2560px) {
-	.desktopScrollInner {
-		max-width: clamp(62.5rem, 70%, 75rem);
-	}
+	padding: 0 1.5rem;
+	max-width: 49.5rem;
 }
 
 :global(.theme-light) .desktopContent {
@@ -305,21 +284,21 @@
 .sidebarNavList {
 	display: flex;
 	flex-direction: column;
-	gap: 0.1875rem;
+	gap: 0.75rem;
 }
 
 .sidebarNavList > * {
 	display: flex;
 	flex-direction: column;
-	gap: 0.1875rem;
+	gap: 0.75rem;
 	min-width: 0;
 }
 
 .sidebarCategory {
 	display: flex;
 	flex-direction: column;
-	gap: 0.1875rem;
-	margin-bottom: 0.5rem;
+	gap: 0.25rem;
+	margin-bottom: 0;
 	min-width: 0;
 }
 
@@ -329,15 +308,24 @@
 	}
 }
 
+.sidebarCategoryCard {
+	display: flex;
+	flex-direction: column;
+	gap: 0.0625rem;
+	padding: 0.1875rem;
+	border-radius: 0.625rem;
+	background: var(--background-secondary-alt);
+	border: 0.0625rem solid var(--settings-border-color);
+	min-width: 0;
+}
+
 .sidebarCategoryTitle {
-	margin: 0 0 0.0625rem;
-	padding: 0.25rem 0.625rem 0.1875rem;
-	font-size: 0.6875rem;
+	margin: 0;
+	padding: 0 0.5rem;
+	font-size: 0.75rem;
 	font-weight: 600;
 	line-height: 1rem;
 	color: var(--text-tertiary);
-	text-transform: uppercase;
-	letter-spacing: 0.02em;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -349,26 +337,26 @@
 
 .sidebarItem {
 	background: transparent;
-	border: var(--settings-sidebar-item-border-width) solid transparent;
+	border: 0;
 	margin: 0;
-	padding: 0.3125rem var(--settings-sidebar-item-padding-inline);
-	border-radius: var(--settings-control-radius);
+	padding: 0 0.5rem;
+	border-radius: 0.4375rem;
 	color: var(--text-primary-muted);
 	font-size: 0.8125rem;
 	line-height: 1.125rem;
 	font-weight: 500;
 	display: flex;
 	align-items: center;
-	gap: var(--settings-sidebar-item-icon-gap);
+	gap: 0.5rem;
 	cursor: pointer;
 	user-select: none;
 	-webkit-user-select: none;
 	-webkit-tap-highlight-color: transparent;
 	width: 100%;
-	min-height: 2.125rem;
+	min-height: 1.875rem;
 	text-align: left;
 	box-sizing: border-box;
-	transition: none;
+	transition: background-color 0.12s ease, color 0.12s ease;
 }
 
 .sidebarItemSelected,
@@ -379,8 +367,8 @@
 
 .sidebarItemIcon {
 	flex-shrink: 0;
-	width: var(--settings-sidebar-item-icon-size);
-	height: var(--settings-sidebar-item-icon-size);
+	width: 1rem;
+	height: 1rem;
 	font-size: 1rem;
 	color: var(--text-tertiary);
 	transition: none;
@@ -435,8 +423,11 @@
 	transition: none;
 }
 
-.sidebarItemSelected .sidebarItemIcon,
-.sidebarItem.sidebarItemFocused:not(.sidebarItemDanger) .sidebarItemIcon {
+.sidebarItemSelected .sidebarItemIcon {
+	color: var(--brand-primary-light, var(--brand-primary));
+}
+
+.sidebarItem.sidebarItemFocused:not(.sidebarItemDanger):not(.sidebarItemSelected) .sidebarItemIcon {
 	color: var(--settings-sidebar-highlight);
 }
 

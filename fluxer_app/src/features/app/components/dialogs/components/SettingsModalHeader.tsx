@@ -22,10 +22,12 @@ interface SettingsModalHeaderProps {
 	flashBanner: boolean;
 	tabData: TabData;
 	onClose: () => void;
+	/** Delight: optional segmented pill tabs shown beside the page title. */
+	tabs?: React.ReactNode;
 }
 
 export const SettingsModalHeader: React.FC<SettingsModalHeaderProps> = observer(
-	({title, pageLinkHref, showUnsavedBanner, flashBanner, tabData, onClose}) => {
+	({title, pageLinkHref, showUnsavedBanner, flashBanner, tabData, onClose, tabs}) => {
 		const {i18n} = useLingui();
 		const prefersReducedMotion = Accessibility.useReducedMotion;
 		return (
@@ -89,6 +91,11 @@ export const SettingsModalHeader: React.FC<SettingsModalHeaderProps> = observer(
 										target="page"
 										data-flx="app.settings-modal-header.heading-link-button"
 									/>
+								) : null}
+								{tabs ? (
+									<div className={styles.tabs} data-flx="app.settings-modal-header.tabs">
+										{tabs}
+									</div>
 								) : null}
 							</div>
 							<button

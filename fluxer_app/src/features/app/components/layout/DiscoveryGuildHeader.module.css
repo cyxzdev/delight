@@ -6,8 +6,8 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 1.25rem;
-	font-weight: 700;
-	line-height: 1.75rem;
+	font-size: 0.9375rem;
+	font-weight: 600;
+	line-height: 1.25rem;
 	color: var(--text-primary);
 }

@@ -145,6 +145,7 @@ export const BrandingSection: React.FC<{
 		>
 			<div
 				className={styles.brandingContent}
+				data-settings-rows=""
 				data-flx="guild.guild-tabs.guild-overview-tab.branding-section.branding-content"
 			>
 				<GuildIconUploadField

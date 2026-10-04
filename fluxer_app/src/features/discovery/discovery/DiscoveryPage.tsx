@@ -35,6 +35,10 @@ const DISCOVERY_RESULTS_COUNT_DESCRIPTOR = msg({
 	message: '{count, plural, one {# community found} other {# communities found}}',
 	comment: 'Screen-reader status text in Discovery. {count} is the total number of matching communities.',
 });
+const ALL_COMMUNITIES_DESCRIPTOR = msg({
+	message: 'All communities',
+	comment: 'Small section title above the Discovery community grid when no category is selected.',
+});
 const LOADING_COMMUNITIES_DESCRIPTOR = msg({
 	message: 'Loading communities',
 	comment: 'Screen-reader status text shown while Discovery communities are loading.',
@@ -202,6 +206,10 @@ export const DiscoveryPage = observer(function DiscoveryPage() {
 		Discovery.loading && guilds.length === 0
 			? i18n._(LOADING_COMMUNITIES_DESCRIPTOR)
 			: i18n._(DISCOVERY_RESULTS_COUNT_DESCRIPTOR, {count: Discovery.total});
+	const sectionTitle = searchActive
+		? null
+		: (Discovery.categories.find((category) => category.id === Discovery.category)?.name ??
+			i18n._(ALL_COMMUNITIES_DESCRIPTOR));
 	if (showPageSkeleton) {
 		return <DiscoveryPageSkeleton data-flx="discovery.discovery.discovery-page.discovery-page-skeleton" />;
 	}
@@ -247,6 +255,21 @@ export const DiscoveryPage = observer(function DiscoveryPage() {
 								className={styles.resultsColumn}
 								data-flx="discovery.discovery.discovery-page.results-column"
 							>
+								{sectionTitle && guilds.length > 0 && (
+									<div
+										className={styles.sectionTitle}
+										aria-hidden
+										data-flx="discovery.discovery.discovery-page.section-title"
+									>
+										<span data-flx="discovery.discovery.discovery-page.section-title-label">{sectionTitle}</span>
+										<span
+											className={styles.sectionCount}
+											data-flx="discovery.discovery.discovery-page.section-title-count"
+										>
+											{Discovery.total}
+										</span>
+									</div>
+								)}
 								<DiscoveryTransition
 									transitionKey={resultsTransitionKey}
 									motionKind={DiscoveryMotionKind.RESULTS}

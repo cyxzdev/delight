@@ -40,9 +40,9 @@
 
 .membershipTitle {
 	font-weight: 600;
-	font-size: 0.875rem;
-	line-height: 1.25rem;
-	color: var(--text-primary);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--text-secondary);
 }
 
 .membershipDates {
@@ -76,9 +76,9 @@
 
 .timeZoneTitle {
 	font-weight: 600;
-	font-size: 0.875rem;
-	line-height: 1.25rem;
-	color: var(--text-primary);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--text-secondary);
 }
 
 .timeZoneTime {
@@ -107,9 +107,9 @@
 
 .rolesTitle {
 	font-weight: 600;
-	font-size: 0.875rem;
-	line-height: 1.25rem;
-	color: var(--text-primary);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--text-secondary);
 }
 
 .rolesEmpty {
@@ -149,9 +149,9 @@
 
 .connectionsTitle {
 	font-weight: 600;
-	font-size: 0.875rem;
-	line-height: 1.25rem;
-	color: var(--text-primary);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--text-secondary);
 }
 
 .connectionsCompactWrapper {
@@ -286,4 +286,26 @@
 .connectionExternalArrow {
 	color: var(--text-tertiary);
 	flex-shrink: 0;
+}
+
+/* Delight: profile sections are separated by hairlines (inside cards that opt in with data-profile-sections). */
+:global([data-profile-sections]) > :is(
+		.bioContainer,
+		.timeZoneContainer,
+		.membershipContainer,
+		.rolesContainer,
+		.connectionsContainer
+	):not(:first-child) {
+	border-top: 0.0625rem solid var(--background-modifier-accent);
+	padding-top: 0.625rem;
+	margin-top: 0.125rem;
+}
+
+:global([data-profile-sections]) > .connectionsContainer {
+	margin-top: 0;
+}
+
+:global([data-profile-sections]) .connectionsCompactSeparator {
+	background: var(--background-modifier-accent);
+	margin-top: 0.125rem;
 }

@@ -169,7 +169,7 @@ export const InviteAcceptModal = observer(function InviteAcceptModal({code}: Inv
 	};
 	return (
 		<Modal.Root
-			size="large"
+			size="small"
 			className={styles.root}
 			centered
 			onClose={handleDismiss}

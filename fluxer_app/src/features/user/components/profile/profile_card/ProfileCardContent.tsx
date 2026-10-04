@@ -14,6 +14,7 @@ export const ProfileCardContent: React.FC<ProfileCardContentProps> = observer(({
 	return (
 		<div
 			className={clsx(styles.contentSection, isWebhook && styles.contentSectionWebhook)}
+			data-profile-sections=""
 			data-flx="user.profile.profile-card.profile-card-content.content-section"
 		>
 			{children}

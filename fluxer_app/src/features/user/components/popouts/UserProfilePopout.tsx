@@ -29,6 +29,7 @@ import * as ContextMenuCommands from '@app/features/ui/commands/ContextMenuComma
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import {modal} from '@app/features/ui/commands/ModalCommands';
 import * as PopoutCommands from '@app/features/ui/commands/PopoutCommands';
+import {usePopoutRevealHold} from '@app/features/ui/popover/PopoutRevealContext';
 import FocusRingScope from '@app/features/ui/focus_ring/FocusRingScope';
 import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
 import * as UserProfileCommands from '@app/features/user/commands/UserProfileCommands';
@@ -59,6 +60,7 @@ import {useUserProfileSurfaceState} from '@app/features/user/hooks/useUserProfil
 import type {User} from '@app/features/user/models/User';
 import * as NicknameUtils from '@app/features/user/utils/NicknameUtils';
 import {resolveProfileGuildMembership} from '@app/features/user/utils/ProfileGuildMembership';
+import {getProfileEffect} from '@app/features/user/utils/ProfileEffects';
 import {createMockProfile} from '@app/features/user/utils/ProfileUtils';
 import {Permissions} from '@fluxer/constants/src/ChannelConstants';
 import {MEDIA_PROXY_PROFILE_BANNER_SIZE_POPOUT} from '@fluxer/constants/src/MediaProxyAssetSizes';
@@ -103,6 +105,7 @@ export const UserProfilePopout: React.FC<UserProfilePopoutProps> = observer(
 			fallbackProfile,
 			onError: handleProfileLoadError,
 		});
+		usePopoutRevealHold(showProfileSkeleton);
 		const showProfileDataWarning =
 			!showProfileSkeleton && !isWebhook && (profileLoadError || DeveloperOptions.forceProfileDataWarning);
 		const profileMembership = resolveProfileGuildMembership(profile, {
@@ -280,6 +283,7 @@ export const UserProfilePopout: React.FC<UserProfilePopoutProps> = observer(
 						hoverRef={hoverRef}
 						className={styles.profilePopoutCard}
 						style={PROFILE_POPOUT_GEOMETRY_STYLE}
+						effect={isWebhook ? null : getProfileEffect(user)}
 						data-flx="user.user-profile-popout.profile-card-layout"
 					>
 						<ProfileCardBanner

@@ -19,7 +19,10 @@ export const ListSection = observer(
 	}) => (
 		<>
 			<div className={styles.sectionTitle} data-flx="channel.friends.list-section.section-title">
-				{title} — {count}
+				<span data-flx="channel.friends.list-section.section-title-text">{title}</span>
+				<span className={styles.sectionCount} data-flx="channel.friends.list-section.section-count">
+					{count}
+				</span>
 			</div>
 			<div
 				className={clsx(marginBottom ? styles.sectionContentWithMargin : styles.sectionContent)}

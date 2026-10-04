@@ -9,7 +9,7 @@
 .header {
 	margin-bottom: 0.5rem;
 	font-weight: 600;
-	font-size: 1.25rem;
+	font-size: 0.9375rem;
 	line-height: 1.75rem;
 }
 
@@ -134,23 +134,21 @@
 	gap: 0;
 }
 
+.sectionWrapper form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
 .settingsGroup {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-3);
-	padding: var(--spacing-6) 0;
-	border-top: 0.0625rem solid var(--background-modifier-accent);
-}
-
-.settingsGroup:first-child {
-	padding-top: 0;
-	border-top: none;
 }
 
 .sectionHeader {
 	margin-bottom: 0.5rem;
 	font-weight: 600;
-	font-size: 1.25rem;
+	font-size: 0.9375rem;
 	line-height: 1.75rem;
 }
 

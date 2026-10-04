@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {getUnreadChannels, UnreadChannelsContent} from '@app/features/app/components/floating/UnreadChannelsContent';
-import {MENTIONS_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
+import {INBOX_DESCRIPTOR, MENTIONS_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
 import * as InboxCommands from '@app/features/inbox/commands/InboxCommands';
 import Inbox, {type InboxTab} from '@app/features/inbox/state/Inbox';
 import styles from '@app/features/messaging/components/popouts/InboxPopout.module.css';
@@ -80,8 +80,8 @@ const RESIZE_INBOX_BOTTOM_RIGHT_DESCRIPTOR = msg({
 	comment: 'Accessible label for the bottom-right resize handle on the inbox popout.',
 });
 
-const INBOX_POPOUT_DEFAULT_SIZE = {width: 600, height: 900};
-const INBOX_POPOUT_MIN_SIZE = {width: 440, height: 400};
+const INBOX_POPOUT_DEFAULT_SIZE = {width: 520, height: 680};
+const INBOX_POPOUT_MIN_SIZE = {width: 400, height: 360};
 const INBOX_POPOUT_RESIZING_CLASS = 'inbox-popout-resizing';
 const INBOX_POPOUT_RESIZE_CURSOR_PROPERTY = '--inbox-popout-resize-cursor';
 const INBOX_RESIZE_HANDLE_LABELS: ResizablePaneHandleLabels = {
@@ -158,40 +158,35 @@ export const InboxPopout = observer(({initialTab}: {initialTab?: InboxTab} = {})
 		const isActive = normalizedActiveTab === tab.key;
 		const tabIndex = tabs.findIndex((candidate) => candidate.key === tab.key);
 		return (
-			<Tooltip
-				key={tab.key}
-				text={tab.label}
-				position="right"
-				data-flx="messaging.inbox-popout.render-tab-button.tooltip"
-			>
-				<FocusRing offset={-2} data-flx="messaging.inbox-popout.render-tab-button.focus-ring">
-					<button
-						id={tab.key}
-						role="tab"
-						type="button"
-						aria-label={tab.label}
-						aria-selected={isActive}
-						aria-controls={`inbox-panel-${tab.key}`}
-						tabIndex={isActive ? 0 : -1}
-						className={clsx(styles.sidebarTab, isActive ? styles.tabActive : styles.tabInactive)}
-						onClick={() => setActiveTab(tab.key)}
-						onKeyDown={(event) => {
-							const direction = getTabNavigationDirection(event.key, 'both');
-							if (!direction) return;
-							const nextIndex = getNextTabIndex(tabIndex, tabs.length, direction);
-							if (nextIndex == null) return;
-							event.preventDefault();
-							event.stopPropagation();
-							const nextTab = tabs[nextIndex];
-							if (!nextTab) return;
-							focusTab(nextTab.key);
-						}}
-						data-flx="messaging.inbox-popout.render-tab-button.sidebar-tab.set-active-tab.button"
-					>
-						{tab.icon}
-					</button>
-				</FocusRing>
-			</Tooltip>
+			<FocusRing key={tab.key} offset={-2} data-flx="messaging.inbox-popout.render-tab-button.focus-ring">
+				<button
+					id={tab.key}
+					role="tab"
+					type="button"
+					aria-selected={isActive}
+					aria-controls={`inbox-panel-${tab.key}`}
+					tabIndex={isActive ? 0 : -1}
+					className={clsx(styles.headerTab, isActive ? styles.tabActive : styles.tabInactive)}
+					onClick={() => setActiveTab(tab.key)}
+					onKeyDown={(event) => {
+						const direction = getTabNavigationDirection(event.key, 'both');
+						if (!direction) return;
+						const nextIndex = getNextTabIndex(tabIndex, tabs.length, direction);
+						if (nextIndex == null) return;
+						event.preventDefault();
+						event.stopPropagation();
+						const nextTab = tabs[nextIndex];
+						if (!nextTab) return;
+						focusTab(nextTab.key);
+					}}
+					data-flx="messaging.inbox-popout.render-tab-button.sidebar-tab.set-active-tab.button"
+				>
+					{tab.icon}
+					<span className={styles.headerTabLabel} data-flx="messaging.inbox-popout.render-tab-button.label">
+						{tab.label}
+					</span>
+				</button>
+			</FocusRing>
 		);
 	};
 	const content = (
@@ -243,41 +238,40 @@ export const InboxPopout = observer(({initialTab}: {initialTab?: InboxTab} = {})
 	return (
 		<FocusRingScope containerRef={containerRef} data-flx="messaging.inbox-popout.focus-ring-scope">
 			<div
-				className={clsx(styles.container, styles.containerWithSidebar)}
+				className={styles.container}
 				ref={containerRef}
 				style={{width: remFromPx(size.width), height: remFromPx(size.height)}}
 				data-flx="messaging.inbox-popout.container"
 			>
-				<nav
-					className={styles.sidebar}
-					aria-label={i18n._(INBOX_TABS_DESCRIPTOR)}
-					data-flx="messaging.inbox-popout.sidebar"
-				>
+				<nav className={styles.header} aria-label={i18n._(INBOX_TABS_DESCRIPTOR)} data-flx="messaging.inbox-popout.sidebar">
+					<h2 className={styles.headerTitle} data-flx="messaging.inbox-popout.header-title">
+						{i18n._(INBOX_DESCRIPTOR)}
+					</h2>
 					<div
-						className={styles.sidebarTabList}
+						className={styles.headerTabList}
 						role="tablist"
 						aria-label={i18n._(INBOX_TABS_DESCRIPTOR)}
-						aria-orientation="vertical"
+						aria-orientation="horizontal"
 						data-flx="messaging.inbox-popout.sidebar-tab-list"
 					>
 						{tabs.map((tab) => renderTabButton(tab))}
 					</div>
 					{normalizedActiveTab === 'mentions' && headerActions && (
-						<div className={styles.sidebarFooterActions} data-flx="messaging.inbox-popout.sidebar-footer-actions">
+						<div className={styles.headerActions} data-flx="messaging.inbox-popout.sidebar-footer-actions">
 							{headerActions}
 						</div>
 					)}
 					{normalizedActiveTab === 'unreadChannels' && (
-						<div className={styles.sidebarFooterActions} data-flx="messaging.inbox-popout.sidebar-footer-actions--2">
+						<div className={styles.headerActions} data-flx="messaging.inbox-popout.sidebar-footer-actions--2">
 							<Tooltip
 								text={i18n._(MARK_ALL_AS_READ_DESCRIPTOR)}
-								position="right"
+								position="bottom"
 								data-flx="messaging.inbox-popout.tooltip"
 							>
 								<FocusRing offset={-2} data-flx="messaging.inbox-popout.focus-ring">
 									<button
 										type="button"
-										className={styles.sidebarActionButton}
+										className={styles.headerActionButton}
 										onClick={handleMarkAllRead}
 										disabled={unreadChannels.length === 0}
 										aria-label={i18n._(MARK_ALL_INBOX_CHANNELS_AS_READ_DESCRIPTOR)}

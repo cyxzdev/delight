@@ -15,7 +15,7 @@
 	border: none !important;
 	border-radius: 0 !important;
 	box-shadow: none !important;
-	background: var(--brand-primary);
+	background: var(--background-tertiary);
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
@@ -41,10 +41,9 @@
 	gap: 0.75rem;
 	padding: 0.625rem 1.125rem;
 	border-radius: 0.75rem;
-	border: 0.0625rem solid color-mix(in srgb, var(--background-modifier-accent) 70%, transparent);
-	background: color-mix(in srgb, var(--background-secondary) 85%, transparent);
-	backdrop-filter: blur(0.75rem);
-	box-shadow: 0 0.75rem 2.25rem rgba(0, 0, 0, 0.35);
+	border: 0.0625rem solid var(--background-modifier-accent);
+	background: var(--background-secondary-alt);
+	box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.4);
 	-webkit-app-region: no-drag;
 }
 

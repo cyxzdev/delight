@@ -44,6 +44,11 @@ import {MutualItemsSheet} from '@app/features/user/components/modals/MutualItems
 import {NoteEditSheet} from '@app/features/user/components/modals/NoteEditSheet';
 import {UserProfileActionsSheet} from '@app/features/user/components/modals/UserProfileActionsSheet';
 import styles from '@app/features/user/components/modals/UserProfileMobileSheet.module.css';
+import {
+	ProfileEffect,
+	profileEffectHostClassName,
+} from '@app/features/user/components/profile_effects/ProfileEffect';
+import {getProfileEffect} from '@app/features/user/utils/ProfileEffects';
 import {getContrastingNotchColor} from '@app/features/user/components/modals/UserProfileUtils';
 import {UserSettingsModal} from '@app/features/user/components/modals/UserSettingsModal';
 import {getMutualItemsDescriptor} from '@app/features/user/components/modals/user_profile_modal/MutualItemsDescriptors';
@@ -514,12 +519,19 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 								data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.scroller"
 							>
 								<div
-									style={{paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)'}}
+									className={profileEffectHostClassName}
+									style={{paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)', minHeight: '100%'}}
 									data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.div"
 								>
+									<ProfileEffect
+										effect={getProfileEffect(user)}
+										radius={16}
+										data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.profile-effect"
+									/>
 									<div
 										ref={bannerHoverRef}
 										className={styles.bannerContainer}
+										data-profile-effect-banner=""
 										data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.banner-container"
 									>
 										{bannerUrl ? (
@@ -560,6 +572,7 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 											<div
 												className={styles.avatarBorder}
 												style={{borderRadius: '9999px'}}
+												data-profile-effect-avatar=""
 												data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.avatar-border"
 											>
 												<StatusAwareAvatar

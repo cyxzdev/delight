@@ -30,7 +30,13 @@ export const SettingsSection: React.FC<{
 					</div>
 				) : null}
 			</div>
-			{children}
+			<div
+				className={styles.sectionBody}
+				data-settings-card-host=""
+				data-flx="guild.guild-tabs.guild-overview-tab.settings-section.section-body"
+			>
+				{children}
+			</div>
 		</section>
 	);
 };

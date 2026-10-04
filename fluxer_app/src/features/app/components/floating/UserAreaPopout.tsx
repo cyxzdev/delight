@@ -42,6 +42,7 @@ import {ProfileCardContent} from '@app/features/user/components/profile/profile_
 import {ProfileCardFooter} from '@app/features/user/components/profile/profile_card/ProfileCardFooter';
 import {ProfileCardLayout} from '@app/features/user/components/profile/profile_card/ProfileCardLayout';
 import {ProfileCardUserInfo} from '@app/features/user/components/profile/profile_card/ProfileCardUserInfo';
+import {getProfileEffect} from '@app/features/user/utils/ProfileEffects';
 import {useAutoplayExpandedProfileAnimations} from '@app/features/user/hooks/useAutoplayExpandedProfileAnimations';
 import {normalizeCustomStatus} from '@app/features/user/state/CustomStatus';
 import StatusExpiry from '@app/features/user/state/StatusExpiry';
@@ -521,7 +522,11 @@ export const UserAreaPopout = observer(() => {
 	return (
 		<FocusRingScope containerRef={popoutContainerRef} data-flx="app.floating.user-area-popout.focus-ring-scope">
 			<div ref={popoutContainerRef} className={styles.container} data-flx="app.floating.user-area-popout.container">
-				<ProfileCardLayout borderColor={borderColor} data-flx="app.floating.user-area-popout.profile-card-layout">
+				<ProfileCardLayout
+					borderColor={borderColor}
+					effect={getProfileEffect(currentUser)}
+					data-flx="app.floating.user-area-popout.profile-card-layout"
+				>
 					<ProfileCardBanner
 						bannerUrl={bannerUrl}
 						hoverBannerUrl={hoverBannerUrl}
@@ -728,6 +733,7 @@ export const UserAreaPopout = observer(() => {
 							{currentUser.isClaimed() && (
 								<Button
 									variant="primary"
+									small
 									fitContainer
 									leftIcon={
 										<PencilIcon

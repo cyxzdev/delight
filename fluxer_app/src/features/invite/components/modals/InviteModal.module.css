@@ -62,7 +62,7 @@
 	display: flex;
 	align-items: flex-start;
 	gap: var(--spacing-2);
-	border-radius: var(--radius-md);
+	border-radius: 0.5rem;
 	background-color: color-mix(in srgb, var(--status-idle) 10%, transparent);
 	border: 0.0625rem solid color-mix(in srgb, var(--status-idle) 30%, transparent);
 	padding: var(--spacing-3);
@@ -92,9 +92,9 @@
 }
 
 .linkSectionLabel {
-	font-size: 0.875rem;
-	font-weight: 500;
-	color: var(--text-primary);
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--text-tertiary);
 	margin: 0;
 }
 
@@ -147,4 +147,35 @@
 	color: var(--text-secondary);
 	margin: 0;
 	line-height: 1.4;
+}
+
+/* Delight: friends to invite sit in one grouped card with hairlines between rows. */
+.recipientsCard [data-flx='app.recipient-list.friend-list'] {
+	gap: 0;
+	margin: var(--spacing-2) 1rem;
+	padding: 0;
+	overflow: hidden;
+	border: 0.0625rem solid var(--background-modifier-accent);
+	border-radius: 0.625rem;
+	background-color: var(--background-secondary-alt);
+}
+
+.recipientsCard [data-flx='app.recipient-list.friend-item'] {
+	min-height: 2.75rem;
+	padding: 0.375rem 0.5rem 0.375rem 0.75rem;
+}
+
+.recipientsCard [data-flx='app.recipient-list.friend-item']::before {
+	inset: 0;
+	border-radius: 0;
+}
+
+.recipientsCard [data-flx='app.recipient-list.friend-item'] + [data-flx='app.recipient-list.friend-item']::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 3.5rem;
+	height: 0.0625rem;
+	background-color: var(--background-modifier-accent);
 }

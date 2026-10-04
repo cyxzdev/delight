@@ -221,6 +221,7 @@ export const ProfileMediaHeader: React.FC<ProfileMediaHeaderProps> = observer(
 					<div
 						ref={mergedBannerRef}
 						className={userProfileModalStyles.bannerContainer}
+						data-profile-effect-banner=""
 						onContextMenu={
 							hasBannerMenu ? (event) => handleImageContextMenu(event, hasBannerMenu, renderBannerMenu) : undefined
 						}
@@ -250,6 +251,7 @@ export const ProfileMediaHeader: React.FC<ProfileMediaHeaderProps> = observer(
 						<div
 							className={userProfileModalStyles.avatarContainer}
 							style={avatarContainerStyle}
+							data-profile-effect-avatar=""
 							onContextMenu={
 								hasAvatarMenu ? (event) => handleImageContextMenu(event, hasAvatarMenu, renderAvatarMenu) : undefined
 							}

@@ -3,7 +3,11 @@
 .container {
 	display: flex;
 	flex-direction: column;
-	gap: 0.5rem;
+	gap: 0.25rem;
+	padding: 0.25rem var(--settings-card-padding-inline, 0.875rem);
+	border-radius: var(--settings-card-radius, 0.625rem);
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	background: var(--settings-card-background, var(--background-secondary-alt));
 }
 
 .permissionHint {

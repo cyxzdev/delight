@@ -638,8 +638,8 @@ export interface AccessibilitySettings {
 	showVideoSeekPreviewThumbnails: boolean;
 }
 
-const getDefaultDmMessagePreviewMode = (): DMMessagePreviewMode =>
-	MobileLayout.isMobileLayout() ? DMMessagePreviewMode.ALL : DMMessagePreviewMode.NONE;
+// Delight: DM rows read like a messaging app (last message preview) on every layout.
+const getDefaultDmMessagePreviewMode = (): DMMessagePreviewMode => DMMessagePreviewMode.ALL;
 const CHANNEL_TYPING_INDICATOR_TO_PROTO: Record<ChannelTypingIndicatorMode, ProtoChannelTypingIndicatorMode> = {
 	[ChannelTypingIndicatorMode.AVATARS]: ProtoChannelTypingIndicatorMode.AVATARS,
 	[ChannelTypingIndicatorMode.INDICATOR_ONLY]: ProtoChannelTypingIndicatorMode.INDICATOR_ONLY,

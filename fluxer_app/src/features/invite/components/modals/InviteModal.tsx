@@ -399,7 +399,10 @@ const InviteModalContent = observer(function InviteModalContent({
 					</>
 				)}
 			</Modal.Header>
-			<Modal.Content className={selectorStyles.selectorContent} data-flx="invite.invite-modal.modal-content">
+			<Modal.Content
+				className={clsx(selectorStyles.selectorContent, styles.recipientsCard)}
+				data-flx="invite.invite-modal.modal-content"
+			>
 				{loading ? (
 					<div className={styles.loadingContainer} data-flx="invite.invite-modal.loading-container">
 						<Spinner data-flx="invite.invite-modal.spinner" />

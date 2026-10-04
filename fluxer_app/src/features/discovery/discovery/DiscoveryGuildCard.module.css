@@ -1,27 +1,30 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
+/* Delight: compact community card. A short banner strip, the icon overlapping its bottom-left edge with the name
+   beside it, a two-line description and one stats line. */
+
 .card {
-	--discovery-card-surface: var(--background-secondary);
+	--discovery-card-surface: var(--background-secondary-alt);
+	--discovery-card-banner-height: 4rem;
+	--discovery-card-icon-size: 2.5rem;
 	position: relative;
 	display: flex;
 	flex-direction: column;
 	min-width: 0;
 	background: var(--discovery-card-surface);
 	border: 0.0625rem solid var(--background-modifier-accent);
-	border-radius: var(--radius-lg);
+	border-radius: 0.625rem;
 	overflow: hidden;
 	transition:
-		background-color 0.15s ease-out,
-		border-color 0.15s ease-out,
-		box-shadow 0.15s ease-out;
+		background-color 120ms ease-out,
+		border-color 120ms ease-out;
 }
 
 @media (hover: hover) and (pointer: fine) {
 	:global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
 		.card:hover {
-		--discovery-card-surface: var(--background-secondary-alt);
+		--discovery-card-surface: var(--background-tertiary);
 		border-color: var(--background-modifier-accent-focus);
-		box-shadow: var(--active-now-card-shadow);
 	}
 }
 
@@ -43,7 +46,7 @@
 .banner {
 	position: relative;
 	display: block;
-	height: 7.5rem;
+	height: var(--discovery-card-banner-height);
 	flex: 0 0 auto;
 	overflow: hidden;
 	background-color: var(--background-tertiary);
@@ -62,24 +65,25 @@
 	position: absolute;
 	inset: 0;
 	display: block;
-	background: linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.42) 100%);
+	background: rgb(0 0 0 / 0.16);
 }
 
 .icon {
 	position: absolute;
-	top: calc(7.5rem - 1.75rem);
-	left: var(--spacing-4);
+	top: calc(var(--discovery-card-banner-height) - var(--discovery-card-icon-size) / 2);
+	left: var(--spacing-3);
 	z-index: 1;
+	border-radius: 0.625rem;
 	box-shadow: 0 0 0 0.1875rem var(--discovery-card-surface);
 	pointer-events: none;
-	transition: box-shadow 0.15s ease-out;
+	transition: box-shadow 120ms ease-out;
 }
 
 .body {
 	display: flex;
 	flex-direction: column;
 	gap: var(--spacing-2);
-	padding: var(--spacing-10) var(--spacing-4) var(--spacing-4);
+	padding: 0.3125rem var(--spacing-3) 0;
 	flex: 1;
 	min-width: 0;
 }
@@ -90,6 +94,7 @@
 	gap: 0.25rem;
 	height: 1.25rem;
 	min-width: 0;
+	padding-left: calc(var(--discovery-card-icon-size) + var(--spacing-2));
 }
 
 .nameText {
@@ -97,21 +102,22 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 1rem;
+	font-size: 0.875rem;
 	font-weight: 600;
-	line-height: 1.25;
+	line-height: 1.25rem;
 	color: var(--text-primary);
 }
 
 .description {
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
-	-webkit-line-clamp: 4;
+	-webkit-line-clamp: 2;
 	overflow: hidden;
-	min-height: var(--discovery-card-description-min-height);
+	min-height: 2.25rem;
+	margin-top: 0.125rem;
 	flex: 1;
-	font-size: 0.875rem;
-	line-height: 1.5;
+	font-size: 0.8125rem;
+	line-height: 1.125rem;
 	color: var(--text-secondary);
 }
 
@@ -121,22 +127,21 @@
 	gap: var(--spacing-3);
 	flex: 0 0 auto;
 	min-width: 0;
-	padding: var(--spacing-3) var(--spacing-4);
-	border-top: 0.0625rem solid var(--background-modifier-accent);
+	padding: var(--spacing-2) var(--spacing-3) var(--spacing-3);
 }
 
 .stat {
 	display: flex;
 	align-items: center;
-	gap: var(--count-indicator-gap);
+	gap: 0.3125rem;
 	flex: 0 1 auto;
-	height: 0.9rem;
+	height: 1rem;
 	min-width: 0;
 }
 
 .statDot {
-	height: 0.5rem;
-	width: 0.5rem;
+	height: 0.4375rem;
+	width: 0.4375rem;
 	border-radius: var(--radius-full);
 	flex: 0 0 auto;
 }
@@ -158,5 +163,6 @@
 	white-space: nowrap;
 	color: var(--text-tertiary);
 	font-size: 0.75rem;
-	line-height: 1.2;
+	line-height: 1rem;
+	font-variant-numeric: tabular-nums;
 }

@@ -783,3 +783,166 @@
 	height: 1rem;
 	width: 1rem;
 }
+
+/* ---- Delight: messaging-app style DM rows (desktop) ---- */
+
+.dmItem {
+	height: 2.75rem;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+	transition:
+		background-color 120ms ease,
+		color 120ms ease;
+}
+
+.dmItemContent {
+	gap: 0.625rem;
+}
+
+.dmItemName {
+	font-size: 0.875rem;
+	line-height: 1.125rem;
+}
+
+.dmItemUnread .dmItemName {
+	font-weight: 600;
+}
+
+.dmItemUnread .dmItemSubtext {
+	color: var(--text-primary-muted);
+}
+
+.dmItemSubtext {
+	font-size: 0.75rem;
+	font-weight: 400;
+	margin-top: 0;
+}
+
+.dmItemMembersSubtext {
+	line-height: 1rem;
+	margin-top: 0;
+}
+
+.dmItemUnreadIndicatorContainerDesktop {
+	display: none;
+}
+
+.dmItemMeta {
+	display: flex;
+	flex-shrink: 0;
+	flex-direction: column;
+	align-items: flex-end;
+	justify-content: center;
+	gap: 0.25rem;
+	align-self: stretch;
+	min-width: 1.5rem;
+	transition: opacity 120ms ease;
+}
+
+.dmItem .dmItemTimestamp {
+	font-size: 0.6875rem;
+	line-height: 0.875rem;
+	color: var(--text-tertiary);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.dmItemUnread .dmItemTimestamp {
+	color: var(--text-primary);
+}
+
+.dmItemUnreadDot {
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: var(--radius-full);
+	background-color: var(--text-primary);
+}
+
+.dmItemMentionBadge {
+	min-width: 1rem;
+	height: 1rem;
+	padding: 0 0.3125rem;
+	border-radius: 0.5rem;
+	background-color: var(--status-danger);
+	color: #fff;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	line-height: 1rem;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
+/* The close button floats over the meta column and swaps in on hover/focus. */
+.dmItem .dmItemCloseButton {
+	position: absolute;
+	right: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 1.375rem;
+	height: 1.375rem;
+	border-radius: 0.375rem;
+	color: var(--text-primary-muted);
+	transition: opacity 120ms ease;
+}
+
+:global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
+	.dmItem
+	.dmItemCloseButton:hover {
+	background-color: var(--background-modifier-hover);
+	color: var(--text-primary);
+}
+
+:global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
+	.dmItem:hover
+	.dmItemMeta {
+	opacity: 0;
+}
+
+.dmItemSelected {
+	background-color: var(--background-modifier-selected);
+	color: var(--text-primary);
+}
+
+.dmSectionHeader {
+	margin-top: 0.75rem;
+	margin-bottom: 0.25rem;
+}
+
+.dmSectionHeaderLabel {
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+/* Delight: compact nav rows (Friends, Personal notes) with rounded-square icon tiles. */
+.clickableItem {
+	height: 2.25rem;
+	transition:
+		background-color 120ms ease,
+		color 120ms ease;
+}
+
+.clickableItemContent {
+	gap: 0.625rem;
+}
+
+.clickableItemIcon {
+	height: 1.75rem;
+	width: 1.75rem;
+	border-radius: 0.5rem;
+	background-color: var(--background-modifier-hover);
+	color: var(--text-primary-muted);
+}
+
+.clickableItemText {
+	font-size: 0.875rem;
+}
+
+.clickableItemSelected {
+	background-color: var(--background-modifier-selected);
+	color: var(--text-primary);
+}
+
+.clickableItemSelected .clickableItemIcon {
+	background-color: var(--brand-primary);
+	color: var(--brand-primary-fill, #fff);
+}

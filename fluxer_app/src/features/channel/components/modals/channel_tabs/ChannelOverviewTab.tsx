@@ -379,7 +379,7 @@ const ChannelOverviewTab: React.FC<{channelId: string}> = observer(({channelId})
 		<div className={styles.sectionWrapper} data-flx="channel.channel-tabs.channel-overview-tab.section-wrapper">
 			<Form form={form} onSubmit={handleSave} data-flx="channel.channel-tabs.channel-overview-tab.form.save">
 				{showGeneralSection && (
-					<div className={styles.settingsGroup} data-flx="channel.channel-tabs.channel-overview-tab.settings-group">
+					<div className={styles.settingsGroup} data-settings-card-host="" data-flx="channel.channel-tabs.channel-overview-tab.settings-group">
 						<Input
 							data-flx="channel.channel-tabs.channel-overview-tab.input.text"
 							{...form.register('name')}
@@ -403,7 +403,7 @@ const ChannelOverviewTab: React.FC<{channelId: string}> = observer(({channelId})
 					</div>
 				)}
 				{showMessagingSection && (
-					<div className={styles.settingsGroup} data-flx="channel.channel-tabs.channel-overview-tab.settings-group--2">
+					<div className={styles.settingsGroup} data-settings-card-host="" data-flx="channel.channel-tabs.channel-overview-tab.settings-group--2">
 						<ChannelOverviewTopicEditor
 							ref={topicEditorRef}
 							channel={channel}
@@ -433,7 +433,7 @@ const ChannelOverviewTab: React.FC<{channelId: string}> = observer(({channelId})
 					</div>
 				)}
 				{showVoiceSection && (
-					<div className={styles.settingsGroup} data-flx="channel.channel-tabs.channel-overview-tab.settings-group--3">
+					<div className={styles.settingsGroup} data-settings-card-host="" data-flx="channel.channel-tabs.channel-overview-tab.settings-group--3">
 						{canManageChannel && (
 							<VoiceSettings
 								form={form}
@@ -452,7 +452,7 @@ const ChannelOverviewTab: React.FC<{channelId: string}> = observer(({channelId})
 					</div>
 				)}
 				{showSafetySection && (
-					<div className={styles.settingsGroup} data-flx="channel.channel-tabs.channel-overview-tab.settings-group--4">
+					<div className={styles.settingsGroup} data-settings-card-host="" data-flx="channel.channel-tabs.channel-overview-tab.settings-group--4">
 						<MatureContentSection
 							form={form}
 							channel={channel}

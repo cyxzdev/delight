@@ -248,6 +248,14 @@ export const SettingsModalSidebarNav: React.FC<SettingsModalSidebarNavProps> = o
 export const SettingsModalSidebarCategory: React.FC<{children: React.ReactNode}> = observer(({children}) => {
 	const [titleId, setTitleId] = useState<string | null>(null);
 	const contextValue = useMemo<SidebarCategoryContextValue>(() => ({setTitleId}), []);
+	// Delight: the category title sits above a grouped card that holds the items.
+	const childArray = React.Children.toArray(children);
+	const titleChildren = childArray.filter(
+		(child) => React.isValidElement(child) && child.type === SettingsModalSidebarCategoryTitle,
+	);
+	const itemChildren = childArray.filter(
+		(child) => !(React.isValidElement(child) && child.type === SettingsModalSidebarCategoryTitle),
+	);
 	return (
 		<SidebarCategoryContext.Provider value={contextValue}>
 			<section
@@ -255,7 +263,15 @@ export const SettingsModalSidebarCategory: React.FC<{children: React.ReactNode}>
 				aria-labelledby={titleId ?? undefined}
 				data-flx="app.settings-modal-layout.settings-modal-sidebar-category.sidebar-category"
 			>
-				{children}
+				{titleChildren}
+				{itemChildren.length > 0 && (
+					<div
+						className={styles.sidebarCategoryCard}
+						data-flx="app.settings-modal-layout.settings-modal-sidebar-category.sidebar-category-card"
+					>
+						{itemChildren}
+					</div>
+				)}
 			</section>
 		</SidebarCategoryContext.Provider>
 	);

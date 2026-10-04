@@ -6,13 +6,15 @@
 	align-items: center;
 	justify-content: center;
 	gap: var(--spacing-3);
-	padding: var(--spacing-12) var(--spacing-6);
+	padding: var(--spacing-10) var(--spacing-6);
+	border: 0.0625rem dashed var(--background-modifier-accent);
+	border-radius: 0.625rem;
 	text-align: center;
 }
 
 .icon {
-	width: 3.5rem;
-	height: 3.5rem;
+	width: 2.5rem;
+	height: 2.5rem;
 	color: var(--text-primary-muted);
 }
 
@@ -26,15 +28,15 @@
 
 .heading {
 	margin: 0;
-	font-size: 1.125rem;
+	font-size: 0.9375rem;
 	font-weight: 600;
-	line-height: 1.4;
+	line-height: 1.25rem;
 	color: var(--text-primary);
 }
 
 .description {
 	margin: 0;
-	font-size: 0.875rem;
-	line-height: 1.5;
+	font-size: 0.8125rem;
+	line-height: 1.125rem;
 	color: var(--text-tertiary);
 }

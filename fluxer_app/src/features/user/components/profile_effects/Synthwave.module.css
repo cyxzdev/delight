@@ -1,0 +1,50 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* The grid rolls toward the viewer: shift the horizontal lines by exactly one gap, then repeat. */
+.gridRoll {
+	animation: grid-roll var(--dur, 1.4s) linear infinite;
+}
+
+@keyframes grid-roll {
+	from {
+		transform: translateY(0);
+	}
+	to {
+		transform: translateY(var(--dy, 0px));
+	}
+}
+
+.sunRise {
+	animation: sun-rise 1100ms cubic-bezier(0.2, 0, 0, 1) 150ms both;
+}
+
+@keyframes sun-rise {
+	from {
+		transform: translateY(var(--dy, 30px));
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+/* The neon horizon breathes. */
+.glow {
+	animation: glow 3.2s ease-in-out 1s infinite alternate both;
+}
+
+@keyframes glow {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0.55;
+	}
+}
+
+[data-pfx-static] :is(.gridRoll, .sunRise, .glow) {
+	animation: none;
+	opacity: 1;
+	transform: none;
+}

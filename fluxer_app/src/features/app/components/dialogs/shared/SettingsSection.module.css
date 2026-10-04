@@ -1,12 +1,23 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
+/*
+ * Delight settings surfaces: a section is a small heading followed by grouped list cards.
+ * A "card host" (section content or subsection content that holds no other host) becomes a rounded card with
+ * hairlines between its rows. Rows are its direct children plus the shared row components (switches, switch
+ * groups, radio options), so tabs get the grouped look without per-tab markup.
+ */
+
 .section {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-4);
-	padding-top: var(--spacing-6);
-	padding-bottom: var(--spacing-6);
-	border-top: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	gap: 0.5rem;
+	padding: 0;
+	border-top: none;
+	scroll-margin-top: 1rem;
+}
+
+.section:not(:last-child) {
+	margin-bottom: 1rem;
 }
 
 .section:first-child {
@@ -14,19 +25,31 @@
 	border-top: none;
 }
 
+
 .sectionHeader {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-1);
+	gap: 0.125rem;
 	min-width: 0;
+	padding: 0 0.125rem;
 }
 
 .sectionTitleRow {
 	display: flex;
 	align-items: center;
-	gap: var(--spacing-2);
+	gap: 0.375rem;
 	min-width: 0;
-	min-height: 1.375rem;
+	min-height: 1.25rem;
+}
+
+.sectionTitleRow :global([data-flx*='heading-link-button']) {
+	opacity: 0;
+	transition: opacity 0.12s ease;
+}
+
+.sectionTitleRow:hover :global([data-flx*='heading-link-button']),
+.sectionTitleRow :global([data-flx*='heading-link-button']):focus-visible {
+	opacity: 1;
 }
 
 .sectionActions,
@@ -43,43 +66,44 @@
 .sectionTitle {
 	min-width: 0;
 	margin: 0;
-	font-size: 1.125rem;
+	font-size: 0.9375rem;
 	font-weight: 600;
-	line-height: 1.3;
+	line-height: 1.25rem;
 	color: var(--text-primary);
 }
 
 .sectionDescription {
 	margin: 0;
-	font-size: 0.875rem;
-	line-height: 1.35;
-	color: var(--text-secondary);
+	font-size: 0.8125rem;
+	line-height: 1.125rem;
+	color: var(--text-tertiary);
 }
 
 .sectionContent {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-5);
+	gap: 1rem;
 }
 
 .subsectionHeader {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-1);
+	gap: 0.125rem;
+	padding: 0 0.125rem;
 }
 
 .subsectionTitle {
 	margin: 0;
-	font-size: 0.9375rem;
+	font-size: 0.75rem;
 	font-weight: 600;
-	line-height: 1.3;
-	color: var(--text-primary);
+	line-height: 1rem;
+	color: var(--text-tertiary);
 }
 
 .subsectionDescription {
 	margin: 0;
-	font-size: 0.8125rem;
-	line-height: 1.4;
+	font-size: 0.75rem;
+	line-height: 1rem;
 	color: var(--text-tertiary);
 }
 
@@ -87,4 +111,133 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--spacing-2);
+}
+
+/* ---- Grouped list cards ---- */
+
+:global([data-settings-card-host]:not(:has([data-settings-card-host])):not(:has(> :only-child:is(button, a, [data-settings-no-card]))):not(:empty)) {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	padding: 0.125rem var(--settings-card-padding-inline, 0.875rem);
+	border-radius: var(--settings-card-radius, 0.625rem);
+	background: var(--settings-card-background, var(--background-secondary-alt));
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	min-width: 0;
+}
+
+:global([data-settings-card-host]:not(:has([data-settings-card-host])):not(:has(> :only-child:is(button, a, [data-settings-no-card]))) > *) {
+	padding-block: 0.625rem;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+:global([data-settings-card-host]:not(:has([data-settings-card-host])):not(:has(> :only-child:is(button, a, [data-settings-no-card]))) > * + *) {
+	border-top: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+}
+
+/* A direct child that only wraps a list of rows lets the rows pad themselves. */
+:global(
+	[data-settings-card-host]:not(:has([data-settings-card-host])):not(:has(> :only-child:is(button, a, [data-settings-no-card])))
+		> :is(div, section):has(> :is([data-flx='ui.switch-group.container'], [data-flx='ui.radio-group.radio-group.group']))
+) {
+	padding-block: 0;
+}
+
+:global([data-settings-card-host] [data-flx='ui.switch-group.container']) {
+	margin: 0;
+}
+
+:global([data-settings-card-host] [data-flx='ui.switch-group.switch-group-item.item']),
+:global([data-settings-card-host] [data-flx='ui.switch-group.switch-group-custom-item.group']) {
+	height: auto;
+	min-height: 2.75rem;
+	padding-block: 0.375rem;
+}
+
+:global([data-settings-card-host] [data-flx='ui.form.switch.container']) {
+	min-height: 2.5rem;
+	padding-block: 0.5rem;
+}
+
+:global([data-settings-card-host] [data-flx='ui.form.switch.label']) {
+	font-size: 0.875rem;
+	font-weight: 500;
+}
+
+:global([data-settings-card-host] [data-flx='ui.form.switch.description']) {
+	font-size: 0.8125rem;
+	line-height: 1.125rem;
+	color: var(--text-tertiary);
+}
+
+/* Radio options become rows with hairlines between them. */
+:global([data-settings-card-host] [data-flx='ui.radio-group.radio-group.group']) {
+	gap: 0;
+}
+
+:global([data-settings-card-host] [data-flx='ui.radio-group.radio-group.group'] > *) {
+	padding-block: 0.625rem;
+}
+
+:global([data-settings-card-host] [data-flx='ui.radio-group.radio-group.group'] > * + *) {
+	border-top: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+}
+
+:global([data-settings-card-host] [data-flx='ui.radio-group.radio-group.radio-option-item.label-text']) {
+	font-size: 0.875rem;
+	font-weight: 500;
+}
+
+:global([data-settings-card-host] [data-flx='ui.radio-group.radio-group.radio-option-item.description']) {
+	font-size: 0.8125rem;
+	line-height: 1.125rem;
+	color: var(--text-tertiary);
+}
+
+/* Row lists inside cards: mark a wrapper with data-settings-rows, or rely on adjacent switches. */
+:global([data-settings-card-host] [data-settings-rows]) {
+	gap: 0;
+}
+
+:global([data-settings-card-host] [data-settings-rows] > *) {
+	padding-block: 0.5rem;
+}
+
+:global([data-settings-card-host] [data-settings-rows] > :first-child) {
+	padding-top: 0;
+}
+
+:global([data-settings-card-host] [data-settings-rows] > :last-child) {
+	padding-bottom: 0;
+}
+
+:global([data-settings-card-host] [data-settings-rows] > * + *),
+:global(
+	[data-settings-card-host]
+		:not([data-settings-rows])
+		> [data-flx='ui.form.switch.container']
+		+ :is([data-flx='ui.form.switch.container'], [data-flx*='switch'])
+) {
+	border-top: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+}
+
+:global(
+	[data-settings-card-host] :not([data-settings-rows]) > [data-flx='ui.form.switch.container'] + [data-flx='ui.form.switch.container']
+) {
+	padding-top: 0.5rem;
+}
+
+/* Boxes that tabs drew as their own cards flatten when they already sit inside a card. */
+:global([data-settings-card-host] [data-settings-flat]) {
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	padding-inline: 0;
+	box-shadow: none;
+}
+
+/* A lone action (a button or a row of buttons) is not a row: it sits on the page, left-aligned, no card. */
+:global([data-settings-card-host]:has(> :only-child:is(button, a))) {
+	align-items: flex-start;
 }

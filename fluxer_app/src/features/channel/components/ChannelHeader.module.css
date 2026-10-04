@@ -623,3 +623,25 @@
 	box-shadow: 0 0 0 0.08rem var(--channel-header-background);
 	pointer-events: none;
 }
+
+/* Delight: DM header shows the recipient's name over their presence/custom status (DM-only class). */
+.dmHeaderText {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-width: 0;
+	margin-left: var(--channel-header-name-gap);
+	gap: 0;
+}
+
+.dmHeaderText .channelName {
+	margin-left: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.125rem;
+	max-height: 1.125rem;
+}
+
+.dmHeaderText .dmNameWrapper {
+	max-width: 20rem;
+}

@@ -2,6 +2,7 @@
 
 .buttonContainer {
 	display: flex;
+	flex-direction: row-reverse;
 	align-items: center;
 	justify-content: flex-start;
 	gap: var(--spacing-3);
@@ -30,7 +31,8 @@
 	display: inline-flex;
 	align-items: center;
 	gap: var(--spacing-1);
-	font-weight: 600;
+	font-size: 0.8125rem;
+	font-weight: 500;
 	text-decoration: none;
 	line-height: 1.25;
 }
@@ -106,14 +108,25 @@
 .listContainer {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-2);
+	gap: 0;
+	border-radius: var(--settings-card-radius, 0.625rem);
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	background-color: var(--settings-card-background, var(--background-secondary-alt));
+	overflow: hidden;
 }
 
 .itemContainer {
-	border-radius: var(--radius-xl);
-	border: 0.0625rem solid var(--background-modifier-accent);
-	background-color: var(--background-textarea);
-	overflow: hidden;
+	position: relative;
+}
+
+.itemContainer + .itemContainer::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 3.375rem;
+	right: 0;
+	height: 0.0625rem;
+	background: var(--settings-border-color, var(--background-modifier-accent));
 }
 
 .itemButton {
@@ -121,8 +134,8 @@
 	align-items: center;
 	justify-content: space-between;
 	width: 100%;
-	min-height: var(--list-row-min-height);
-	padding: 0 var(--input-container-padding);
+	min-height: 3.25rem;
+	padding: 0 0.875rem;
 	background: transparent;
 	border: none;
 	text-align: left;
@@ -137,7 +150,7 @@
 .itemLeft {
 	display: flex;
 	align-items: center;
-	gap: var(--spacing-2);
+	gap: 0.625rem;
 	min-width: 0;
 	flex: 1;
 }
@@ -209,19 +222,14 @@
 }
 
 .itemChevron {
-	height: 1.25rem;
-	width: 1.25rem;
+	height: 1rem;
+	width: 1rem;
 	flex-shrink: 0;
 	color: var(--text-tertiary);
 	transition: transform var(--transition-fast);
 }
 
-@media (min-width: 768px) {
-	.itemChevron {
-		height: 1.5rem;
-		width: 1.5rem;
-	}
-}
+
 
 .emptyState {
 	padding: 0;

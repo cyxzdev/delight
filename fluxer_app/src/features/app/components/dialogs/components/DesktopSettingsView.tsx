@@ -11,6 +11,7 @@ import {LogoutModal} from '@app/features/app/components/dialogs/components/Logou
 import {SettingsModalHeader} from '@app/features/app/components/dialogs/components/SettingsModalHeader';
 import {SettingsSearch} from '@app/features/app/components/dialogs/components/SettingsSearch';
 import {SettingsCurrentTabProvider} from '@app/features/app/components/dialogs/shared/SettingsCurrentTabContext';
+import {SettingsSectionPills} from '@app/features/app/components/dialogs/shared/SettingsPillTabs';
 import {
 	SettingsModalDesktopContent,
 	SettingsModalDesktopScroll,
@@ -24,6 +25,7 @@ import {
 	SettingsModalSidebarSubItems,
 	SettingsTreeProvider,
 } from '@app/features/app/components/dialogs/shared/SettingsModalLayout';
+import {openDeveloperPortal} from '@app/features/developers/DeveloperPortalNavigation';
 import {hasWhatsNewEntries} from '@app/features/app/components/whats_new/WhatsNewEntries';
 import {openWhatsNewModal} from '@app/features/app/components/whats_new/WhatsNewModal';
 import {
@@ -89,7 +91,15 @@ import {
 } from '@app/features/user/utils/SettingsModalLayoutUtils';
 import type {I18n} from '@lingui/core';
 import {Trans, useLingui} from '@lingui/react/macro';
-import {ArrowLeftIcon, ArrowRightIcon, CaretRightIcon, MegaphoneIcon, SignOutIcon} from '@phosphor-icons/react';
+import {
+	ArrowLeftIcon,
+	ArrowRightIcon,
+	ArrowSquareOutIcon,
+	CaretRightIcon,
+	CodeIcon,
+	MegaphoneIcon,
+	SignOutIcon,
+} from '@phosphor-icons/react';
 import {clsx} from 'clsx';
 import {AnimatePresence, motion} from 'framer-motion';
 import {observer} from 'mobx-react-lite';
@@ -411,6 +421,17 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 		) : (
 			currentTab?.label || i18n._(USER_SETTINGS_LABEL_DESCRIPTOR)
 		);
+		const headerPillItems = useMemo(() => {
+			if (!selectedTab || isSearchActive || isApplicationsDetailTitle || !hasSections) return [];
+			return getSidebarSectionsForTab(selectedTab, i18n, currentUserCreatedAt).map((section) => ({
+				id: section.id,
+				label: section.label,
+			}));
+		}, [selectedTab, isSearchActive, isApplicationsDetailTitle, hasSections, i18n, currentUserCreatedAt]);
+		const headerTabs =
+			headerPillItems.length > 1 ? (
+				<SettingsSectionPills items={headerPillItems} data-flx="app.desktop-settings-view.section-pills" />
+			) : null;
 		const sidebarFooter = (
 			<AnimatePresence data-flx="app.desktop-settings-view.animate-presence">
 				{!useOverride && (
@@ -473,8 +494,13 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 				>
 					<div className={userSettingsStyles.userProfileInfo} data-flx="app.desktop-settings-view.div--3">
 						<StatusAwareAvatar size={32} user={currentUser!} data-flx="app.desktop-settings-view.status-aware-avatar" />
-						<div className={userSettingsStyles.userProfileName} data-flx="app.desktop-settings-view.div--4">
-							{currentUser?.displayName}
+						<div className={userSettingsStyles.userProfileText} data-flx="app.desktop-settings-view.user-profile-text">
+							<div className={userSettingsStyles.userProfileName} data-flx="app.desktop-settings-view.div--4">
+								{currentUser?.displayName}
+							</div>
+							<div className={userSettingsStyles.userProfileSubtitle} data-flx="app.desktop-settings-view.user-profile-subtitle">
+								<Trans>Edit profile</Trans>
+							</div>
 						</div>
 					</div>
 				</button>
@@ -558,11 +584,31 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 													<SettingsModalSidebarCategoryTitle data-flx="app.desktop-settings-view.settings-modal-sidebar-category-title">
 														{getCategoryLabel(category as SettingsTab['category'])}
 													</SettingsModalSidebarCategoryTitle>
-													{tabs.map((tab) => {
+													{category === 'developer' && (
+														<SettingsModalSidebarItem
+															icon={CodeIcon}
+															iconWeight="bold"
+															label={
+																<span className={styles.tabLabel} data-flx="app.desktop-settings-view.developer-portal-label">
+																	<span data-flx="app.desktop-settings-view.developer-portal-text">
+																		<Trans>Developer portal</Trans>
+																	</span>
+																	<ArrowSquareOutIcon size={14} weight="bold" className={styles.externalIcon} aria-hidden="true" />
+																</span>
+															}
+															onClick={() => {
+																if (checkUnsavedChanges()) return;
+																openDeveloperPortal();
+															}}
+															data-flx="app.desktop-settings-view.settings-modal-sidebar-item.developer-portal"
+														/>
+													)}
+													{(category === 'developer' ? [] : tabs).map((tab) => {
 														const tabId = `settings-tab-${tab.type}`;
 														const panelId = `settings-tabpanel-${tab.type}`;
 														const isSelected = tab.type === selectedTab;
-														const hasTabSections = sidebarTabHasSections(tab.type, currentUserCreatedAt);
+														// Delight: a tab's sections show as pill tabs in the page header instead.
+														const hasTabSections = false;
 														return (
 															<React.Fragment key={tab.type}>
 																<SettingsModalSidebarItem
@@ -643,6 +689,7 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 						flashBanner={flashBanner}
 						tabData={tabData}
 						onClose={handleClose}
+						tabs={headerTabs}
 						data-flx="app.desktop-settings-view.settings-modal-header"
 					/>
 					<SettingsModalDesktopScroll

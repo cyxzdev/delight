@@ -56,6 +56,7 @@ import {useChannelSearchState} from '@app/features/channel/components/channel_vi
 import {MessageSearchBar} from '@app/features/channel/components/message_search_bar/MessageSearchBar';
 import {ChannelTopicModal} from '@app/features/channel/components/modals/ChannelTopicModal';
 import {CreateDMModal} from '@app/features/channel/components/modals/CreateDMModal';
+import {DMHeaderPresenceLine} from '@app/features/channel/components/direct_message/DMHeaderPresenceLine';
 import {EditGroupModal} from '@app/features/channel/components/modals/EditGroupModal';
 import type {Channel} from '@app/features/channel/models/Channel';
 import * as ChannelUtils from '@app/features/channel/utils/ChannelUtils';
@@ -731,26 +732,32 @@ export const ChannelHeader = observer(
 													showOffline={true}
 													data-flx="channel.channel-header.status-aware-avatar--2"
 												/>
-												<span className={styles.dmNameWrapper} data-flx="channel.channel-header.dm-name-wrapper--2">
-													<Tooltip
-														text={isDMNameOverflowing ? directMessageName : ''}
-														data-flx="channel.channel-header.tooltip--4"
-													>
-														<span
-															ref={dmNameRef}
-															className={styles.channelName}
-															data-flx="channel.channel-header.channel-name--4"
+												<span className={styles.dmHeaderText} data-flx="channel.channel-header.dm-header-text">
+													<span className={styles.dmNameWrapper} data-flx="channel.channel-header.dm-name-wrapper--2">
+														<Tooltip
+															text={isDMNameOverflowing ? directMessageName : ''}
+															data-flx="channel.channel-header.tooltip--4"
 														>
-															{directMessageName}
-														</span>
-													</Tooltip>
-													{isBotDMRecipient && (
-														<UserTag
-															className={styles.userTag}
-															system={recipient.system}
-															data-flx="channel.channel-header.user-tag--2"
-														/>
-													)}
+															<span
+																ref={dmNameRef}
+																className={styles.channelName}
+																data-flx="channel.channel-header.channel-name--4"
+															>
+																{directMessageName}
+															</span>
+														</Tooltip>
+														{isBotDMRecipient && (
+															<UserTag
+																className={styles.userTag}
+																system={recipient.system}
+																data-flx="channel.channel-header.user-tag--2"
+															/>
+														)}
+													</span>
+													<DMHeaderPresenceLine
+														userId={recipient.id}
+														data-flx="channel.channel-header.dm-header-presence-line"
+													/>
 												</span>
 											</button>
 										</FocusRing>

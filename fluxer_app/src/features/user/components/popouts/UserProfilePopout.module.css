@@ -45,7 +45,7 @@
 }
 
 .profileDisplayName {
-	font-size: clamp(1.0625rem, calc(30rem / var(--profile-display-name-length, 1)), 1.25rem);
+	font-size: 1.125rem;
 }
 
 :global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
@@ -60,7 +60,7 @@
 
 .profilePopoutCard {
 	--profile-popout-content-width: 18.75rem;
-	--profile-popout-border-width: 0.15625rem;
+	--profile-popout-border-width: 0.0625rem;
 	--profile-card-width: calc(
 		var(--profile-popout-content-width) +
 		var(--profile-popout-border-width) +

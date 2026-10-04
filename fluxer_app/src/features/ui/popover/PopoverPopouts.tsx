@@ -7,6 +7,7 @@ import * as PopoutCommands from '@app/features/ui/commands/PopoutCommands';
 import {scopePortalHostToDocument, usePortalHost} from '@app/features/ui/overlay/PortalHostContext';
 import {type Popout, PopoutKeyContext, type PopoutReferenceRect} from '@app/features/ui/popover';
 import {PopoutResizePositionContext} from '@app/features/ui/popover/PopoutResizePositionContext';
+import {PopoutRevealContext} from '@app/features/ui/popover/PopoutRevealContext';
 import {getPopoutFocusManagerInsideElements} from '@app/features/ui/popover/PopoverFocusManagerUtils';
 import styles from '@app/features/ui/popover/PopoverPopout.module.css';
 import {scheduleFloatingPortalSweep} from '@app/features/ui/popover/PopoverPortalCleanup';
@@ -107,35 +108,90 @@ function getPopoutCloseDuration(animationType: PopoutAnimationType, prefersReduc
 	if (prefersReducedMotion || animationType === 'none') {
 		return 0;
 	}
-	return isProfileSlideAnimation(animationType) ? 140 : 250;
+	return isProfileSlideAnimation(animationType) ? 110 : 250;
 }
 
 function isProfileSlideAnimation(animationType: PopoutAnimationType): boolean {
 	return animationType === 'profile-slide' || animationType === 'profile-slide-inverted';
 }
 
+type PopoutSide = 'top' | 'bottom' | 'left' | 'right';
+
+const PROFILE_POP_DISTANCE_PX = 4;
+const PROFILE_POP_SCALE = 0.97;
+
+function getPlacementSide(placement: string): PopoutSide {
+	const side = placement.split('-')[0];
+	if (side === 'top' || side === 'bottom' || side === 'left' || side === 'right') return side;
+	return 'right';
+}
+
+/** The popout grows out of the side that faces the element it is anchored to. */
+function getAnchorOffset(side: PopoutSide): {x: number; y: number} {
+	switch (side) {
+		case 'right':
+			return {x: -PROFILE_POP_DISTANCE_PX, y: 0};
+		case 'left':
+			return {x: PROFILE_POP_DISTANCE_PX, y: 0};
+		case 'bottom':
+			return {x: 0, y: -PROFILE_POP_DISTANCE_PX};
+		case 'top':
+			return {x: 0, y: PROFILE_POP_DISTANCE_PX};
+	}
+}
+
+function getAnchorTransformOrigin(placement: string): string {
+	const [side, align] = placement.split('-');
+	const cross = align === 'start' ? '0%' : align === 'end' ? '100%' : '50%';
+	switch (side) {
+		case 'left':
+			return `100% ${cross}`;
+		case 'top':
+			return `${cross} 100%`;
+		case 'bottom':
+			return `${cross} 0%`;
+		default:
+			return `0% ${cross}`;
+	}
+}
+
 function getPopoutMotion(
 	animationType: PopoutAnimationType,
 	shouldAnimate: boolean,
 	isOpen: boolean,
+	placement: string,
 ): {
 	initial: false | Record<string, number>;
-	animate: Record<string, number>;
+	animate: Record<string, number | Array<number>>;
 	transition: Transition;
 } {
 	if (!shouldAnimate || animationType === 'none') {
 		return {
 			initial: false as const,
-			animate: {opacity: isOpen ? 1 : 0, x: 0, scale: 1},
+			animate: {opacity: isOpen ? 1 : 0, x: 0, y: 0, scale: 1},
 			transition: {duration: 0},
 		};
 	}
 	if (isProfileSlideAnimation(animationType)) {
-		const slideOffset = animationType === 'profile-slide-inverted' ? -10 : 10;
+		// Explicit keyframes: the start offset depends on the side the popout actually resolved to (after flip), which
+		// is only known once it's positioned, so it can't live in `initial`.
+		const offset = getAnchorOffset(getPlacementSide(placement));
+		if (isOpen) {
+			return {
+				initial: {opacity: 0},
+				animate: {
+					opacity: [0, 1],
+					x: [offset.x, 0],
+					y: [offset.y, 0],
+					scale: [PROFILE_POP_SCALE, 1],
+				},
+				transition: {duration: 0.14, ease: [0.2, 0, 0, 1]},
+			};
+		}
 		return {
-			initial: {opacity: 0, x: slideOffset},
-			animate: {opacity: isOpen ? 1 : 0, x: isOpen ? 0 : slideOffset},
-			transition: {duration: 0.14, ease: 'easeOut'},
+			initial: {opacity: 0},
+			animate: {opacity: 0, x: offset.x / 2, y: offset.y / 2, scale: 0.985},
+			transition: {duration: 0.1, ease: 'easeIn'},
 		};
 	}
 	return {
@@ -144,6 +200,9 @@ function getPopoutMotion(
 		transition: {duration: 0.25, ease: 'easeInOut'},
 	};
 }
+
+/** How long popout content may hold the popout invisible (see PopoutRevealContext) before it shows anyway. */
+const MAX_REVEAL_HOLD_MS = 450;
 
 const isTextEntryElement = (element: HTMLElement): boolean => {
 	const ownerWindow = element.ownerDocument.defaultView;
@@ -272,20 +331,62 @@ const PopoutItem: React.FC<PopoutItemProps> = observer(
 			focusTarget.focus({preventScroll: true});
 			hasFocusedInitialRef.current = true;
 		}, [state.isReady, isVisible, hasUsableReference, popoutRef]);
+		const [isRevealHeld, setIsRevealHeld] = useState(false);
+		const revealHoldTimerRef = useRef<number | null>(null);
+		const revealHoldRafRef = useRef<number | null>(null);
+		const revealController = useMemo(() => {
+			const clearPending = () => {
+				if (ownerWindow == null) return;
+				if (revealHoldTimerRef.current != null) ownerWindow.clearTimeout(revealHoldTimerRef.current);
+				if (revealHoldRafRef.current != null) ownerWindow.cancelAnimationFrame(revealHoldRafRef.current);
+				revealHoldTimerRef.current = null;
+				revealHoldRafRef.current = null;
+			};
+			return {
+				setPending: (pending: boolean) => {
+					clearPending();
+					if (ownerWindow == null) return;
+					if (pending) {
+						setIsRevealHeld(true);
+						revealHoldTimerRef.current = ownerWindow.setTimeout(() => {
+							revealHoldTimerRef.current = null;
+							setIsRevealHeld(false);
+						}, MAX_REVEAL_HOLD_MS);
+						return;
+					}
+					// Give the floating element two frames to measure its real size and re-position before fading in.
+					revealHoldRafRef.current = ownerWindow.requestAnimationFrame(() => {
+						revealHoldRafRef.current = ownerWindow.requestAnimationFrame(() => {
+							revealHoldRafRef.current = null;
+							setIsRevealHeld(false);
+						});
+					});
+				},
+				dispose: clearPending,
+			};
+		}, [ownerWindow]);
+		useEffect(() => revealController.dispose, [revealController]);
 		const isPositioned = animationType === 'none' ? true : state.isReady;
 		const shouldShowOpenState = isVisible && !isClosingRequested;
-		const motionOpen = shouldShowOpenState && hasUsableReference && isPositioned;
+		const motionOpen = shouldShowOpenState && hasUsableReference && isPositioned && !isRevealHeld;
+		const revealPlacementRef = useRef<string | null>(null);
+		if (motionOpen && revealPlacementRef.current == null) {
+			revealPlacementRef.current = state.placement;
+		}
+		const motionPlacement = revealPlacementRef.current ?? state.placement;
 		const popoutMotion = useMemo(
-			() => getPopoutMotion(animationType, !prefersReducedMotion, motionOpen),
-			[animationType, motionOpen, prefersReducedMotion],
+			() => getPopoutMotion(animationType, !prefersReducedMotion, motionOpen, motionPlacement),
+			[animationType, motionOpen, prefersReducedMotion, motionPlacement],
 		);
 		const transitionStyles = useMemo(() => {
 			return {
 				pointerEvents:
-					isPositioned && hasUsableReference && shouldShowOpenState ? ('auto' as const) : ('none' as const),
+					isPositioned && hasUsableReference && shouldShowOpenState && !isRevealHeld
+						? ('auto' as const)
+						: ('none' as const),
 				display: hasUsableReference ? undefined : ('none' as const),
 			};
-		}, [hasUsableReference, isPositioned, shouldShowOpenState]);
+		}, [hasUsableReference, isPositioned, shouldShowOpenState, isRevealHeld]);
 		const closeSelf = useCallback(() => {
 			beginClose();
 		}, [beginClose]);
@@ -410,6 +511,7 @@ const PopoutItem: React.FC<PopoutItemProps> = observer(
 				data-flx="ui.popover.popouts.popout-item.floating-focus-manager"
 			>
 				<PopoutKeyContext.Provider value={popoutKey}>
+					<PopoutRevealContext.Provider value={revealController}>
 					<PopoutResizePositionContext.Provider value={resizePositionController}>
 						<motion.div
 							id={popoutKey}
@@ -430,6 +532,9 @@ const PopoutItem: React.FC<PopoutItemProps> = observer(
 								zIndex: zIndexBoost != null ? 1000 + zIndexBoost : undefined,
 								...transitionStyles,
 								visibility: state.isReady && hasUsableReference ? 'visible' : 'hidden',
+								...(isProfileSlideAnimation(animationType)
+									? {transformOrigin: getAnchorTransformOrigin(motionPlacement)}
+									: null),
 							}}
 							initial={popoutMotion.initial}
 							animate={popoutMotion.animate}
@@ -442,6 +547,7 @@ const PopoutItem: React.FC<PopoutItemProps> = observer(
 							})}
 						</motion.div>
 					</PopoutResizePositionContext.Provider>
+					</PopoutRevealContext.Provider>
 				</PopoutKeyContext.Provider>
 			</FloatingFocusManager>
 		);

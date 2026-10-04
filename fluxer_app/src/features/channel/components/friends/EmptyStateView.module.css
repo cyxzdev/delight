@@ -1,30 +1,56 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .container {
+	width: 100%;
+	max-width: calc(47.5rem + 2rem);
+	margin: 0 auto;
+	padding: 1rem;
+}
+
+.card {
 	display: flex;
-	height: 100%;
-	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	padding: 2rem;
-	text-align: center;
+	gap: 0.875rem;
+	padding: 1rem;
+	border: 0.0625rem solid var(--background-modifier-accent);
+	border-radius: 0.625rem;
+	background-color: var(--background-secondary-alt);
+}
+
+.iconWrap {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 0.5rem;
+	background-color: var(--background-modifier-hover);
 }
 
 .icon {
-	margin-bottom: 1rem;
-	height: 4rem;
-	width: 4rem;
+	height: 1.25rem;
+	width: 1.25rem;
 	color: var(--text-tertiary);
 }
 
+.text {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: 0.125rem;
+}
+
 .title {
-	margin-bottom: 0.5rem;
+	margin: 0;
 	font-weight: 600;
+	font-size: 0.875rem;
+	line-height: 1.25rem;
 	color: var(--text-primary);
-	font-size: 1.25rem;
 }
 
 .subtitle {
-	max-width: 28rem;
+	margin: 0;
+	font-size: 0.8125rem;
+	line-height: 1.125rem;
 	color: var(--text-tertiary);
 }

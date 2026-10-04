@@ -70,6 +70,52 @@ const ApplicationsTab: React.FC = observer(() => {
 		if (checkUnsavedChanges()) return;
 		void store.navigateToList();
 	}, [store, checkUnsavedChanges]);
+	const listActions = (
+		<div className={styles.buttonContainer} data-flx="user.applications-tab.button-container">
+			{isUnclaimed ? (
+				<Tooltip
+					text={i18n._(CLAIM_YOUR_ACCOUNT_TO_CREATE_APPLICATIONS_DESCRIPTOR)}
+					data-flx="user.applications-tab.tooltip"
+				>
+					<div data-flx="user.applications-tab.div">
+						<Button
+							variant="primary"
+							fitContent
+							onClick={openCreateModal}
+							disabled
+							data-flx="user.applications-tab.button.open-create-modal"
+						>
+							<Trans>Create application</Trans>
+						</Button>
+					</div>
+				</Tooltip>
+			) : (
+				<Button
+					variant="primary"
+					fitContent
+					onClick={openCreateModal}
+					data-flx="user.applications-tab.button.open-create-modal--2"
+				>
+					<Trans>Create application</Trans>
+				</Button>
+			)}
+			<a
+				className={styles.documentationLink}
+				href={FLUXER_DOCS_URL}
+				target="_blank"
+				rel="noreferrer"
+				data-flx="user.applications-tab.documentation-link"
+			>
+				<BookOpenIcon
+					weight="fill"
+					size={18}
+					className={styles.documentationIcon}
+					data-flx="user.applications-tab.documentation-icon"
+				/>
+				{i18n._(READ_DOCUMENTATION_DESCRIPTOR, {domain: FLUXER_DOCS_DOMAIN})}
+			</a>
+		</div>
+	);
 	if (store.navigationState === 'LOADING_LIST' || (store.isLoading && store.isListView)) {
 		return (
 			<SettingsTabContainer data-flx="user.applications-tab.settings-tab-container">
@@ -127,52 +173,9 @@ const ApplicationsTab: React.FC = observer(() => {
 				<SettingsSection
 					id="applications-list"
 					title={<Trans>Applications</Trans>}
+					actions={listActions}
 					data-flx="user.applications-tab.settings-tab-section--2"
 				>
-					<div className={styles.buttonContainer} data-flx="user.applications-tab.button-container">
-						{isUnclaimed ? (
-							<Tooltip
-								text={i18n._(CLAIM_YOUR_ACCOUNT_TO_CREATE_APPLICATIONS_DESCRIPTOR)}
-								data-flx="user.applications-tab.tooltip"
-							>
-								<div data-flx="user.applications-tab.div">
-									<Button
-										variant="primary"
-										fitContent
-										onClick={openCreateModal}
-										disabled
-										data-flx="user.applications-tab.button.open-create-modal"
-									>
-										<Trans>Create application</Trans>
-									</Button>
-								</div>
-							</Tooltip>
-						) : (
-							<Button
-								variant="primary"
-								fitContent
-								onClick={openCreateModal}
-								data-flx="user.applications-tab.button.open-create-modal--2"
-							>
-								<Trans>Create application</Trans>
-							</Button>
-						)}
-						<a
-							className={styles.documentationLink}
-							href={FLUXER_DOCS_URL}
-							target="_blank"
-							rel="noreferrer"
-							data-flx="user.applications-tab.documentation-link"
-						>
-							<BookOpenIcon
-								weight="fill"
-								size={18}
-								className={styles.documentationIcon}
-								data-flx="user.applications-tab.documentation-icon"
-							/>
-							{i18n._(READ_DOCUMENTATION_DESCRIPTOR, {domain: FLUXER_DOCS_DOMAIN})}
-						</a>
-					</div>
 					<ApplicationsList
 						applications={store.applications}
 						onSelectApplication={handleSelectApplication}

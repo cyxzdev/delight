@@ -11,14 +11,13 @@
 .modalRoot.modalRoot {
 	--profile-modal-scale: 1.0666667;
 	--profile-modal-radius: 0.5rem;
-	--profile-modal-border-width: 0.25rem;
+	--profile-modal-border-width: 0.0625rem;
 	--profile-modal-inner-radius: calc(var(--profile-modal-radius) - var(--profile-modal-border-width));
 	--profile-modal-content-radius: 0.5rem;
 	border: none;
 	border-radius: var(--profile-modal-radius);
-	width: min(40rem, calc(100vw - 3rem), calc(76.923svh - 2.307688rem));
-	height: auto;
-	aspect-ratio: 10 / 13;
+	width: min(37.5rem, calc(100vw - 3rem));
+	height: min(38rem, calc(100svh - 4rem));
 	overflow: hidden;
 }
 
@@ -74,9 +73,9 @@
 	white-space: nowrap;
 	vertical-align: middle;
 	font-weight: 600;
-	font-size: 1.5rem;
+	font-size: 1.25rem;
 	color: var(--text-primary);
-	line-height: 1.25;
+	line-height: 1.5rem;
 }
 
 .userTag {
@@ -154,8 +153,14 @@
 
 .noteLabel {
 	font-weight: 600;
-	font-size: 0.875rem;
-	color: var(--text-primary);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--text-secondary);
+}
+
+.profileContentHeader > .userNoteEditor:not(:first-child) {
+	border-top: 0.0625rem solid var(--background-modifier-accent);
+	padding-top: 0.75rem;
 }
 
 .noteTextareaBase {
@@ -211,7 +216,7 @@
 .bannerContainer {
 	width: 100%;
 	height: auto;
-	aspect-ratio: 20 / 7;
+	aspect-ratio: 5 / 1;
 	overflow: hidden;
 	position: relative;
 	border-top-left-radius: var(--profile-modal-inner-radius);
@@ -309,8 +314,7 @@
 	overflow: hidden;
 	border-radius: var(--profile-modal-radius);
 	clip-path: inset(0 round var(--profile-modal-radius));
-	border-width: var(--profile-modal-border-width);
-	border-style: solid;
+	border: var(--profile-modal-border-width) solid var(--background-modifier-accent);
 	box-sizing: border-box;
 	background-color: var(--background-primary);
 	position: relative;

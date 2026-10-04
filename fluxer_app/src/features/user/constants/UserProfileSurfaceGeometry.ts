@@ -6,25 +6,27 @@ import {getStatusGeometry} from '@app/features/ui/constants/AvatarStatusGeometry
 type CssLengthVariables = Record<`--${string}`, string>;
 
 const PROFILE_POPOUT_AVATAR_SIZE_PX = 80;
-const PROFILE_MODAL_AVATAR_SIZE_PX = 120;
+const PROFILE_MODAL_AVATAR_SIZE_PX = 96;
 const PROFILE_POPOUT_AVATAR_BORDER_PX = getStatusGeometry(PROFILE_POPOUT_AVATAR_SIZE_PX).borderWidth;
 const PROFILE_MODAL_AVATAR_BORDER_PX = getStatusGeometry(PROFILE_MODAL_AVATAR_SIZE_PX).borderWidth;
 const PROFILE_POPOUT_AVATAR_LEFT_PX = 10;
-const PROFILE_POPOUT_AVATAR_TOP_PX = 55;
+// Delight: compact banners with the avatar centred on the banner's bottom edge.
+const PROFILE_POPOUT_BANNER_HEIGHT_PX = 90;
 const PROFILE_MODAL_AVATAR_LEFT_PX = 16;
 const PROFILE_POPOUT_AVATAR_OUTER_RADIUS_PX = PROFILE_POPOUT_AVATAR_SIZE_PX / 2 + PROFILE_POPOUT_AVATAR_BORDER_PX;
+const PROFILE_POPOUT_AVATAR_TOP_PX = PROFILE_POPOUT_BANNER_HEIGHT_PX - PROFILE_POPOUT_AVATAR_OUTER_RADIUS_PX;
 const PROFILE_MODAL_AVATAR_OUTER_RADIUS_PX = PROFILE_MODAL_AVATAR_SIZE_PX / 2 + PROFILE_MODAL_AVATAR_BORDER_PX;
 
 export const PROFILE_POPOUT_GEOMETRY = {
 	contentWidthPx: 300,
 	contentHeightPx: 520,
-	borderWidthPx: 2.5,
+	borderWidthPx: 1,
 	avatarSizePx: PROFILE_POPOUT_AVATAR_SIZE_PX,
 	avatarBorderPx: PROFILE_POPOUT_AVATAR_BORDER_PX,
 	avatarLeftPx: PROFILE_POPOUT_AVATAR_LEFT_PX,
 	avatarTopPx: PROFILE_POPOUT_AVATAR_TOP_PX,
-	bannerHeightPx: 105,
-	headerHeightPx: 140,
+	bannerHeightPx: PROFILE_POPOUT_BANNER_HEIGHT_PX,
+	headerHeightPx: Math.ceil(PROFILE_POPOUT_BANNER_HEIGHT_PX + PROFILE_POPOUT_AVATAR_OUTER_RADIUS_PX) + 2,
 } as const;
 
 export const PROFILE_POPOUT_BANNER_AVATAR_CUTOUT = {
@@ -37,7 +39,7 @@ export const PROFILE_POPOUT_BANNER_AVATAR_CUTOUT = {
 
 export const PROFILE_MODAL_GEOMETRY = {
 	bannerViewBoxWidthPx: 600,
-	bannerViewBoxHeightPx: 210,
+	bannerViewBoxHeightPx: 120,
 	avatarSizePx: PROFILE_MODAL_AVATAR_SIZE_PX,
 	avatarBorderPx: PROFILE_MODAL_AVATAR_BORDER_PX,
 	avatarLeftPx: PROFILE_MODAL_AVATAR_LEFT_PX,

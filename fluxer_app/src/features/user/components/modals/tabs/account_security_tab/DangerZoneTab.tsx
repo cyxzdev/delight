@@ -57,7 +57,7 @@ export const DangerZoneTabContent: React.FC<DangerZoneTabProps> = observer(({use
 					data-flx="user.account-security-tab.danger-zone-tab.danger-zone-tab-content.settings-tab-section"
 				>
 					<Button
-						variant="primary"
+						variant="secondary"
 						className={styles.claimButton}
 						small={true}
 						onClick={handleDisableAccount}

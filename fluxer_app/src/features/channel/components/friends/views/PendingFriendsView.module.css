@@ -1,7 +1,10 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .pendingViewContainer {
-	padding: 1rem;
+	padding: 1rem 1rem 1.5rem;
+	width: 100%;
+	max-width: calc(47.5rem + 2rem);
+	margin: 0 auto;
 }
 
 .scroller {

@@ -137,7 +137,8 @@
 .card {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-3);
+	gap: 0.5rem;
+	scroll-margin-top: 1rem;
 	padding: 0;
 	border: none;
 	border-radius: 0;
@@ -155,22 +156,22 @@
 	align-items: flex-start;
 	gap: var(--spacing-2);
 	flex-wrap: wrap;
-	padding-bottom: var(--spacing-2);
-	border-bottom: 0.0625rem solid var(--background-modifier-accent);
+	padding: 0 0.125rem;
 }
 
 .cardTitle {
 	margin: 0;
-	font-size: 1.05rem;
-	font-weight: 750;
+	font-size: 0.9375rem;
+	line-height: 1.25rem;
+	font-weight: 600;
 	color: var(--text-primary);
 }
 
 .cardSubtitle {
-	margin: 0.35rem 0 0 0;
-	color: var(--text-primary-muted);
-	font-size: 0.95rem;
-	line-height: 1.5;
+	margin: 0.125rem 0 0 0;
+	color: var(--text-tertiary);
+	font-size: 0.8125rem;
+	line-height: 1.125rem;
 }
 
 .cardActions {
@@ -182,8 +183,15 @@
 .cardBody {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-3);
-	padding-top: var(--spacing-2);
+	gap: 0.875rem;
+	padding: 0.875rem var(--settings-card-padding-inline, 0.875rem);
+	border-radius: var(--settings-card-radius, 0.625rem);
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	background: var(--settings-card-background, var(--background-secondary-alt));
+}
+
+.cardDanger .cardBody {
+	border-color: color-mix(in srgb, var(--status-danger) 35%, transparent);
 }
 
 .secretRow {

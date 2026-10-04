@@ -27,7 +27,7 @@ export const ApplicationsList: React.FC<ApplicationsListProps> = observer(({appl
 	const {i18n} = useLingui();
 	if (applications.length === 0) {
 		return (
-			<div className={styles.emptyState} data-flx="user.applications-tab.applications-list.empty-state">
+			<div className={styles.emptyState} data-settings-no-card="" data-flx="user.applications-tab.applications-list.empty-state">
 				<StatusSlate
 					Icon={AppWindowIcon}
 					title={<Trans>No applications yet</Trans>}
@@ -38,7 +38,7 @@ export const ApplicationsList: React.FC<ApplicationsListProps> = observer(({appl
 		);
 	}
 	return (
-		<div className={styles.listContainer} data-flx="user.applications-tab.applications-list.list-container">
+		<div className={styles.listContainer} data-settings-no-card="" data-flx="user.applications-tab.applications-list.list-container">
 			{applications.map((app) => {
 				const avatarUrl = app.bot
 					? AvatarUtils.getUserAvatarURL({id: app.bot.id, avatar: app.bot.avatar}, false)

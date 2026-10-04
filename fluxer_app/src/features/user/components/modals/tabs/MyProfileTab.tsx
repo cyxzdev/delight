@@ -37,6 +37,7 @@ import {BIO_MARKDOWN_PARSER_FLAGS, BioEditor} from '@app/features/user/component
 import {UsernameSection} from '@app/features/user/components/modals/tabs/my_profile_tab/MyProfileTabUsernameSection';
 import {PerGuildPremiumUpsell} from '@app/features/user/components/modals/tabs/my_profile_tab/PerGuildPremiumUpsell';
 import {PremiumBadgeSettings} from '@app/features/user/components/modals/tabs/my_profile_tab/PremiumBadgeSettings';
+import {ProfileEffectSetting} from '@app/features/user/components/modals/tabs/my_profile_tab/ProfileEffectSetting';
 import {
 	assignProfileAssetUploadPatch,
 	createGlobalProfileAssetRemoteState,
@@ -888,6 +889,12 @@ const MyProfileTabComponent = observer(function MyProfileTabComponent({
 											data-flx="user.my-profile-tab.my-profile-tab-component.accent-color-picker.set-value"
 										/>
 									</div>
+									{!isPerGuildProfile && user && (
+										<ProfileEffectSetting
+											user={user}
+											data-flx="user.my-profile-tab.my-profile-tab-component.profile-effect-setting"
+										/>
+									)}
 									<div
 										className={isPerGuildProfile && !hasPerGuildProfiles ? styles.opacityHalf : ''}
 										data-flx="user.my-profile-tab.my-profile-tab-component.opacity-half--2"

@@ -1,18 +1,42 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .sectionTitle {
-	margin-bottom: 1rem;
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+	margin: 0 0 0.375rem 0.25rem;
 	font-weight: 600;
 	font-size: 0.75rem;
 	line-height: 1rem;
-	text-transform: uppercase;
 	color: var(--text-primary-muted);
 }
 
+.sectionCount {
+	min-width: 1.125rem;
+	height: 1rem;
+	padding: 0 0.3125rem;
+	border-radius: 0.5rem;
+	background-color: var(--background-modifier-hover);
+	color: var(--text-tertiary);
+	font-size: 0.6875rem;
+	line-height: 1rem;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Grouped list card: rows sit inside one rounded surface, separated by inset hairlines. */
 .sectionContent {
-	margin: 0 -1rem;
+	--friend-row-padding-block: 0.375rem;
+	--friend-row-padding-inline: 0.75rem;
+	--friend-row-content-gap: 0.75rem;
+	--friend-row-action-gap: 0.25rem;
+	overflow: hidden;
+	border: 0.0625rem solid var(--background-modifier-accent);
+	border-radius: 0.625rem;
+	background-color: var(--background-secondary-alt);
 }
 
 .sectionContentWithMargin {
-	margin: 0 -1rem 2rem;
+	composes: sectionContent;
+	margin-bottom: 1.25rem;
 }

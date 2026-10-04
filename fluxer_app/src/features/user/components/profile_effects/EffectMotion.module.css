@@ -1,0 +1,246 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* Shared motion for profile effects (see effectKit.tsx). Transform + opacity only. Per-element timing comes from
+   custom properties: --dur, --delay, --dx, --dy, --rot, --sway; still-frame placement from --sx, --sy, --sr. */
+
+.svg {
+	position: absolute;
+	inset: 0;
+	display: block;
+	overflow: visible;
+}
+
+.drift,
+.sway,
+.burst,
+.twinkle,
+.introPop,
+.spin,
+.pulse,
+.flicker,
+.ripple {
+	transform-box: fill-box;
+	transform-origin: 50% 50%;
+}
+
+/* ---------- loops ---------- */
+
+.drift {
+	animation: drift var(--dur, 6s) linear var(--delay, 0ms) infinite both;
+}
+
+@keyframes drift {
+	0% {
+		transform: translate(0, 0) rotate(0deg);
+		opacity: 0;
+	}
+	10% {
+		opacity: 1;
+	}
+	85% {
+		opacity: 1;
+	}
+	100% {
+		transform: translate(var(--dx, 0px), var(--dy, 0px)) rotate(var(--rot, 0deg));
+		opacity: 0;
+	}
+}
+
+.driftFadeOut {
+	animation-name: drift-fade-out;
+}
+
+@keyframes drift-fade-out {
+	0% {
+		transform: translate(0, 0) rotate(0deg);
+		opacity: 1;
+	}
+	70% {
+		opacity: 1;
+	}
+	100% {
+		transform: translate(var(--dx, 0px), var(--dy, 0px)) rotate(var(--rot, 0deg));
+		opacity: 0;
+	}
+}
+
+.sway {
+	animation: sway var(--dur, 3s) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes sway {
+	from {
+		transform: translateX(calc(var(--sway, 6px) * -1));
+	}
+	to {
+		transform: translateX(var(--sway, 6px));
+	}
+}
+
+.twinkle {
+	animation: twinkle var(--dur, 2.4s) ease-in-out var(--delay, 0ms) infinite both;
+}
+
+@keyframes twinkle {
+	0%,
+	100% {
+		transform: scale(0.35);
+		opacity: 0.25;
+	}
+	50% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+.spin {
+	animation: spin var(--dur, 12s) linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* Two quick beats, then rest. */
+.pulse {
+	animation: pulse var(--dur, 1.6s) ease-out var(--delay, 0ms) infinite both;
+}
+
+@keyframes pulse {
+	0%,
+	40%,
+	100% {
+		transform: scale(1);
+	}
+	10% {
+		transform: scale(1.14);
+	}
+	22% {
+		transform: scale(1.04);
+	}
+	30% {
+		transform: scale(1.1);
+	}
+}
+
+/* Flames: lick upward from their base. */
+.flicker {
+	transform-origin: 50% 100%;
+	animation: flicker var(--dur, 900ms) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes flicker {
+	0% {
+		transform: scale(1, 0.82) skewX(-3deg);
+	}
+	50% {
+		transform: scale(0.94, 1.08) skewX(2deg);
+	}
+	100% {
+		transform: scale(1.04, 0.92) skewX(-1deg);
+	}
+}
+
+.ripple {
+	animation: ripple var(--dur, 2s) ease-out var(--delay, 0ms) infinite both;
+}
+
+@keyframes ripple {
+	0% {
+		transform: scale(0.15);
+		opacity: 0;
+	}
+	10% {
+		opacity: 0.9;
+	}
+	100% {
+		transform: scale(1);
+		opacity: 0;
+	}
+}
+
+/* ---------- intros (play once) ---------- */
+
+.burst {
+	animation: burst var(--dur, 900ms) cubic-bezier(0.2, 0.6, 0.3, 1) var(--delay, 0ms) both;
+}
+
+@keyframes burst {
+	0% {
+		transform: translate(0, 0) rotate(0deg) scale(0.4);
+		opacity: 0;
+	}
+	12% {
+		opacity: 1;
+		transform: translate(calc(var(--dx, 0px) * 0.15), calc(var(--dy, 0px) * 0.15)) rotate(0deg) scale(1);
+	}
+	70% {
+		opacity: 1;
+	}
+	100% {
+		transform: translate(var(--dx, 0px), var(--dy, 0px)) rotate(var(--rot, 0deg)) scale(0.8);
+		opacity: 0;
+	}
+}
+
+.introFade {
+	animation: intro-fade var(--dur, 500ms) ease-out var(--delay, 0ms) both;
+}
+
+@keyframes intro-fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+.introPop {
+	animation: intro-pop var(--dur, 420ms) cubic-bezier(0.2, 0, 0, 1) var(--delay, 0ms) both;
+}
+
+@keyframes intro-pop {
+	0% {
+		transform: scale(0);
+		opacity: 0;
+	}
+	60% {
+		transform: scale(1.08);
+		opacity: 1;
+	}
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+/* ---------- still frame (reduced motion, thumbnails) ---------- */
+
+[data-pfx-static] .drift {
+	animation: none;
+	opacity: 1;
+	transform: translate(var(--sx, 0px), var(--sy, 0px)) rotate(var(--sr, 0deg));
+}
+
+[data-pfx-static] :is(.sway, .spin, .pulse, .flicker, .twinkle) {
+	animation: none;
+}
+
+[data-pfx-static] .ripple {
+	animation: none;
+	transform: scale(0.7);
+	opacity: 0.45;
+}
+
+[data-pfx-static] :is(.introFade, .introPop) {
+	animation: none;
+	opacity: 1;
+	transform: none;
+}
+
+[data-pfx-static] .burst {
+	display: none;
+}

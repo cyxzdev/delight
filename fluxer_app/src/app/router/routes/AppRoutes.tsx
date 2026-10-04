@@ -9,6 +9,7 @@ import {DiscoveryLayout} from '@app/features/app/components/layout/DiscoveryLayo
 import {FavoritesLayout} from '@app/features/app/components/layout/FavoritesLayout';
 import {GuildsLayout} from '@app/features/app/components/layout/GuildsLayout';
 import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
+import {DeveloperPortalPaths, type DeveloperPortalSection} from '@app/features/developers/DeveloperPortalPaths';
 import Authentication from '@app/features/auth/state/Authentication';
 import {ChannelIndexPage} from '@app/features/channel/components/ChannelIndexPage';
 import {ChannelLayout} from '@app/features/channel/components/ChannelLayout';
@@ -66,6 +67,10 @@ const PlutoniumPageLayout = createNamedLoadableComponent<AppRouteComponentProps>
 const PremiumCallbackPage = createDefaultLoadableComponent<AppRouteComponentProps>({
 	displayName: 'PremiumCallbackPage',
 	load: () => import('@app/features/premium/components/pages/PremiumCallbackPage'),
+});
+const DeveloperPortalPage = createNamedLoadableComponent<{section: DeveloperPortalSection; appId?: string}>({
+	displayName: 'DeveloperPortalPage',
+	load: async () => (await import('@app/features/developers/components/DeveloperPortalPage')).DeveloperPortalPage,
 });
 const StatusChangeBottomSheet = createNamedLoadableComponent<AppRouteComponentProps>({
 	displayName: 'StatusChangeBottomSheet',
@@ -331,7 +336,70 @@ const messageRoute = createRoute({
 		</ChannelLayout>
 	),
 });
+const developersRootRoute = createRoute({
+	getParentRoute: () => appLayoutRoute,
+	id: 'developersRoot',
+	path: DeveloperPortalPaths.ROOT,
+	onEnter: () => new Redirect(DeveloperPortalPaths.APPLICATIONS),
+});
+const developersApplicationsRoute = createRoute({
+	getParentRoute: () => appLayoutRoute,
+	id: 'developersApplications',
+	path: DeveloperPortalPaths.APPLICATIONS,
+	preload: DeveloperPortalPage.preload,
+	component: () => <DeveloperPortalPage section="applications" data-flx="app.router.app-routes.developer-portal" />,
+});
+const developersApplicationRoute = createRoute({
+	getParentRoute: () => appLayoutRoute,
+	id: 'developersApplication',
+	path: DeveloperPortalPaths.APPLICATION,
+	preload: DeveloperPortalPage.preload,
+	component: () => {
+		const {appId} = useParams() as {appId: string};
+		return (
+			<DeveloperPortalPage
+				section="applications"
+				appId={appId}
+				data-flx="app.router.app-routes.developer-portal--application"
+			/>
+		);
+	},
+});
+const developersOptionsRoute = createRoute({
+	getParentRoute: () => appLayoutRoute,
+	id: 'developersOptions',
+	path: DeveloperPortalPaths.OPTIONS,
+	preload: DeveloperPortalPage.preload,
+	component: () => <DeveloperPortalPage section="options" data-flx="app.router.app-routes.developer-portal--options" />,
+});
+const developersEmbedDebuggerRoute = createRoute({
+	getParentRoute: () => appLayoutRoute,
+	id: 'developersEmbedDebugger',
+	path: DeveloperPortalPaths.EMBED_DEBUGGER,
+	preload: DeveloperPortalPage.preload,
+	component: () => (
+		<DeveloperPortalPage section="embed_debugger" data-flx="app.router.app-routes.developer-portal--embed-debugger" />
+	),
+});
+const developersComponentGalleryRoute = createRoute({
+	getParentRoute: () => appLayoutRoute,
+	id: 'developersComponentGallery',
+	path: DeveloperPortalPaths.COMPONENT_GALLERY,
+	preload: DeveloperPortalPage.preload,
+	component: () => (
+		<DeveloperPortalPage
+			section="component_gallery"
+			data-flx="app.router.app-routes.developer-portal--component-gallery"
+		/>
+	),
+});
 export const appRouteTree = appLayoutRoute.addChildren([
+	developersRootRoute,
+	developersApplicationsRoute,
+	developersApplicationRoute,
+	developersOptionsRoute,
+	developersEmbedDebuggerRoute,
+	developersComponentGalleryRoute,
 	notificationsRoute,
 	youRoute,
 	userProfileRoute,

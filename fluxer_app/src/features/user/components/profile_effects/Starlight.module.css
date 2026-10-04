@@ -1,0 +1,32 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* A shooting star: crosses quickly, then waits out the rest of the cycle. */
+.shoot {
+	opacity: 0;
+	animation: shoot var(--dur, 6s) cubic-bezier(0.3, 0, 0.6, 1) var(--delay, 0ms) infinite both;
+}
+
+@keyframes shoot {
+	0% {
+		transform: translate(0, 0);
+		opacity: 0;
+	}
+	2% {
+		opacity: 1;
+	}
+	14% {
+		opacity: 1;
+	}
+	18% {
+		transform: translate(var(--dx, 0px), var(--dy, 0px));
+		opacity: 0;
+	}
+	100% {
+		transform: translate(var(--dx, 0px), var(--dy, 0px));
+		opacity: 0;
+	}
+}
+
+[data-pfx-static] .shoot {
+	display: none;
+}

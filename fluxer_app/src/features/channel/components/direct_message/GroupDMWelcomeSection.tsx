@@ -14,6 +14,7 @@ import * as ContextMenuCommands from '@app/features/ui/commands/ContextMenuComma
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import {modal} from '@app/features/ui/commands/ModalCommands';
 import {useLingui} from '@lingui/react';
+import {plural} from '@lingui/core/macro';
 import {Trans} from '@lingui/react/macro';
 import {NotePencilIcon, UserPlusIcon} from '@phosphor-icons/react';
 import {observer} from 'mobx-react-lite';
@@ -62,63 +63,82 @@ export const GroupDMWelcomeSection: React.FC<GroupDMWelcomeSectionProps> = obser
 		},
 		[channel],
 	);
+	const memberCount = channel.recipientIds.length + 1;
 	return (
 		<div className={styles.welcomeSection} data-flx="channel.direct-message.group-dm-welcome-section.welcome-section">
-			<button
-				type="button"
-				className={styles.profileSection}
-				onContextMenu={handleGroupContextMenu}
-				aria-haspopup="menu"
-				data-flx="channel.direct-message.group-dm-welcome-section.profile-section.group-context-menu.button"
-			>
-				<GroupDMAvatar
-					channel={channel}
-					size={80}
-					data-flx="channel.direct-message.group-dm-welcome-section.group-dm-avatar"
-				/>
-				<span className={styles.groupName} data-flx="channel.direct-message.group-dm-welcome-section.group-name">
-					{displayName}
-				</span>
-			</button>
-			<p className={styles.welcomeText} data-flx="channel.direct-message.group-dm-welcome-section.welcome-text">
-				<Trans>
-					Welcome to <strong data-flx="channel.direct-message.group-dm-welcome-section.strong">{displayName}</strong>.
-					Add friends to get the group going.
-				</Trans>
-			</p>
-			<div className={styles.actions} data-flx="channel.direct-message.group-dm-welcome-section.actions">
-				<Button
-					variant="secondary"
-					leftIcon={
-						<NotePencilIcon
-							size={remFromPx(18)}
-							weight="bold"
-							data-flx="channel.direct-message.group-dm-welcome-section.note-pencil-icon"
-						/>
-					}
-					onClick={handleOpenEditGroup}
-					fitContent
-					data-flx="channel.direct-message.group-dm-welcome-section.button.open-edit-group"
+			<div className={styles.card} data-flx="channel.direct-message.group-dm-welcome-section.card">
+				<button
+					type="button"
+					className={styles.profileSection}
+					onContextMenu={handleGroupContextMenu}
+					aria-haspopup="menu"
+					data-flx="channel.direct-message.group-dm-welcome-section.profile-section.group-context-menu.button"
 				>
-					<Trans>Edit group</Trans>
-				</Button>
-				{!isGroupDMFull && (
+					<GroupDMAvatar
+						channel={channel}
+						size={56}
+						data-flx="channel.direct-message.group-dm-welcome-section.group-dm-avatar"
+					/>
+					<span className={styles.identity} data-flx="channel.direct-message.group-dm-welcome-section.identity">
+						<span className={styles.groupName} data-flx="channel.direct-message.group-dm-welcome-section.group-name">
+							{displayName}
+						</span>
+						<span
+							className={styles.memberCount}
+							data-flx="channel.direct-message.group-dm-welcome-section.member-count"
+						>
+							{plural(
+								{count: memberCount},
+								{
+									one: '# member',
+									other: '# members',
+								},
+							)}
+						</span>
+					</span>
+				</button>
+				<p className={styles.welcomeText} data-flx="channel.direct-message.group-dm-welcome-section.welcome-text">
+					<Trans>
+						Welcome to <strong data-flx="channel.direct-message.group-dm-welcome-section.strong">{displayName}</strong>.
+						Add friends to get the group going.
+					</Trans>
+				</p>
+				<div className={styles.actions} data-flx="channel.direct-message.group-dm-welcome-section.actions">
 					<Button
-						variant="primary"
+						variant="secondary"
+						small={true}
 						leftIcon={
-							<UserPlusIcon
-								size={remFromPx(18)}
+							<NotePencilIcon
+								size={remFromPx(14)}
 								weight="bold"
-								data-flx="channel.direct-message.group-dm-welcome-section.user-plus-icon"
+								data-flx="channel.direct-message.group-dm-welcome-section.note-pencil-icon"
 							/>
 						}
-						onClick={handleAddFriends}
+						onClick={handleOpenEditGroup}
 						fitContent
-						data-flx="channel.direct-message.group-dm-welcome-section.button.add-friends"
+						data-flx="channel.direct-message.group-dm-welcome-section.button.open-edit-group"
 					>
-						<Trans>Add friends to group</Trans>
+						<Trans>Edit group</Trans>
 					</Button>
-				)}
+					{!isGroupDMFull && (
+						<Button
+							variant="primary"
+							small={true}
+							leftIcon={
+								<UserPlusIcon
+									size={remFromPx(14)}
+									weight="bold"
+									data-flx="channel.direct-message.group-dm-welcome-section.user-plus-icon"
+								/>
+							}
+							onClick={handleAddFriends}
+							fitContent
+							data-flx="channel.direct-message.group-dm-welcome-section.button.add-friends"
+						>
+							<Trans>Add friends to group</Trans>
+						</Button>
+					)}
+				</div>
 			</div>
 		</div>
 	);

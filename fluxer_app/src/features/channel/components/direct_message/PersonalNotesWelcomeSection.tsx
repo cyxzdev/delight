@@ -39,7 +39,7 @@ export const PersonalNotesWelcomeSection: React.FC<PersonalNotesWelcomeSectionPr
 				/>
 				<StatusAwareAvatar
 					user={user}
-					size={80}
+					size={56}
 					disablePresence={true}
 					className={styles.avatar}
 					data-flx="channel.direct-message.personal-notes-welcome-section.avatar"

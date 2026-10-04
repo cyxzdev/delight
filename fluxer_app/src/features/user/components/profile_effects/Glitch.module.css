@@ -1,0 +1,150 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* Boot-up: the overlay stutters on. */
+.boot {
+	animation: boot 520ms steps(1, end) both;
+}
+
+@keyframes boot {
+	0% {
+		opacity: 0;
+	}
+	20% {
+		opacity: 1;
+	}
+	35% {
+		opacity: 0.1;
+	}
+	50% {
+		opacity: 1;
+	}
+	62% {
+		opacity: 0.3;
+	}
+	75%,
+	100% {
+		opacity: 1;
+	}
+}
+
+/* RGB split: the red/cyan copies jump sideways every so often. */
+.jitterA,
+.jitterB {
+	animation: jitter-a var(--dur, 2.6s) steps(1, end) var(--delay, 0ms) infinite;
+}
+
+.jitterB {
+	animation-name: jitter-b;
+}
+
+@keyframes jitter-a {
+	0%,
+	62%,
+	100% {
+		transform: translate(0, 0);
+	}
+	64% {
+		transform: translate(-3px, 1px);
+	}
+	67% {
+		transform: translate(2px, 0);
+	}
+	70% {
+		transform: translate(-1px, -1px);
+	}
+	88% {
+		transform: translate(-4px, 0);
+	}
+	90% {
+		transform: translate(0, 0);
+	}
+}
+
+@keyframes jitter-b {
+	0%,
+	62%,
+	100% {
+		transform: translate(0, 0);
+	}
+	64% {
+		transform: translate(3px, -1px);
+	}
+	67% {
+		transform: translate(-2px, 1px);
+	}
+	70% {
+		transform: translate(1px, 0);
+	}
+	88% {
+		transform: translate(4px, 0);
+	}
+	90% {
+		transform: translate(0, 0);
+	}
+}
+
+/* Corrupted blocks: flash on briefly at their own moment in the cycle, shifted sideways. */
+.block {
+	opacity: 0;
+	animation: block var(--dur, 3s) steps(1, end) var(--delay, 0ms) infinite both;
+}
+
+@keyframes block {
+	0%,
+	100% {
+		opacity: 0;
+		transform: translateX(0);
+	}
+	4% {
+		opacity: 1;
+		transform: translateX(var(--dx, 0px));
+	}
+	7% {
+		opacity: 0.6;
+		transform: translateX(0);
+	}
+	10% {
+		opacity: 1;
+		transform: translateX(calc(var(--dx, 0px) * -0.5));
+	}
+	13% {
+		opacity: 0;
+	}
+}
+
+/* A faint bright scanline sweeps down the card. */
+.scan {
+	animation: scan var(--dur, 5s) linear var(--delay, 0ms) infinite both;
+}
+
+@keyframes scan {
+	0% {
+		transform: translateY(0);
+		opacity: 0;
+	}
+	5% {
+		opacity: 1;
+	}
+	60% {
+		transform: translateY(var(--dy, 0px));
+		opacity: 1;
+	}
+	61%,
+	100% {
+		transform: translateY(var(--dy, 0px));
+		opacity: 0;
+	}
+}
+
+[data-pfx-static] :is(.boot, .jitterA, .jitterB) {
+	animation: none;
+}
+
+[data-pfx-static] .block {
+	animation: none;
+	opacity: 0.8;
+}
+
+[data-pfx-static] .scan {
+	display: none;
+}

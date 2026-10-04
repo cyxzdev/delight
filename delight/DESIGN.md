@@ -29,6 +29,22 @@ Use the base app's own layout, sizes, spacing and corners (the user prefers its 
 are colour (GenerateColorSystem.ts), the Inter font, branding, and the 32px title strip above the app
 (WindowTitleStrip). Don't enlarge text, rows or padding, and don't add custom radii.
 
+## Delight surfaces (everything except the server/channel chat layout)
+Keep the base app's compact sizes (13–14px UI text, 15–16px message text, 32–40px rows). What changes is the
+structure and feel:
+- **Pages** (friends, DMs home, settings, discovery, inbox, You, developer portal): a 48px page header with the title
+  on the left and **segmented pill tabs** (selected = filled `--background-modifier-selected` pill, 6px radius, 28px
+  tall). Content sits in a centered column (max ~760px; full width only for lists that need it).
+- **Grouped list cards**: rows live inside rounded cards (10px radius, `--background-secondary-alt` fill, 1px hairline
+  border), with hairlines *between* rows (inset to the text start), like grouped settings lists. Small 12px/600 muted
+  section titles sit above each card. Rows 40–44px.
+- **Profiles**: Discord-like placement, not centred — banner across the top, avatar left-aligned overlapping the
+  banner's bottom edge with a ring in the card colour, name/username under it left-aligned. Optional animated
+  **profile effect** layers (SVG) in front of and behind the card.
+- **Motion**: popouts open anchored to the thing you clicked (beside it, clamped to the viewport), with a short
+  120–160ms fade + slight scale/translate from that side. No sliding in from odd places.
+- Purple only for primary actions, selection and focus; no gradients except inside profile effects.
+
 ## Rules for agents
 - Edit only your scope (given in your prompt). CSS modules first; change TSX markup only where placement changes need it.
   Keep props, exports, behaviour and accessibility intact.

@@ -47,13 +47,29 @@
 	min-width: 0;
 	align-items: center;
 	gap: 0.5rem;
-	margin-right: 1rem;
+	margin-right: 0.75rem;
+}
+
+.tabs {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+	flex: 0 1 auto;
+	margin-left: 0.5rem;
+	padding-left: 0.75rem;
+	border-left: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	height: 1.25rem;
+	overflow: visible;
+}
+
+.tabs > * {
+	height: 2rem;
 }
 
 .title {
 	margin: 0;
 	font-weight: 600;
-	font-size: 1.125rem;
+	font-size: 1rem;
 	line-height: 1.5rem;
 	color: var(--text-primary);
 	flex: 0 1 auto;
@@ -71,4 +87,12 @@
 .headerTransition {
 	transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
 	transition-duration: 200ms;
+}
+
+.titleWrapper:has(.tabs) .title {
+	flex-shrink: 0;
+}
+
+.tabs {
+	flex: 1 1 auto;
 }

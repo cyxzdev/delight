@@ -25,3 +25,29 @@ services:
   worker:
     environment:
       FLUXER_AUTO_JOIN_INVITE_CODE: delight
+  # Delight sidecar (delight/service/server.ts): per-user state Fluxer's API has no field for, e.g. profile effects.
+  # The edge serves it at /delight/*.
+  delight-svc:
+    image: oven/bun:1-alpine
+    restart: ${FLUXER_RESTART_POLICY:-unless-stopped}
+    networks: [fluxer]
+    working_dir: /app
+    command: ["bun", "run", "/app/server.ts"]
+    environment:
+      PORT: "3000"
+      DATA_DIR: /data
+      FLUXER_API_URL: http://api:8080
+      # Fluxer's API checks Origin on browser-style requests; send the public origin.
+      FLUXER_ORIGIN: ${DELIGHT_FLUXER_ORIGIN:-${FLUXER_PUBLIC_ORIGIN:-http://localhost:3131}}
+    volumes:
+      - ../../delight/service:/app:ro
+      - delight-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  delight-data:

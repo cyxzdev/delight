@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import styles from '@app/features/user/components/profile/profile_card/ProfileCardLayout.module.css';
+import {
+	ProfileEffect,
+	profileEffectHostClassName,
+} from '@app/features/user/components/profile_effects/ProfileEffect';
+import type {ProfileEffectId} from '@app/features/user/utils/ProfileEffects';
 import {Trans} from '@lingui/react/macro';
 import {clsx} from 'clsx';
 import {observer} from 'mobx-react-lite';
@@ -13,12 +18,18 @@ interface ProfileCardLayoutProps {
 	hoverRef?: (instance: HTMLDivElement | null) => void;
 	className?: string;
 	style?: React.CSSProperties;
+	/** Animated profile effect drawn in front of / behind the card. */
+	effect?: ProfileEffectId | null;
 	children: React.ReactNode;
 }
 
 export const ProfileCardLayout: React.FC<ProfileCardLayoutProps> = observer(
-	({borderColor, showPreviewLabel = false, hoverRef, className, style, children}) => {
-		const cardStyle = useMemo<React.CSSProperties>(() => ({...style, borderColor}), [borderColor, style]);
+	({borderColor, showPreviewLabel = false, hoverRef, className, style, effect, children}) => {
+		// Delight: the card keeps a neutral hairline border; the accent colour lives on the banner (exposed as a variable).
+		const cardStyle = useMemo<React.CSSProperties>(
+			() => ({...style, '--profile-accent-color': borderColor}) as React.CSSProperties,
+			[borderColor, style],
+		);
 		return (
 			<div data-flx="user.profile.profile-card.profile-card-layout.div">
 				{showPreviewLabel && (
@@ -28,10 +39,11 @@ export const ProfileCardLayout: React.FC<ProfileCardLayoutProps> = observer(
 				)}
 				<div
 					ref={hoverRef}
-					className={clsx(styles.profileCard, className)}
+					className={clsx(styles.profileCard, profileEffectHostClassName, className)}
 					style={cardStyle}
 					data-flx="user.profile.profile-card.profile-card-layout.profile-card"
 				>
+					{effect && <ProfileEffect effect={effect} radius={6} data-flx="user.profile.profile-card.profile-card-layout.profile-effect" />}
 					{children}
 				</div>
 			</div>

@@ -305,21 +305,23 @@ const GuildModerationTab: React.FC<{guildId: string}> = observer(({guildId}) => 
 								</Trans>
 							</p>
 						)}
-						<Controller
-							name="verification_level"
-							control={form.control}
-							render={({field}) => (
-								<RadioGroup
-									value={getEffectiveGuildVerificationLevel(field.value ?? GuildVerificationLevel.NONE, isDiscoverable)}
-									onChange={field.onChange}
-									disabled={!canManageGuild}
-									options={verificationLevelOptions}
-									aria-label={i18n._(MEMBER_VERIFICATION_LEVEL_ARIA_DESCRIPTOR)}
-									data-flx="guild.guild-tabs.guild-moderation-tab.radio-group.change"
-								/>
-							)}
-							data-flx="guild.guild-tabs.guild-moderation-tab.controller"
-						/>
+						<div className={styles.card} data-settings-card-host="" data-flx="guild.guild-tabs.guild-moderation-tab.card--verification">
+							<Controller
+								name="verification_level"
+								control={form.control}
+								render={({field}) => (
+									<RadioGroup
+										value={getEffectiveGuildVerificationLevel(field.value ?? GuildVerificationLevel.NONE, isDiscoverable)}
+										onChange={field.onChange}
+										disabled={!canManageGuild}
+										options={verificationLevelOptions}
+										aria-label={i18n._(MEMBER_VERIFICATION_LEVEL_ARIA_DESCRIPTOR)}
+										data-flx="guild.guild-tabs.guild-moderation-tab.radio-group.change"
+									/>
+								)}
+								data-flx="guild.guild-tabs.guild-moderation-tab.controller"
+							/>
+						</div>
 					</div>
 					<div className={styles.section} data-flx="guild.guild-tabs.guild-moderation-tab.section--2">
 						<h3 className={styles.sectionTitle} data-flx="guild.guild-tabs.guild-moderation-tab.section-title--2">
@@ -345,100 +347,104 @@ const GuildModerationTab: React.FC<{guildId: string}> = observer(({guildId}) => 
 								</Trans>
 							</p>
 						)}
-						<Controller
-							name="explicit_content_filter"
-							control={form.control}
-							render={({field}) => (
-								<RadioGroup
-									value={isDiscoverable ? GuildExplicitContentFilterTypes.ALL_MEMBERS : field.value}
-									onChange={field.onChange}
-									disabled={!canManageGuild || isDiscoverable}
-									options={[
-										{
-											value: GuildExplicitContentFilterTypes.DISABLED,
-											name: i18n._(EXPLICIT_CONTENT_FILTER_OFF_NAME_DESCRIPTOR),
-											desc: i18n._(EXPLICIT_CONTENT_FILTER_OFF_DESCRIPTION_DESCRIPTOR),
-										},
-										{
-											value: GuildExplicitContentFilterTypes.MEMBERS_WITHOUT_ROLES,
-											name: colorizeLabel(
-												i18n._(EXPLICIT_CONTENT_FILTER_MEMBERS_WITHOUT_ROLES_NAME_DESCRIPTOR),
-												'#f59e0b',
-											),
-											desc: i18n._(EXPLICIT_CONTENT_FILTER_MEMBERS_WITHOUT_ROLES_DESCRIPTION_DESCRIPTOR),
-										},
-										{
-											value: GuildExplicitContentFilterTypes.ALL_MEMBERS,
-											name: colorizeLabel(i18n._(EXPLICIT_CONTENT_FILTER_EVERYONE_NAME_DESCRIPTOR), '#ef4444'),
-											desc: i18n._(EXPLICIT_CONTENT_FILTER_EVERYONE_DESCRIPTION_DESCRIPTOR),
-										},
-									]}
-									aria-label={i18n._(EXPLICIT_CONTENT_FILTER_ARIA_DESCRIPTOR)}
-									data-flx="guild.guild-tabs.guild-moderation-tab.radio-group.change--2"
-								/>
-							)}
-							data-flx="guild.guild-tabs.guild-moderation-tab.controller--2"
-						/>
+						<div className={styles.card} data-settings-card-host="" data-flx="guild.guild-tabs.guild-moderation-tab.card--filter">
+							<Controller
+								name="explicit_content_filter"
+								control={form.control}
+								render={({field}) => (
+									<RadioGroup
+										value={isDiscoverable ? GuildExplicitContentFilterTypes.ALL_MEMBERS : field.value}
+										onChange={field.onChange}
+										disabled={!canManageGuild || isDiscoverable}
+										options={[
+											{
+												value: GuildExplicitContentFilterTypes.DISABLED,
+												name: i18n._(EXPLICIT_CONTENT_FILTER_OFF_NAME_DESCRIPTOR),
+												desc: i18n._(EXPLICIT_CONTENT_FILTER_OFF_DESCRIPTION_DESCRIPTOR),
+											},
+											{
+												value: GuildExplicitContentFilterTypes.MEMBERS_WITHOUT_ROLES,
+												name: colorizeLabel(
+													i18n._(EXPLICIT_CONTENT_FILTER_MEMBERS_WITHOUT_ROLES_NAME_DESCRIPTOR),
+													'#f59e0b',
+												),
+												desc: i18n._(EXPLICIT_CONTENT_FILTER_MEMBERS_WITHOUT_ROLES_DESCRIPTION_DESCRIPTOR),
+											},
+											{
+												value: GuildExplicitContentFilterTypes.ALL_MEMBERS,
+												name: colorizeLabel(i18n._(EXPLICIT_CONTENT_FILTER_EVERYONE_NAME_DESCRIPTOR), '#ef4444'),
+												desc: i18n._(EXPLICIT_CONTENT_FILTER_EVERYONE_DESCRIPTION_DESCRIPTOR),
+											},
+										]}
+										aria-label={i18n._(EXPLICIT_CONTENT_FILTER_ARIA_DESCRIPTOR)}
+										data-flx="guild.guild-tabs.guild-moderation-tab.radio-group.change--2"
+									/>
+								)}
+								data-flx="guild.guild-tabs.guild-moderation-tab.controller--2"
+							/>
+						</div>
 					</div>
 					<div className={styles.section} data-flx="guild.guild-tabs.guild-moderation-tab.section--3">
 						<h3 className={styles.sectionTitle} data-flx="guild.guild-tabs.guild-moderation-tab.section-title--3">
 							<Trans>Mature content & content warnings</Trans>
 						</h3>
-						<Controller
-							name="nsfw"
-							control={form.control}
-							render={({field}) => (
-								<CompactComboboxRow<string>
-									label={i18n._(MATURE_CONTENT_DESCRIPTOR)}
-									value={field.value ? 'on' : 'off'}
-									onChange={(value) => field.onChange(value === 'on')}
-									options={matureContentOptions}
-									isSearchable={false}
-									controlWidth="small"
-									disabled={!canManageGuild}
-									dataFlx="guild.guild-tabs.guild-moderation-tab.mature-content-select"
-									data-flx="guild.guild-tabs.guild-moderation-tab.compact-combobox-row.change"
-								/>
-							)}
-							data-flx="guild.guild-tabs.guild-moderation-tab.controller--3"
-						/>
-						<Controller
-							name="content_warning_level"
-							control={form.control}
-							render={({field}) => (
-								<Switch
-									label={i18n._(SHOW_CONTENT_WARNING_SWITCH_LABEL_DESCRIPTOR)}
-									value={field.value === ContentWarningLevel.CONTENT_WARNING}
-									onChange={(value) =>
-										field.onChange(value ? ContentWarningLevel.CONTENT_WARNING : ContentWarningLevel.INHERIT)
-									}
-									disabled={!canManageGuild}
-									data-flx="guild.guild-tabs.guild-moderation-tab.switch.change--2"
-								/>
-							)}
-							data-flx="guild.guild-tabs.guild-moderation-tab.controller--4"
-						/>
-						{form.watch('content_warning_level') === ContentWarningLevel.CONTENT_WARNING && (
+						<div className={styles.card} data-settings-card-host="" data-flx="guild.guild-tabs.guild-moderation-tab.card--mature">
 							<Controller
-								name="content_warning_text"
+								name="nsfw"
 								control={form.control}
 								render={({field}) => (
-									<Textarea
-										label={i18n._(CUSTOM_CONTENT_WARNING_TEXT_FIELD_LABEL_DESCRIPTOR)}
-										placeholder={i18n._(CUSTOM_CONTENT_WARNING_TEXT_PLACEHOLDER_DESCRIPTOR)}
-										value={field.value ?? ''}
-										onChange={(e) => field.onChange(e.target.value)}
-										maxLength={CONTENT_WARNING_TEXT_MAX_LENGTH}
-										minRows={2}
-										maxRows={4}
-										showCharacterCount={true}
+									<CompactComboboxRow<string>
+										label={i18n._(MATURE_CONTENT_DESCRIPTOR)}
+										value={field.value ? 'on' : 'off'}
+										onChange={(value) => field.onChange(value === 'on')}
+										options={matureContentOptions}
+										isSearchable={false}
+										controlWidth="small"
 										disabled={!canManageGuild}
-										data-flx="guild.guild-tabs.guild-moderation-tab.textarea.change"
+										dataFlx="guild.guild-tabs.guild-moderation-tab.mature-content-select"
+										data-flx="guild.guild-tabs.guild-moderation-tab.compact-combobox-row.change"
 									/>
 								)}
-								data-flx="guild.guild-tabs.guild-moderation-tab.controller--5"
+								data-flx="guild.guild-tabs.guild-moderation-tab.controller--3"
 							/>
-						)}
+							<Controller
+								name="content_warning_level"
+								control={form.control}
+								render={({field}) => (
+									<Switch
+										label={i18n._(SHOW_CONTENT_WARNING_SWITCH_LABEL_DESCRIPTOR)}
+										value={field.value === ContentWarningLevel.CONTENT_WARNING}
+										onChange={(value) =>
+											field.onChange(value ? ContentWarningLevel.CONTENT_WARNING : ContentWarningLevel.INHERIT)
+										}
+										disabled={!canManageGuild}
+										data-flx="guild.guild-tabs.guild-moderation-tab.switch.change--2"
+									/>
+								)}
+								data-flx="guild.guild-tabs.guild-moderation-tab.controller--4"
+							/>
+							{form.watch('content_warning_level') === ContentWarningLevel.CONTENT_WARNING && (
+								<Controller
+									name="content_warning_text"
+									control={form.control}
+									render={({field}) => (
+										<Textarea
+											label={i18n._(CUSTOM_CONTENT_WARNING_TEXT_FIELD_LABEL_DESCRIPTOR)}
+											placeholder={i18n._(CUSTOM_CONTENT_WARNING_TEXT_PLACEHOLDER_DESCRIPTOR)}
+											value={field.value ?? ''}
+											onChange={(e) => field.onChange(e.target.value)}
+											maxLength={CONTENT_WARNING_TEXT_MAX_LENGTH}
+											minRows={2}
+											maxRows={4}
+											showCharacterCount={true}
+											disabled={!canManageGuild}
+											data-flx="guild.guild-tabs.guild-moderation-tab.textarea.change"
+										/>
+									)}
+									data-flx="guild.guild-tabs.guild-moderation-tab.controller--5"
+								/>
+							)}
+						</div>
 					</div>
 					{isGuildOwner && (
 						<div className={styles.section} data-flx="guild.guild-tabs.guild-moderation-tab.section--4">
@@ -454,30 +460,32 @@ const GuildModerationTab: React.FC<{guildId: string}> = observer(({guildId}) => 
 									messages.
 								</Trans>
 							</p>
-							<Controller
-								name="mfa_level"
-								control={form.control}
-								render={({field}) => {
-									const tooltipText = getMfaTooltipText();
-									const switchElement = (
-										<Switch
-											value={field.value === GuildMFALevel.ELEVATED}
-											onChange={(value: boolean) => field.onChange(value ? GuildMFALevel.ELEVATED : GuildMFALevel.NONE)}
-											disabled={isMfaDisabled}
-											label={i18n._(REQUIRE_2FA_FOR_MODERATION_SWITCH_LABEL_DESCRIPTOR)}
-											data-flx="guild.guild-tabs.guild-moderation-tab.switch.change--3"
-										/>
-									);
-									return tooltipText ? (
-										<Tooltip text={tooltipText} data-flx="guild.guild-tabs.guild-moderation-tab.tooltip">
-											{switchElement}
-										</Tooltip>
-									) : (
-										switchElement
-									);
-								}}
-								data-flx="guild.guild-tabs.guild-moderation-tab.controller--6"
-							/>
+							<div className={styles.card} data-settings-card-host="" data-flx="guild.guild-tabs.guild-moderation-tab.card--mfa">
+								<Controller
+									name="mfa_level"
+									control={form.control}
+									render={({field}) => {
+										const tooltipText = getMfaTooltipText();
+										const switchElement = (
+											<Switch
+												value={field.value === GuildMFALevel.ELEVATED}
+												onChange={(value: boolean) => field.onChange(value ? GuildMFALevel.ELEVATED : GuildMFALevel.NONE)}
+												disabled={isMfaDisabled}
+												label={i18n._(REQUIRE_2FA_FOR_MODERATION_SWITCH_LABEL_DESCRIPTOR)}
+												data-flx="guild.guild-tabs.guild-moderation-tab.switch.change--3"
+											/>
+										);
+										return tooltipText ? (
+											<Tooltip text={tooltipText} data-flx="guild.guild-tabs.guild-moderation-tab.tooltip">
+												{switchElement}
+											</Tooltip>
+										) : (
+											switchElement
+										);
+									}}
+									data-flx="guild.guild-tabs.guild-moderation-tab.controller--6"
+								/>
+							</div>
 						</div>
 					)}
 				</div>

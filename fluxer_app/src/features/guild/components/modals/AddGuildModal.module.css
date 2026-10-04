@@ -15,67 +15,92 @@
 .landingContainer {
 	display: flex;
 	flex-direction: column;
-	gap: 1.5rem;
+	gap: 0.75rem;
 }
 
+/* Delight: the three options are rows in one grouped card, hairlines between them inset to the text. */
 .actionButtonsGroup {
 	display: flex;
 	flex-direction: column;
-	gap: 0.75rem;
-}
-
-.actionButtons {
-	display: flex;
-	width: 100%;
-	flex-direction: row;
-	gap: 0.75rem;
-}
-
-.actionButtonsGroup > .actionButton {
-	flex-direction: row;
-	padding: 1rem;
+	overflow: hidden;
+	border: 0.0625rem solid var(--background-modifier-accent);
+	border-radius: 0.625rem;
+	background: var(--background-secondary-alt);
 }
 
 .actionButton {
+	position: relative;
 	display: flex;
-	flex: 1;
-	flex-direction: column;
 	align-items: center;
-	justify-content: center;
 	gap: 0.75rem;
-	padding: 1.5rem 1rem;
-	border: 0.0625rem solid var(--background-modifier-accent);
-	border-radius: 0.5rem;
-	background: var(--background-secondary);
+	width: 100%;
+	min-height: 3.25rem;
+	padding: 0.5rem 0.75rem;
+	border: 0;
+	background: transparent;
 	color: var(--text-primary);
+	text-align: left;
 	cursor: pointer;
+	transition: background-color 120ms ease;
+}
+
+.actionButton + .actionButton::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 3.5rem;
+	height: 0.0625rem;
+	background: var(--background-modifier-accent);
 }
 
 :global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
 	.actionButton:hover {
-	background: var(--background-secondary-alt);
+	background: var(--background-modifier-hover);
 }
 
 .actionIcon {
 	display: flex;
+	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: 3rem;
-	height: 3rem;
-	border-radius: 50%;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 0.5rem;
+	background: var(--background-modifier-selected);
+	color: var(--text-primary);
+}
+
+.actionButton:first-child .actionIcon {
 	background: var(--brand-primary);
 	color: var(--brand-primary-fill);
 }
 
-.actionIcon > svg {
-	width: 1.5rem;
-	height: 1.5rem;
+.actionText {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: 0.0625rem;
+	min-width: 0;
 }
 
 .actionLabel {
 	font-weight: 600;
 	font-size: 0.875rem;
-	text-align: center;
+	line-height: 1.125rem;
+}
+
+.actionHint {
+	color: var(--text-tertiary);
+	font-size: 0.75rem;
+	line-height: 1rem;
+}
+
+.actionChevron {
+	flex: none;
+	width: 0.875rem;
+	height: 0.875rem;
+	color: var(--text-tertiary);
 }
 
 .formContainer {
@@ -112,8 +137,8 @@
 }
 
 .iconImage {
-	height: 5rem;
-	width: 5rem;
+	height: 4rem;
+	width: 4rem;
 	flex-shrink: 0;
 	border-radius: 50%;
 	background-position: center;
@@ -122,8 +147,8 @@
 
 .iconPlaceholder {
 	display: flex;
-	height: 5rem;
-	width: 5rem;
+	height: 4rem;
+	width: 4rem;
 	flex-shrink: 0;
 	align-items: center;
 	justify-content: center;
@@ -184,8 +209,8 @@
 }
 
 .iconHint {
-	color: var(--text-primary-muted);
-	font-size: 0.875rem;
+	color: var(--text-tertiary);
+	font-size: 0.75rem;
 }
 
 .iconError {
@@ -215,8 +240,8 @@
 	gap: 0.5rem;
 	padding: 0.75rem;
 	border: 0.0625rem solid var(--background-modifier-accent);
-	border-radius: 0.5rem;
-	background: var(--background-secondary);
+	border-radius: 0.625rem;
+	background: var(--background-secondary-alt);
 }
 
 .templateInfo {
@@ -226,11 +251,9 @@
 }
 
 .templateLabel {
-	font-size: 0.6875rem;
+	font-size: 0.75rem;
 	font-weight: 600;
-	text-transform: uppercase;
-	color: var(--text-primary-muted);
-	letter-spacing: 0.02em;
+	color: var(--text-tertiary);
 }
 
 .templateName {

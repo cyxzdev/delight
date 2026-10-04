@@ -82,6 +82,7 @@ export const ProfileCardBanner: React.FC<ProfileCardBannerProps> = observer(
 					role="group"
 					className={styles.bannerWrapper}
 					style={bannerWrapperStyle}
+					data-profile-effect-banner=""
 					onContextMenu={onBannerContextMenu}
 					data-flx="user.profile.profile-card.profile-card-banner.banner-wrapper.banner-context-menu"
 				>
@@ -132,6 +133,7 @@ export const ProfileCardBanner: React.FC<ProfileCardBannerProps> = observer(
 						onClick={onAvatarClick}
 						onContextMenu={onAvatarContextMenu}
 						className={styles.avatarButton}
+						data-profile-effect-avatar=""
 						data-flx="user.profile.profile-card.profile-card-banner.avatar-button.avatar-click"
 					>
 						<StatusAwareAvatar
