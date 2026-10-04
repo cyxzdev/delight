@@ -610,8 +610,15 @@
 	padding-top: 0;
 }
 
+/* Delight: on the web too, the panel right of the server list gets a rounded top-left corner with a hairline. */
 :global(html:not(.platform-native)) .outlineFrame {
-	border-top: none;
+	border-top: 0.0625rem solid var(--user-area-divider-color);
+	--outline-radius: var(--outline-frame-radius-native);
+}
+
+:global(html:not(.platform-native)) .outlineFrame.outlineFrameFullscreen {
+	border: none;
+	--outline-radius: 0px;
 }
 
 :global(html.platform-native) .outlineFrame {
