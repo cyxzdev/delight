@@ -16,8 +16,9 @@
 	--profile-modal-content-radius: 0.5rem;
 	border: none;
 	border-radius: var(--profile-modal-radius);
-	width: min(37.5rem, calc(100vw - 3rem));
-	height: min(38rem, calc(100svh - 4rem));
+	/* Delight: Discord-style two-column profile: the profile card on the left, tabs on the right. */
+	width: min(56.25rem, calc(100vw - 3rem));
+	height: min(40rem, calc(100svh - 4rem));
 	overflow: hidden;
 }
 
@@ -216,7 +217,9 @@
 .bannerContainer {
 	width: 100%;
 	height: auto;
-	aspect-ratio: 5 / 1;
+	/* Matches PROFILE_MODAL_BANNER_AVATAR_CUTOUT (370 × 120) so the avatar cutout stays round. */
+	aspect-ratio: 370 / 120;
+	flex-shrink: 0;
 	overflow: hidden;
 	position: relative;
 	border-top-left-radius: var(--profile-modal-inner-radius);
@@ -310,14 +313,118 @@
 	min-height: 0;
 	min-width: 0;
 	width: 100%;
-	flex-direction: column;
-	overflow: hidden;
+	flex-direction: row;
 	border-radius: var(--profile-modal-radius);
-	clip-path: inset(0 round var(--profile-modal-radius));
 	border: var(--profile-modal-border-width) solid var(--background-modifier-accent);
 	box-sizing: border-box;
-	background-color: var(--background-primary);
+	background-color: var(--background-secondary);
 	position: relative;
+}
+
+/* Left column: holds the profile card. Positioned so decorations (profile frames) can attach to it. */
+.profileCardColumn {
+	position: relative;
+	display: flex;
+	flex: 0 0 auto;
+	width: calc(23.125rem + 2.5rem);
+	min-height: 0;
+	padding: 1.25rem;
+	box-sizing: border-box;
+}
+
+/* The card itself: popout-like surface, banner on top, hosts the profile effect. */
+.profileCard {
+	display: flex;
+	flex-direction: column;
+	width: 23.125rem;
+	min-height: 0;
+	flex: 1 1 auto;
+	border-radius: var(--profile-modal-radius);
+	border: var(--profile-modal-border-width) solid var(--background-modifier-accent);
+	background-color: var(--background-primary);
+	box-sizing: border-box;
+}
+
+.profileCard .headerContainer {
+	flex-shrink: 0;
+}
+
+.profileCardInfo {
+	flex-shrink: 0;
+	padding: 0.75rem 1rem 0.75rem;
+}
+
+.profileCardInfo .userInfo {
+	padding-left: 0;
+}
+
+.profileCardScroller {
+	flex: 1 1 auto;
+	min-height: 0;
+	border-bottom-left-radius: var(--profile-modal-inner-radius);
+	border-bottom-right-radius: var(--profile-modal-inner-radius);
+}
+
+.profileCardScroller .profileContentHeader {
+	border-top: 0.0625rem solid var(--background-modifier-accent);
+	padding-top: 0.75rem;
+}
+
+/* Right column: tabs and their lists on the modal's own surface. */
+.sidePanel {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+	padding: 1.25rem 1.25rem 0 0.25rem;
+}
+
+.sidePanelScroller {
+	flex: 1 1 auto;
+	min-height: 0;
+	padding-bottom: 1rem;
+}
+
+.activityPane {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.activityEmpty {
+	display: none;
+}
+
+.activityList:empty {
+	display: none;
+}
+
+.activityList:empty + .activityEmpty {
+	display: flex;
+}
+
+@media (max-width: 47.5rem) {
+	.modalContainer {
+		flex-direction: column;
+		overflow-y: auto;
+	}
+
+	.profileCardColumn {
+		width: 100%;
+		height: 36rem;
+		flex-shrink: 0;
+	}
+
+	.profileCard {
+		width: 100%;
+	}
+
+	.sidePanel {
+		flex: 0 0 auto;
+		min-height: 20rem;
+		padding: 0 1.25rem;
+	}
 }
 
 .actionButtons {

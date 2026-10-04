@@ -2,6 +2,7 @@
 
 import {
 	between,
+	countFor,
 	EffectSvg,
 	FadeIn,
 	PopIn,
@@ -242,8 +243,18 @@ function useLayout(geometry: ProfileEffectGeometry) {
 			[w * 0.42, h - 12 * s, 4.5],
 			[w - 52 * s, h - 20 * s, 6.5],
 			[86 * s, 10 * s, 4],
+			// Big cards (profile modal, mobile sheet) get a few more along the long edges.
+			...(w + h > 900
+				? [
+						[10 * s, h * 0.42, 4],
+						[w - 12 * s, h * 0.36, 4.5],
+						[w * 0.26, h - 10 * s, 5],
+						[w * 0.66, h - 14 * s, 4],
+						[w * 0.3, 9 * s, 3.5],
+					]
+				: []),
 		].map(([x, y, r]) => ({x, y, r: r * s, dur: between(rand, 2000, 3600), delay: between(rand, 0, 2200)}));
-		const dust = Array.from({length: 60}, () => {
+		const dust = Array.from({length: countFor(w, h, 60)}, () => {
 			const edge = rand();
 			const x = edge < 0.5 ? (rand() < 0.5 ? between(rand, 0, w * 0.14) : w - between(rand, 0, w * 0.14)) : between(rand, 0, w);
 			const y = edge < 0.5 ? between(rand, 0, h) : rand() < 0.6 ? between(rand, 0, bb) : between(rand, h - 40 * s, h);

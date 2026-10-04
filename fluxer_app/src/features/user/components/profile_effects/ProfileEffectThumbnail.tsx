@@ -29,7 +29,7 @@ export const ProfileEffectThumbnail: React.FC<ProfileEffectThumbnailProps> = ({e
 	return (
 		<div className={styles.thumbFrame} data-flx="user.profile-effect-thumbnail">
 			<div className={clsx(styles.thumbCard, profileEffectHostClassName)}>
-				{effect && <ProfileEffect key={`${effect}-${animate}`} effect={effect} radius={14} still={!animate} />}
+				{effect && <ProfileEffect key={`${effect}-${animate}`} effect={effect} radius={14} still={!animate} fadeOnHover={false} />}
 				<div className={styles.thumbBanner} {...bannerAttr} />
 				<div className={styles.thumbAvatar} {...avatarAttr}>
 					{avatarUrl && <img src={avatarUrl} alt="" draggable={false} />}

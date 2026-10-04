@@ -49,6 +49,8 @@ import {
 	profileEffectHostClassName,
 } from '@app/features/user/components/profile_effects/ProfileEffect';
 import {getProfileEffect} from '@app/features/user/utils/ProfileEffects';
+import {ProfileFrame} from '@app/features/user/components/profile_frames/ProfileFrame';
+import {getProfileFrame} from '@app/features/user/utils/ProfileFrames';
 import {getContrastingNotchColor} from '@app/features/user/components/modals/UserProfileUtils';
 import {UserSettingsModal} from '@app/features/user/components/modals/UserSettingsModal';
 import {getMutualItemsDescriptor} from '@app/features/user/components/modals/user_profile_modal/MutualItemsDescriptors';
@@ -528,6 +530,7 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 										radius={16}
 										data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.profile-effect"
 									/>
+									<ProfileFrame frame={getProfileFrame(user)} contain />
 									<div
 										ref={bannerHoverRef}
 										className={styles.bannerContainer}

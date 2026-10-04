@@ -20,6 +20,8 @@ interface ProfileEffectProps {
 	radius?: number;
 	/** Draw a still frame instead of animating (as under reduced motion). */
 	still?: boolean;
+	/** Fade the effect down while the pointer is over the card, so its content is easy to read and click. */
+	fadeOnHover?: boolean;
 }
 
 function sameGeometry(a: ProfileEffectGeometry | null, b: ProfileEffectGeometry): boolean {
@@ -68,7 +70,7 @@ function measure(card: HTMLElement): ProfileEffectGeometry {
  * `position: relative` and `isolation: isolate` (see `.host` in ProfileEffect.module.css, exported as
  * `profileEffectHostClassName`).
  */
-export const ProfileEffect: React.FC<ProfileEffectProps> = observer(({effect, radius = 6, still = false}) => {
+export const ProfileEffect: React.FC<ProfileEffectProps> = observer(({effect, radius = 6, still = false, fadeOnHover = true}) => {
 	const backRef = useRef<HTMLDivElement>(null);
 	const [geometry, setGeometry] = useState<ProfileEffectGeometry | null>(null);
 	const idPrefix = `pfx${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -101,7 +103,7 @@ export const ProfileEffect: React.FC<ProfileEffectProps> = observer(({effect, ra
 
 	if (!effect) return null;
 	const ready = geometry != null && geometry.width > 0 && geometry.height > 0;
-	const layerClass = clsx(styles.layer, reducedMotion && styles.reducedMotion);
+	const layerClass = clsx(styles.layer, reducedMotion && styles.reducedMotion, fadeOnHover && styles.fadeOnHover);
 	const {Layer} = getProfileEffectDefinition(effect);
 	const staticAttr = reducedMotion ? '' : undefined;
 	return (

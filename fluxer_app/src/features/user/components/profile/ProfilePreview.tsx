@@ -29,6 +29,8 @@ import type {CustomStatus} from '@app/features/user/state/CustomStatus';
 import * as NicknameUtils from '@app/features/user/utils/NicknameUtils';
 import type {ProfilePreviewOverrides} from '@app/features/user/utils/ProfileDisplayUtils';
 import {getProfileEffect, type ProfileEffectId} from '@app/features/user/utils/ProfileEffects';
+import {getProfileFrame} from '@app/features/user/utils/ProfileFrames';
+import type {ProfileFrameId} from '@app/features/user/utils/ProfileFrameIds';
 import {type BadgeSettings, createMockProfile} from '@app/features/user/utils/ProfileUtils';
 import type {UserProfile} from '@fluxer/schema/src/domains/user/UserResponseSchemas';
 import {msg} from '@lingui/core/macro';
@@ -71,6 +73,8 @@ interface ProfilePreviewProps {
 	previewCustomStatus?: CustomStatus | null;
 	/** Show this profile effect instead of the user's own (null = none). */
 	previewEffect?: ProfileEffectId | null;
+	/** Show this profile frame instead of the user's own (null = no frame). */
+	previewFrame?: ProfileFrameId | null;
 }
 
 export const ProfilePreview: React.FC<ProfilePreviewProps> = observer(
@@ -97,6 +101,7 @@ export const ProfilePreview: React.FC<ProfilePreviewProps> = observer(
 		showPreviewLabel = true,
 		previewCustomStatus,
 		previewEffect,
+		previewFrame,
 	}) => {
 		const {i18n} = useLingui();
 		const previewOverrides = useMemo<ProfilePreviewOverrides>(
@@ -243,6 +248,7 @@ export const ProfilePreview: React.FC<ProfilePreviewProps> = observer(
 						borderColor={borderColor}
 						showPreviewLabel={showPreviewLabel}
 						effect={previewEffect !== undefined ? previewEffect : getProfileEffect(user)}
+						frame={previewFrame !== undefined ? previewFrame : getProfileFrame(user)}
 						data-flx="user.profile.profile-preview.profile-card-layout"
 					>
 						<ProfileCardBanner

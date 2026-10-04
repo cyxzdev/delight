@@ -4,6 +4,7 @@ import {
 	arcPath,
 	bannerBottomOf,
 	between,
+	countFor,
 	EffectSvg,
 	FadeIn,
 	PopIn,
@@ -107,8 +108,9 @@ function useLayout(geometry: ProfileEffectGeometry) {
 		const sunR = Math.min(36 * s, bannerBottom * 0.48);
 		const sunCx = w * 0.74;
 		const sunCy = bannerBottom + sunR * 0.18;
-		const stars = Array.from({length: 7}, (_, i) => ({
-			x: i < 3 ? between(rand, w * 0.3, w * 0.55) : between(rand, w * 0.55, w * 0.95),
+		const starCount = countFor(w, h, 7);
+		const stars = Array.from({length: starCount}, (_, i) => ({
+			x: i < starCount * 0.43 ? between(rand, w * 0.3, w * 0.55) : between(rand, w * 0.55, w * 0.95),
 			y: between(rand, 14 * s, bannerBottom * 0.55),
 			k: between(rand, 0.5, 1) * s,
 			dur: between(rand, 1800, 3200),

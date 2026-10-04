@@ -50,11 +50,9 @@ import userProfileModalStyles from '@app/features/user/components/modals/UserPro
 import {UserSettingsModal} from '@app/features/user/components/modals/UserSettingsModal';
 import {ProfileModalContent} from '@app/features/user/components/modals/user_profile_modal/ProfileModalContent';
 import {UserProfileLoadingSkeleton} from '@app/features/user/components/profile/UserProfileLoadingSkeleton';
-import {
-	ProfileEffect,
-	profileEffectHostClassName,
-} from '@app/features/user/components/profile_effects/ProfileEffect';
 import {getProfileEffect} from '@app/features/user/utils/ProfileEffects';
+import {profileFrameModalRootClassName} from '@app/features/user/components/profile_frames/ProfileFrame';
+import {getProfileFrame} from '@app/features/user/utils/ProfileFrames';
 import {useUserProfileSurfaceState} from '@app/features/user/hooks/useUserProfileSurfaceState';
 import type {Profile} from '@app/features/user/models/Profile';
 import {User} from '@app/features/user/models/User';
@@ -832,11 +830,13 @@ export const UserProfileModal: UserProfileModalComponent = observer(
 				? previewOverrides.previewAccentColor
 				: borderProfile?.accent_color;
 		const borderColor = getUserAccentColor(displayUser, borderAccentColor);
+		// Delight: the profile frame hugs the left profile card; the modal lets it spill out (see ProfileModalContent).
+		const profileFrame = showProfileSkeleton ? null : getProfileFrame(displayUser);
 		return (
 			<Modal.Root
 				size="medium"
 				initialFocusRef={autoFocusNote ? noteRef : undefined}
-				className={userProfileModalStyles.modalRoot}
+				className={clsx(userProfileModalStyles.modalRoot, profileFrame && profileFrameModalRootClassName)}
 				data-flx="user.user-profile-modal.modal-root"
 			>
 				<Modal.ScreenReaderLabel
@@ -844,17 +844,10 @@ export const UserProfileModal: UserProfileModalComponent = observer(
 					data-flx="user.user-profile-modal.modal-screen-reader-label"
 				/>
 				<div
-					className={clsx(userProfileModalStyles.modalContainer, profileEffectHostClassName)}
+					className={userProfileModalStyles.modalContainer}
 					style={{'--profile-accent-color': borderColor} as React.CSSProperties}
 					data-flx="user.user-profile-modal.div"
 				>
-					{!showProfileSkeleton && (
-						<ProfileEffect
-							effect={getProfileEffect(displayUser)}
-							radius={8}
-							data-flx="user.user-profile-modal.profile-effect"
-						/>
-					)}
 					{showProfileSkeleton ? (
 						<UserProfileLoadingSkeleton
 							variant="modal"
@@ -871,6 +864,8 @@ export const UserProfileModal: UserProfileModalComponent = observer(
 							renderActionButtons={renderActionButtons}
 							showProfileDataWarning={shouldShowProfileDataWarning}
 							previewOverrides={previewOverrides}
+							effect={getProfileEffect(displayUser)}
+							frame={profileFrame}
 							data-flx="user.user-profile-modal.profile-modal-content"
 						/>
 					)}

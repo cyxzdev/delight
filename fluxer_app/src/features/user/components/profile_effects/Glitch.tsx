@@ -4,6 +4,7 @@ import {
 	arcPath,
 	bannerBottomOf,
 	between,
+	countFor,
 	EffectSvg,
 	type ProfileEffectGeometry,
 	type ProfileEffectLayer,
@@ -120,7 +121,7 @@ function useLayout(geometry: ProfileEffectGeometry) {
 			});
 		const shardsL = shards(8);
 		const shardsR = shards(6);
-		const tears = Array.from({length: 8}, (_, i) => {
+		const tears = Array.from({length: countFor(w, h, 8)}, (_, i) => {
 			const left = i % 2 === 0;
 			const width = between(rand, 18, 64) * s;
 			return {

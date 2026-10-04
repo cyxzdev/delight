@@ -1,0 +1,146 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* A profile frame: illustrated pieces positioned around the card that contains it (the top band rises above the card's
+   top edge, the bottom piece may dip below it). Never takes clicks. */
+.root {
+	position: absolute;
+	inset: 0;
+	z-index: 7;
+	pointer-events: none;
+	user-select: none;
+	animation: frame-in 220ms ease-out both;
+}
+
+@keyframes frame-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+.piece {
+	position: absolute;
+	display: block;
+	max-width: none;
+	pointer-events: none;
+	-webkit-user-drag: none;
+}
+
+.mirrored {
+	transform: scaleX(-1);
+}
+
+.svg {
+	position: absolute;
+	left: 0;
+	top: 0;
+	overflow: visible;
+	pointer-events: none;
+}
+
+.screen {
+	mix-blend-mode: screen;
+}
+
+/* ---------- motion (transform + opacity only); [data-still] shows the composed frame ---------- */
+
+.twinkle,
+.flicker,
+.pulse {
+	transform-box: fill-box;
+	transform-origin: center;
+}
+
+.twinkle {
+	animation: twinkle var(--dur, 2600ms) ease-in-out var(--delay, 0ms) infinite;
+}
+
+@keyframes twinkle {
+	0%,
+	100% {
+		transform: scale(0.5) rotate(0deg);
+		opacity: 0.3;
+	}
+	50% {
+		transform: scale(1) rotate(12deg);
+		opacity: 1;
+	}
+}
+
+.flicker {
+	transform-origin: 50% 80%;
+	animation: flicker var(--dur, 1700ms) ease-in-out var(--delay, 0ms) infinite alternate;
+}
+
+@keyframes flicker {
+	0% {
+		opacity: 0.55;
+		transform: scale(0.92, 0.94);
+	}
+	27% {
+		opacity: 0.9;
+		transform: scale(1.03, 1.1);
+	}
+	51% {
+		opacity: 0.62;
+		transform: scale(0.96, 0.97);
+	}
+	78% {
+		opacity: 1;
+		transform: scale(1.05, 1.12);
+	}
+	100% {
+		opacity: 0.72;
+		transform: scale(0.98, 1);
+	}
+}
+
+.pulse {
+	animation: pulse var(--dur, 3600ms) ease-in-out var(--delay, 0ms) infinite;
+}
+
+@keyframes pulse {
+	0%,
+	100% {
+		transform: scale(0.96);
+		opacity: 0.55;
+	}
+	50% {
+		transform: scale(1.06);
+		opacity: 1;
+	}
+}
+
+.root[data-still] .twinkle,
+.root[data-still] .flicker,
+.root[data-still] .pulse {
+	animation: none;
+}
+
+.root[data-still] {
+	animation: none;
+}
+
+/* ---------- hosts ---------- */
+
+/* The profile modal clips its surface; with a frame the surface lets the frame spill out (the inner container still
+   clips the content to the rounded card). */
+.modalRootFramed.modalRootFramed.modalRootFramed {
+	overflow: visible;
+}
+
+/* A card wrapper padded for its frame's spill (ProfileCardLayout). The floating layer around it would otherwise draw
+   its shadow around the padding too; move the shadow onto the card. */
+.framePad {
+	box-sizing: border-box;
+}
+
+:global([data-flx='ui.popover.popouts.popout-item.popout']):has(> * > .framePad, > .framePad, > * > * > .framePad) {
+	box-shadow: none;
+}
+
+.framePad > :global([data-flx='user.profile.profile-card.profile-card-layout.profile-card']) {
+	box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.24);
+}

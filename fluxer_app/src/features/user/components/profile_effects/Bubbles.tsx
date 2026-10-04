@@ -5,6 +5,7 @@ import {
 	arcPath,
 	bannerBottomOf,
 	between,
+	countFor,
 	Drifter,
 	EffectSvg,
 	FadeIn,
@@ -119,7 +120,8 @@ function useLayout(geometry: ProfileEffectGeometry) {
 	return useMemo(() => {
 		const s = scaleFor(w);
 		const rand = seeded(0xb0bb1e);
-		const risers = Array.from({length: 13}, (_, i) => {
+		const riserCount = countFor(w, h, 13);
+		const risers = Array.from({length: riserCount}, (_, i) => {
 			const left = i % 2 === 0;
 			const x = left ? between(rand, 6, w * 0.17) : between(rand, w * 0.83, w - 6);
 			const r = (i % 4 === 0 ? between(rand, 5, 7.5) : between(rand, 1.8, 4.2)) * s;
@@ -133,7 +135,7 @@ function useLayout(geometry: ProfileEffectGeometry) {
 				r,
 				rise,
 				dur: between(rand, 4200, 7200) * (r > 4 ? 1.15 : 1),
-				delay: 200 + i * 360 + between(rand, 0, 500),
+				delay: 200 + i * (4680 / riserCount) + between(rand, 0, 500),
 				sway: between(rand, 3, 7),
 				sy: -between(rand, 0.15, 0.8) * rise,
 				hue: (i % 3) as 0 | 1 | 2,

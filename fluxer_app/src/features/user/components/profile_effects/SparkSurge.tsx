@@ -180,8 +180,10 @@ function HalftoneDefs({idPrefix}: {idPrefix: string}) {
 
 function FrontLayer({geometry, radius, idPrefix}: Omit<SparkSurgeLayerProps, 'layer'>) {
 	const {width: w, height: h, avatar} = geometry;
-	const s = Math.min(1.35, Math.max(0.85, w / 300));
+	const s = Math.min(1.6, Math.max(0.85, w / 300));
 	const bannerBottom = geometry.bannerBottom ?? Math.round(h * 0.2);
+	// Big cards (the profile modal, the mobile sheet) get extra sparks and accents so the frame isn't sparse.
+	const wide = w + h > 900;
 	const i = 1.5;
 	const r = Math.max(0, radius - i);
 	const streakStart = avatar ? avatar.cx + avatar.r + 10 : 14;
@@ -303,9 +305,25 @@ function FrontLayer({geometry, radius, idPrefix}: Omit<SparkSurgeLayerProps, 'la
 				/>
 
 				{/* Bottom corner bolts. */}
-				<Bolt x={w - 24} y={h - 34} rotate={22} scale={s * 0.8} fill={YELLOW} delay={380} />
-				<Bolt x={w - 12} y={h - 22} rotate={-8} scale={s * 0.8} fill={PINK} small delay={460} />
-				<Bolt x={6} y={h - 26} rotate={-24} scale={s * 0.9} fill={CYAN} small delay={520} />
+				<Bolt x={w - 24 * s} y={h - 34 * s} rotate={22} scale={s * 0.8} fill={YELLOW} delay={380} />
+				<Bolt x={w - 12 * s} y={h - 22 * s} rotate={-8} scale={s * 0.8} fill={PINK} small delay={460} />
+				<Bolt x={6} y={h - 26 * s} rotate={-24} scale={s * 0.9} fill={CYAN} small delay={520} />
+				{wide && (
+					<>
+						{/* A big card gets a bolt pair at the left edge's middle and a zigzag on the bottom edge too. */}
+						<Bolt x={4} y={h * 0.5} rotate={-16} scale={s * 0.7} fill={YELLOW} small delay={560} />
+						<path
+							className={styles.drawIn}
+							style={{animationDelay: '320ms'}}
+							d={zigzag(w * 0.42, h - i - 0.5, w * 0.42 + 40, h - i - 0.5, 3, 5)}
+							stroke={YELLOW}
+							strokeWidth={1.5}
+							fill="none"
+							strokeLinejoin="miter"
+							pathLength={1}
+						/>
+					</>
+				)}
 			</g>
 
 			{/* Sparks pop around the top corners and edge. */}
@@ -316,6 +334,16 @@ function FrontLayer({geometry, radius, idPrefix}: Omit<SparkSurgeLayerProps, 'la
 			<Spark x={w * 0.5} y={7} size={0.6} color={PINK} delay={2300} period={3600} />
 			<Spark x={w - 12} y={h - 56} size={0.65} color={CYAN} shape="diamond" delay={1500} period={2900} />
 			<Spark x={16} y={h - 38} size={0.6} color={YELLOW} delay={2700} period={3400} />
+			{wide && (
+				<>
+					<Spark x={w * 0.3} y={9} size={0.7} color={CYAN} shape="diamond" delay={3100} period={3800} />
+					<Spark x={w * 0.72} y={8} size={0.75} color={YELLOW} delay={1100} period={3200} />
+					<Spark x={12} y={h * 0.62} size={0.7} color={PINK} delay={2000} period={3000} />
+					<Spark x={w - 13} y={h * 0.7} size={0.8} color={YELLOW} delay={600} period={3500} />
+					<Spark x={w * 0.25} y={h - 11} size={0.65} color={CYAN} delay={3400} period={2900} />
+					<Spark x={w * 0.66} y={h - 12} size={0.7} color={PINK} shape="diamond" delay={2400} period={3300} />
+				</>
+			)}
 
 			{avatar && <AvatarFront avatar={avatar} />}
 		</svg>
@@ -357,9 +385,14 @@ function AvatarFront({avatar}: {avatar: NonNullable<SparkSurgeGeometry['avatar']
 	);
 }
 
+/** A filled bolt from points in popout px, placed at (x, y), scaled by s and mirrored when dir is -1. */
+function bigBolt(x: number, y: number, s: number, dir: 1 | -1, pts: ReadonlyArray<readonly [number, number]>): string {
+	return `M${pts.map(([px, py]) => `${(x + dir * px * s).toFixed(1)},${(y + py * s).toFixed(1)}`).join(' L')} Z`;
+}
+
 function BackLayer({geometry, radius, idPrefix}: Omit<SparkSurgeLayerProps, 'layer'>) {
 	const {width: w, height: h, avatar} = geometry;
-	const s = Math.min(1.35, Math.max(0.85, w / 300));
+	const s = Math.min(1.6, Math.max(0.85, w / 300));
 	return (
 		<svg className={styles.svg} width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
 			<defs>
@@ -377,16 +410,24 @@ function BackLayer({geometry, radius, idPrefix}: Omit<SparkSurgeLayerProps, 'lay
 					<rect x={w - 90 * s} y={h - 80 * s} width={170 * s} height={160 * s} fill={`url(#${idPrefix}-dots-fine)`} />
 				</g>
 				{/* Big translucent bolts behind the content, like light leaking through the card. */}
+				{/* Drawn in popout units and scaled uniformly, so they keep their shape on wide cards. */}
 				<path
-					d={`M${w * 0.05},${h - 18} L${w * 0.22},${h - 62 * s} L${w * 0.2},${h - 38 * s} L${w * 0.36},${h - 86 * s} L${w * 0.3},${h - 30 * s} L${w * 0.32},${h - 46 * s} Z`}
+					d={bigBolt(0, h, s, 1, [[15, -18], [66, -62], [60, -38], [108, -86], [90, -30], [96, -46]])}
 					fill={VIOLET}
 					opacity={0.16}
 				/>
 				<path
-					d={`M${w - 4},${h * 0.32} L${w * 0.8},${h * 0.44} L${w * 0.87},${h * 0.44} L${w * 0.74},${h * 0.56} L${w - 4},${h * 0.4} L${w * 0.92},${h * 0.4} Z`}
+					d={bigBolt(w, h * 0.32, s, -1, [[4, 0], [60, 47], [39, 47], [78, 94], [4, 31], [24, 31]])}
 					fill={PINK}
 					opacity={0.08}
 				/>
+				{w + h > 900 && (
+					<path
+						d={bigBolt(w * 0.5, h - 6, s, -1, [[0, 0], [-40, -52], [-26, -50], [-66, -104], [-12, -40], [-26, -42]])}
+						fill={CYAN}
+						opacity={0.05}
+					/>
+				)}
 			</g>
 			{avatar && <AvatarBack avatar={avatar} />}
 		</svg>

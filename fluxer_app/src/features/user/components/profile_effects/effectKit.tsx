@@ -49,9 +49,22 @@ export function between(rand: () => number, min: number, max: number): number {
 	return min + rand() * (max - min);
 }
 
-/** Scale factor for decorations: 1 on a 300px-wide card. */
+/** Scale factor for decorations: 1 on a 300px-wide card, growing to 1.6 on the ~600px profile modal. */
 export function scaleFor(width: number): number {
-	return Math.min(1.35, Math.max(0.7, width / 300));
+	return Math.min(1.6, Math.max(0.7, width / 300));
+}
+
+/**
+ * How many times more edge-hugging particles/ornaments a card wants than the 300×400 popout: by perimeter, so a
+ * bigger card isn't sparser. Never below 1 (thumbnails keep the popout's set) and capped for perf.
+ */
+export function densityFor(geometry: {width: number; height: number}, cap = 2): number {
+	return Math.min(cap, Math.max(1, (geometry.width + geometry.height) / 700));
+}
+
+/** `base` scaled by the density of a w×h card, rounded. */
+export function countFor(w: number, h: number, base: number, cap = 2): number {
+	return Math.round(base * densityFor({width: w, height: h}, cap));
 }
 
 export function bannerBottomOf(geometry: ProfileEffectGeometry): number {

@@ -29,20 +29,20 @@ import {
 	getMutualCommunityDisplayItems,
 	getMutualGroupChannels,
 } from '@app/features/user/components/modals/user_profile_modal/MutualItemsUtils';
-import {ProfileContent} from '@app/features/user/components/modals/user_profile_modal/ProfileContent';
 import {
 	isContextMenuOpenForTarget,
 	type ProfileBodyProps,
 	type ProfileTab,
 	useContextMenuTarget,
 } from '@app/features/user/components/modals/user_profile_modal/UserProfileModalShared';
-import {UserInfo} from '@app/features/user/components/modals/user_profile_modal/UserProfileModalUserInfo';
+import {VoiceActivitySection} from '@app/features/user/components/profile/VoiceActivitySection';
 import {User} from '@app/features/user/models/User';
 import {ME} from '@fluxer/constants/src/AppConstants';
 import type {UserPartial} from '@fluxer/schema/src/domains/user/UserResponseSchemas';
 import {msg} from '@lingui/core/macro';
 import {Trans, useLingui} from '@lingui/react/macro';
 import {UsersThreeIcon} from '@phosphor-icons/react';
+import {clsx} from 'clsx';
 import {observer} from 'mobx-react-lite';
 import type React from 'react';
 import {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
@@ -51,9 +51,9 @@ const MUTUAL_FRIENDS_DESCRIPTOR = msg({
 	message: 'Mutual friends ({count})',
 	comment: 'Short label in the user profile modal. Keep it concise. Preserve {count}; it is inserted by code.',
 });
-const OVERVIEW_DESCRIPTOR = msg({
-	message: 'Overview',
-	comment: 'Short label in the user profile modal. Keep it concise.',
+const ACTIVITY_DESCRIPTOR = msg({
+	message: 'Activity',
+	comment: 'Tab label in the user profile modal for what the user is doing right now. Keep it concise.',
 });
 const MIN_TABS_SCALE = 0.7;
 const TABS_SCALE_EPSILON = 0.001;
@@ -83,10 +83,12 @@ function measureUnwrappedTablistWidth(tablist: HTMLElement): number {
 }
 
 export const ProfileBody: React.FC<ProfileBodyProps> = observer(
-	({profile, user, userNote, autoFocusNote, noteRef, showProfileDataWarning}) => {
+	({profile, user}) => {
 		const {i18n} = useLingui();
-		const showMutualFriendsTab = !user.bot;
-		const [activeTab, setActiveTab] = useState<ProfileTab>('overview');
+		const isCurrentUser = user.id === Authentication.currentUserId;
+		const showMutualFriendsTab = !user.bot && !isCurrentUser;
+		const showMutualCommunitiesTab = !isCurrentUser;
+		const [activeTab, setActiveTab] = useState<ProfileTab>('activity');
 		const handleTabChange = useCallback((tab: ProfileTab) => {
 			setActiveTab(tab);
 		}, []);
@@ -98,19 +100,19 @@ export const ProfileBody: React.FC<ProfileBodyProps> = observer(
 		const mutualGroupsCount = mutualGroups.length;
 		const mutualCommunitiesGroupsCount = mutualGroupsCount + mutualCommunitiesCount;
 		const contextMenuTarget = useContextMenuTarget();
-		const isCurrentUser = user.id === Authentication.currentUserId;
 		const isContextMenuOpenFor = useCallback(
 			(target: EventTarget | null) => isContextMenuOpenForTarget(contextMenuTarget, target),
 			[contextMenuTarget],
 		);
 		const tabs = useMemo(() => {
-			const items: Array<{key: ProfileTab; label: string}> = [{key: 'overview', label: i18n._(OVERVIEW_DESCRIPTOR)}];
+			const items: Array<{key: ProfileTab; label: string}> = [{key: 'activity', label: i18n._(ACTIVITY_DESCRIPTOR)}];
 			if (showMutualFriendsTab) {
 				items.push({
 					key: 'mutual_friends',
 					label: i18n._(MUTUAL_FRIENDS_DESCRIPTOR, {count: mutualFriends.length}),
 				});
 			}
+			if (!showMutualCommunitiesTab) return items;
 			items.push({
 				key: 'mutual_communities_groups',
 				label: i18n._(
@@ -125,6 +127,7 @@ export const ProfileBody: React.FC<ProfileBodyProps> = observer(
 			return items;
 		}, [
 			showMutualFriendsTab,
+			showMutualCommunitiesTab,
 			mutualFriends.length,
 			mutualCommunitiesCount,
 			mutualGroupsCount,
@@ -135,7 +138,7 @@ export const ProfileBody: React.FC<ProfileBodyProps> = observer(
 			if (tabs.some((tab) => tab.key === activeTab)) {
 				return;
 			}
-			setActiveTab(tabs[0]?.key ?? 'overview');
+			setActiveTab(tabs[0]?.key ?? 'activity');
 		}, [activeTab, tabs]);
 		const tabsWrapperRef = useRef<HTMLDivElement>(null);
 		useLayoutEffect(() => {
@@ -222,6 +225,9 @@ export const ProfileBody: React.FC<ProfileBodyProps> = observer(
 			},
 			[profile],
 		);
+		const handleNavigate = useCallback(() => {
+			ModalCommands.pop();
+		}, []);
 		const handleGuildClick = useCallback((guild: Guild) => {
 			ModalCommands.pop();
 			const selectedChannel = SelectedChannel.selectedChannelIds.get(guild.id);
@@ -335,16 +341,27 @@ export const ProfileBody: React.FC<ProfileBodyProps> = observer(
 		);
 		const renderActiveTabContent = () => {
 			switch (activeTab) {
-				case 'overview':
+				case 'activity':
 					return (
-						<ProfileContent
-							profile={profile}
-							user={user}
-							userNote={userNote}
-							autoFocusNote={autoFocusNote}
-							noteRef={noteRef}
-							data-flx="user.user-profile-modal.render-active-tab-content.profile-content"
-						/>
+						<div className={userProfileModalStyles.activityPane} data-flx="user.user-profile-modal.render-activity.div">
+							<div
+								className={userProfileModalStyles.activityList}
+								data-flx="user.user-profile-modal.render-activity.list"
+							>
+								<VoiceActivitySection
+									userId={user.id}
+									onNavigate={handleNavigate}
+									showAllActivities={true}
+									data-flx="user.user-profile-modal.render-activity.voice-activity-section"
+								/>
+							</div>
+							<div
+								className={clsx(userProfileModalStyles.emptyState, userProfileModalStyles.activityEmpty)}
+								data-flx="user.user-profile-modal.render-activity.empty"
+							>
+								<Trans>Nothing going on right now.</Trans>
+							</div>
+						</div>
 					);
 				case 'mutual_friends':
 					return showMutualFriendsTab ? renderMutualFriendsList() : renderMutualCommunitiesGroupsList();
@@ -353,42 +370,26 @@ export const ProfileBody: React.FC<ProfileBodyProps> = observer(
 			}
 		};
 		return (
-			<div className={userProfileModalStyles.contentContainer} data-flx="user.user-profile-modal.profile-body.div">
-				<UserInfo
-					user={user}
-					profile={profile}
-					guildId={profile.guildId ?? undefined}
-					showProfileDataWarning={showProfileDataWarning}
-					data-flx="user.user-profile-modal.profile-body.user-info"
-				/>
-				{!isCurrentUser ? (
-					<div
-						ref={tabsWrapperRef}
-						className={userProfileModalStyles.tabsWrapper}
-						data-flx="user.user-profile-modal.profile-body.div--2"
-					>
-						<Tabs
-							activeTab={activeTab}
-							onTabChange={handleTabChange}
-							tabs={tabs}
-							data-flx="user.user-profile-modal.profile-body.tabs"
-						/>
-					</div>
-				) : (
-					<div className={userProfileModalStyles.separator} data-flx="user.user-profile-modal.profile-body.div--3" />
-				)}
+			<div className={userProfileModalStyles.sidePanel} data-flx="user.user-profile-modal.profile-body.div">
 				<div
-					className={userProfileModalStyles.profileContentWrapper}
-					data-flx="user.user-profile-modal.profile-body.div--4"
+					ref={tabsWrapperRef}
+					className={userProfileModalStyles.tabsWrapper}
+					data-flx="user.user-profile-modal.profile-body.div--2"
 				>
-					<Scroller
-						className={userProfileModalStyles.scrollerFullHeight}
-						key="user-profile-modal-content-scroller"
-						data-flx="user.user-profile-modal.profile-body.scroller"
-					>
-						{renderActiveTabContent()}
-					</Scroller>
+					<Tabs
+						activeTab={activeTab}
+						onTabChange={handleTabChange}
+						tabs={tabs}
+						data-flx="user.user-profile-modal.profile-body.tabs"
+					/>
 				</div>
+				<Scroller
+					className={userProfileModalStyles.sidePanelScroller}
+					key="user-profile-modal-content-scroller"
+					data-flx="user.user-profile-modal.profile-body.scroller"
+				>
+					{renderActiveTabContent()}
+				</Scroller>
 			</div>
 		);
 	},

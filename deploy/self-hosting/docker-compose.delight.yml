@@ -42,9 +42,12 @@ services:
       # Profile badges: artwork served at /delight/badge-assets/; extra badge staff besides instance admins.
       DELIGHT_BADGE_ASSET_DIR: /badges
       DELIGHT_ADMIN_USER_IDS: ${DELIGHT_ADMIN_USER_IDS:-}
+      # Profile frames: artwork served at /delight/frame-assets/<frame>/<piece>.webp.
+      DELIGHT_FRAME_ASSET_DIR: /frames
     volumes:
       - ../../delight/service:/app:ro
       - ../../delight/badges:/badges:ro
+      - ../../delight/frames:/frames:ro
       - delight-data:/data
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/health"]

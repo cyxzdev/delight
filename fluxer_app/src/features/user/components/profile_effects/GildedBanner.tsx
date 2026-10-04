@@ -2,6 +2,7 @@
 
 import {
 	between,
+	countFor,
 	Drifter,
 	EffectSvg,
 	FadeIn,
@@ -156,7 +157,8 @@ function useLayout(geometry: ProfileEffectGeometry) {
 		const rand = seeded(0x9a1d);
 		const trim = 6 * s;
 		const hem = 16 * s;
-		const motes = Array.from({length: 9}, (_, i) => {
+		const moteCount = countFor(w, h, 9);
+		const motes = Array.from({length: moteCount}, (_, i) => {
 			const lane = i % 3;
 			const x =
 				lane === 0 ? between(rand, 14 * s, w * 0.22) : lane === 1 ? w - between(rand, 14 * s, w * 0.22) : between(rand, w * 0.3, w * 0.7);
@@ -166,7 +168,7 @@ function useLayout(geometry: ProfileEffectGeometry) {
 				r: between(rand, 0.9, 1.6) * s,
 				star: i % 4 === 1,
 				dur: between(rand, 6500, 9500),
-				delay: 900 + i * 700,
+				delay: 900 + i * (6300 / moteCount),
 				dx: between(rand, -16, 16),
 				dy: -between(rand, h * 0.35, h * 0.6),
 				sway: between(rand, 4, 9),

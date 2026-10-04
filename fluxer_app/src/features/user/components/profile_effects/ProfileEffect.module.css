@@ -19,6 +19,18 @@
 	z-index: -1;
 }
 
+/* Like Discord: while the pointer is over the card, the effect steps back so the content is easy to read and click.
+   Only for real hover (not sticky touch hover); the layers never take pointer events either way. */
+.fadeOnHover {
+	transition: opacity 200ms ease;
+}
+
+@media (hover: hover) {
+	.host:hover > .fadeOnHover {
+		opacity: 0.3;
+	}
+}
+
 .front {
 	z-index: 5;
 }

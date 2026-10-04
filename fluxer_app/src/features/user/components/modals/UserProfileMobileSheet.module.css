@@ -51,6 +51,8 @@
 	justify-content: center;
 	padding-top: 0.75rem;
 	padding-bottom: 0.75rem;
+	/* Overlays the banner: don't paint the sheet surface over it (or over the profile effect's top edge). */
+	background-color: transparent;
 	user-select: none;
 	-webkit-user-select: none;
 	touch-action: manipulation;
@@ -361,4 +363,10 @@
 
 .sheetContainer {
 	background-color: transparent;
+}
+
+/* Delight: with a profile effect, the info cards let a little of the effect's back layer through (as on the popout
+   and the profile modal) while keeping a solid enough ground for their text. */
+div:has(> [data-profile-effect]) :is(.infoCard, .noteButton, .mutualButtonsGroup, .actionCard) {
+	background-color: color-mix(in srgb, var(--background-secondary-alt) 72%, transparent);
 }

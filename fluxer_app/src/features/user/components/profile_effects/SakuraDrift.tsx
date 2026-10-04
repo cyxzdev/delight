@@ -10,6 +10,7 @@ import {
 	type ProfileEffectGeometry,
 	type ProfileEffectLayer,
 	bannerBottomOf,
+	countFor,
 	polar,
 	scaleFor,
 	seeded,
@@ -162,8 +163,9 @@ function useLayout(geometry: ProfileEffectGeometry) {
 		const rand = seeded(0x5a4b);
 		const tone = (): 0 | 1 | 2 => (Math.floor(rand() * 3) as 0 | 1 | 2);
 		// Fallen petals carpeting the bottom edge, piled deeper in the corners.
-		const carpet = Array.from({length: 30}, (_, i) => {
-			const t = i / 29;
+		const carpetCount = countFor(w, h, 30);
+		const carpet = Array.from({length: carpetCount}, (_, i) => {
+			const t = i / (carpetCount - 1);
 			const edgeBias = t < 0.5 ? Math.pow(t * 2, 1.6) / 2 : 1 - Math.pow((1 - t) * 2, 1.6) / 2;
 			const x = edgeBias * w;
 			const depth = 1 - Math.min(1, Math.min(x, w - x) / (w * 0.32));
@@ -175,7 +177,8 @@ function useLayout(geometry: ProfileEffectGeometry) {
 				tone: tone(),
 			};
 		});
-		const fall = Array.from({length: 9}, (_, i) => {
+		const fallCount = countFor(w, h, 9);
+		const fall = Array.from({length: fallCount}, (_, i) => {
 			const side = i % 3 === 2 ? 0.5 : i % 2;
 			const x = side === 0.5 ? between(rand, w * 0.4, w * 0.75) : side ? w - between(rand, 6, 36 * s) : between(rand, 6, 36 * s);
 			return {
@@ -183,7 +186,7 @@ function useLayout(geometry: ProfileEffectGeometry) {
 				size: between(rand, 0.85, 1.25) * s,
 				tone: tone(),
 				dur: between(rand, 7000, 10500),
-				delay: 900 + i * 900,
+				delay: 900 + i * (8100 / fallCount),
 				rot: between(rand, 180, 420) * (rand() < 0.5 ? -1 : 1),
 				dx: between(rand, -34, 8),
 				sway: between(rand, 8, 16),
@@ -192,11 +195,12 @@ function useLayout(geometry: ProfileEffectGeometry) {
 				sr: between(rand, 0, 360),
 			};
 		});
-		const back = Array.from({length: 5}, (_, i) => ({
+		const backCount = countFor(w, h, 5);
+		const back = Array.from({length: backCount}, (_, i) => ({
 			x: i % 2 ? between(rand, w * 0.78, w * 0.98) : between(rand, w * 0.02, w * 0.2),
 			size: between(rand, 1.7, 2.3) * s,
 			dur: between(rand, 11000, 15000),
-			delay: 1500 + i * 2400,
+			delay: 1500 + i * (12000 / backCount),
 			rot: between(rand, 160, 320),
 			dx: between(rand, -50, -10),
 			sway: between(rand, 10, 20),
@@ -241,17 +245,20 @@ function Front({geometry, radius, idPrefix}: {geometry: ProfileEffectGeometry; r
 		[X(138), 15 * s],
 		[X(160), 21 * s],
 	];
+	// On the profile modal's card (tall banner) the action buttons sit just under the banner's right end: keep the
+	// side limb above them instead of letting it grow down with the card's scale.
+	const sv = bb > 100 ? Math.min(s, Math.max(1, (bb + 20) / 140)) : s;
 	const limbSide: Array<Pt> = [
-		[w + 8, 26 * s],
-		[X(10), 52 * s],
-		[X(14), 86 * s],
-		[X(8), 118 * s],
-		[X(12), 140 * s],
+		[w + 8, 26 * sv],
+		[X(10), 52 * sv],
+		[X(14), 86 * sv],
+		[X(8), 118 * sv],
+		[X(12), 140 * sv],
 	];
 	const twigs: Array<{pts: Array<Pt>; w0: number}> = [
 		{pts: [[X(62), 9 * s], [X(74), 1 * s], [X(86), -6 * s]], w0: 3 * s},
 		{pts: [[X(100), 22 * s], [X(108), 34 * s], [X(118), 42 * s]], w0: 3 * s},
-		{pts: [[X(13), 80 * s], [X(26), 92 * s], [X(36), 96 * s]], w0: 2.6 * s},
+		{pts: [[X(13), 80 * sv], [X(26), 92 * sv], [X(36), 96 * sv]], w0: 2.6 * s},
 		{pts: [[X(138), 15 * s], [X(146), 5 * s]], w0: 2.2 * s},
 	];
 	const flowersTR: Array<Flower> = [
@@ -266,7 +273,7 @@ function Front({geometry, radius, idPrefix}: {geometry: ProfileEffectGeometry; r
 		[20, 70, 9, -8, 2],
 		[36, 96, 8.5, 30, 1],
 		[9, 112, 8, 12, 0],
-	].map(([dx, y, r, rot, tone]) => ({x: X(dx), y: y * s, r: r * s, rot, tone: tone as 0 | 1 | 2}));
+	].map(([dx, y, r, rot, tone], i) => ({x: X(dx), y: y * (i >= 7 ? sv : s), r: r * s, rot, tone: tone as 0 | 1 | 2}));
 	const budsTR: Array<[number, number, number]> = [
 		[160, 21, -100],
 		[96, -8, -40],
@@ -379,14 +386,14 @@ function Front({geometry, radius, idPrefix}: {geometry: ProfileEffectGeometry; r
 					))}
 				</Grow>
 				{leavesTR.map(([dx, y, rot, k], i) => (
-					<At key={i} x={X(dx)} y={y * s}>
+					<At key={i} x={X(dx)} y={y * (i === 2 || i === 3 ? sv : s)}>
 						<PopIn delay={next()}>
 							<Leaf size={k * s} rot={rot} />
 						</PopIn>
 					</At>
 				))}
 				{budsTR.map(([dx, y, rot], i) => (
-					<At key={i} x={X(dx)} y={y * s}>
+					<At key={i} x={X(dx)} y={y * (i >= 3 ? sv : s)}>
 						<PopIn delay={next()}>
 							<Bud r={4 * s} rot={rot} />
 						</PopIn>

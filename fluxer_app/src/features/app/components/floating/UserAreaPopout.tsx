@@ -43,6 +43,7 @@ import {ProfileCardFooter} from '@app/features/user/components/profile/profile_c
 import {ProfileCardLayout} from '@app/features/user/components/profile/profile_card/ProfileCardLayout';
 import {ProfileCardUserInfo} from '@app/features/user/components/profile/profile_card/ProfileCardUserInfo';
 import {getProfileEffect} from '@app/features/user/utils/ProfileEffects';
+import {getProfileFrame} from '@app/features/user/utils/ProfileFrames';
 import {useAutoplayExpandedProfileAnimations} from '@app/features/user/hooks/useAutoplayExpandedProfileAnimations';
 import {normalizeCustomStatus} from '@app/features/user/state/CustomStatus';
 import StatusExpiry from '@app/features/user/state/StatusExpiry';
@@ -525,6 +526,7 @@ export const UserAreaPopout = observer(() => {
 				<ProfileCardLayout
 					borderColor={borderColor}
 					effect={getProfileEffect(currentUser)}
+					frame={getProfileFrame(currentUser)}
 					data-flx="app.floating.user-area-popout.profile-card-layout"
 				>
 					<ProfileCardBanner

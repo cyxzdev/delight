@@ -38,6 +38,7 @@ import {UsernameSection} from '@app/features/user/components/modals/tabs/my_prof
 import {PerGuildPremiumUpsell} from '@app/features/user/components/modals/tabs/my_profile_tab/PerGuildPremiumUpsell';
 import {PremiumBadgeSettings} from '@app/features/user/components/modals/tabs/my_profile_tab/PremiumBadgeSettings';
 import {ProfileEffectSetting} from '@app/features/user/components/modals/tabs/my_profile_tab/ProfileEffectSetting';
+import {ProfileFrameSetting} from '@app/features/user/components/modals/tabs/my_profile_tab/ProfileFrameSetting';
 import {
 	assignProfileAssetUploadPatch,
 	createGlobalProfileAssetRemoteState,
@@ -893,6 +894,12 @@ const MyProfileTabComponent = observer(function MyProfileTabComponent({
 										<ProfileEffectSetting
 											user={user}
 											data-flx="user.my-profile-tab.my-profile-tab-component.profile-effect-setting"
+										/>
+									)}
+									{!isPerGuildProfile && user && (
+										<ProfileFrameSetting
+											user={user}
+											data-flx="user.my-profile-tab.my-profile-tab-component.profile-frame-setting"
 										/>
 									)}
 									<div

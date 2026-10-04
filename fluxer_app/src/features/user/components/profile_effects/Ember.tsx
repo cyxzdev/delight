@@ -4,6 +4,7 @@ import motion from '@app/features/user/components/profile_effects/EffectMotion.m
 import {
 	Burst,
 	between,
+	countFor,
 	Drifter,
 	EffectSvg,
 	FadeIn,
@@ -126,14 +127,15 @@ function useLayout(geometry: ProfileEffectGeometry) {
 				});
 			}
 		}
-		const sparks = Array.from({length: 10}, (_, i) => {
+		const sparkCount = countFor(w, h, 10);
+		const sparks = Array.from({length: sparkCount}, (_, i) => {
 			const side = i % 3;
 			const x = side === 0 ? between(rand, 6, 40 * s) : side === 1 ? w - between(rand, 6, 40 * s) : between(rand, w * 0.3, w * 0.7);
 			return {
 				x,
 				r: between(rand, 0.9, 1.6) * s,
 				dur: between(rand, 3600, 5600),
-				delay: 600 + i * 520,
+				delay: 600 + i * (5200 / sparkCount),
 				dx: between(rand, -30, 30),
 				dy: -between(rand, h * 0.55, h * 0.95),
 				sway: between(rand, 6, 14),

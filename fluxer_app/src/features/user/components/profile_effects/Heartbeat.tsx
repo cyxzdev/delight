@@ -3,6 +3,7 @@
 import {
 	Burst,
 	between,
+	countFor,
 	Drifter,
 	EffectSvg,
 	FadeIn,
@@ -150,14 +151,15 @@ function useLayout(geometry: ProfileEffectGeometry) {
 	return useMemo(() => {
 		const s = scaleFor(w);
 		const rand = seeded(0x4ea7);
-		const floaters = Array.from({length: 9}, (_, i) => {
+		const floaterCount = countFor(w, h, 9);
+		const floaters = Array.from({length: floaterCount}, (_, i) => {
 			const side = i % 2;
 			return {
 				x: side ? w - between(rand, 10, 26 * s) : between(rand, 10, 26 * s),
 				r: between(rand, 4, 7) * s,
 				tone: (i % 3) as 0 | 1 | 2,
 				dur: between(rand, 5200, 7600),
-				delay: 700 + i * 760,
+				delay: 700 + i * (6840 / floaterCount),
 				dx: between(rand, -12, 12),
 				dy: -between(rand, h * 0.55, h * 0.85),
 				sway: between(rand, 5, 10),

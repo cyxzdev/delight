@@ -6,6 +6,7 @@ import {
 	Burst,
 	bannerBottomOf,
 	between,
+	countFor,
 	Drifter,
 	EffectSvg,
 	edgeX,
@@ -184,6 +185,8 @@ function useLayout(geometry: ProfileEffectGeometry) {
 	const bannerBottom = bannerBottomOf(geometry);
 	return useMemo(() => {
 		const s = scaleFor(w);
+		// The profile modal's card (tall banner) has its action buttons under the banner's right end.
+		const wide = bannerBottom > 100;
 		const rand = seeded(0xc0f3);
 		const kinds: ReadonlyArray<PieceKind> = ['strip', 'strip', 'dot', 'squiggle', 'star', 'strip'];
 		const pickColor = () => PALETTE[Math.floor(rand() * PALETTE.length)];
@@ -225,7 +228,8 @@ function useLayout(geometry: ProfileEffectGeometry) {
 				dur: between(rand, 900, 1500),
 			};
 		});
-		const falling = Array.from({length: 14}, (_, i) => {
+		const fallingCount = countFor(w, h, 14);
+		const falling = Array.from({length: fallingCount}, (_, i) => {
 			const x = edgeX(rand, w, 0.2);
 			const y = between(rand, -16, bannerBottom * 0.6);
 			const fall = between(rand, 0.55, 1) * (h - y + 10);
@@ -239,13 +243,13 @@ function useLayout(geometry: ProfileEffectGeometry) {
 				colors: PALETTE[i % PALETTE.length],
 				k: between(rand, 0.75, 1.1) * s,
 				dur: between(rand, 4200, 7000),
-				delay: 900 + i * 380 + between(rand, 0, 400),
+				delay: 900 + i * (5320 / fallingCount) + between(rand, 0, 400),
 				flutter: between(rand, 420, 900),
 				sy: between(rand, 0.15, 0.85) * fall,
 				sr: between(rand, -180, 180),
 			};
 		});
-		const pile = Array.from({length: 40}, (_, i) => {
+		const pile = Array.from({length: countFor(w, h, 40)}, (_, i) => {
 			const left = i % 2 === 0;
 			const reach = Math.pow(rand(), 1.7) * w * 0.48;
 			const x = left ? reach : w - reach;
@@ -260,10 +264,10 @@ function useLayout(geometry: ProfileEffectGeometry) {
 			};
 		});
 		// Curly streamers hanging from the poppers down the sides.
-		const streamer = (x0: number, y0: number, length: number, amp: number, phase: number, dir: 1 | -1) => {
+		const streamer = (x0: number, y0: number, length: number, amp: number, phase: number, dir: 1 | -1, lean = 0.02) => {
 			let d = `M${x0.toFixed(1)},${y0.toFixed(1)}`;
 			for (let y = 4; y <= length; y += 4) {
-				const x = x0 + dir * (Math.sin((y / (16 * s)) * Math.PI + phase) * amp + y * 0.02);
+				const x = x0 + dir * (Math.sin((y / (16 * s)) * Math.PI + phase) * amp + y * lean);
 				d += ` L${x.toFixed(1)},${(y0 + y).toFixed(1)}`;
 			}
 			return d;
@@ -271,7 +275,10 @@ function useLayout(geometry: ProfileEffectGeometry) {
 		const streamers = [
 			{d: streamer(9 * s, mouthL[1] + 4, bannerBottom + 40 * s, 4 * s, 0, 1), colors: YELLOW, delay: 0},
 			{d: streamer(20 * s, mouthL[1] + 8, bannerBottom * 0.55, 3 * s, 1.4, 1), colors: CYAN, delay: 700},
-			{d: streamer(w - 9 * s, mouthR[1] + 4, bannerBottom + 70 * s, 4 * s, 0.6, -1), colors: PURPLE, delay: 300},
+			// Keep clear of those buttons: hang this one tight to the edge.
+			wide
+				? {d: streamer(w - 7 * s, mouthR[1] + 4, bannerBottom + 70 * s, 2.6 * s, 0.6, -1, 0), colors: PURPLE, delay: 300}
+				: {d: streamer(w - 9 * s, mouthR[1] + 4, bannerBottom + 70 * s, 4 * s, 0.6, -1), colors: PURPLE, delay: 300},
 			{d: streamer(w - 21 * s, mouthR[1] + 8, bannerBottom * 0.6, 3 * s, 2, -1), colors: PINK, delay: 1100},
 		];
 		return {s, L, m, middle, swags, pennants, burst, falling, pile, streamers, bannerBottom};

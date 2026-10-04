@@ -3,6 +3,7 @@
 import {
 	Burst,
 	between,
+	countFor,
 	Drifter,
 	EffectSvg,
 	FadeIn,
@@ -172,13 +173,14 @@ function useLayout(geometry: ProfileEffectGeometry) {
 		for (let x = startX; x < w - 14 * s; x += between(rand, 9, 16) * s) {
 			bannerIcicles.push({x, wd: between(rand, 3.2, 5) * s, len: between(rand, 4, 11) * s});
 		}
-		const fallNear = Array.from({length: 7}, (_, i) => {
+		const nearCount = countFor(w, h, 7);
+		const fallNear = Array.from({length: nearCount}, (_, i) => {
 			const side = i % 2;
 			return {
 				x: side ? w - between(rand, 8, Math.min(w * 0.2, 44 * s)) : between(rand, 8, Math.min(w * 0.2, 44 * s)),
 				r: between(rand, 4.5, 6.5) * s,
 				dur: between(rand, 7000, 10000),
-				delay: 700 + i * 1100,
+				delay: 700 + i * (7700 / nearCount),
 				dx: between(rand, -14, 14),
 				sway: between(rand, 6, 12),
 				rot: between(rand, 90, 200) * (rand() < 0.5 ? -1 : 1),
@@ -195,11 +197,12 @@ function useLayout(geometry: ProfileEffectGeometry) {
 			rot: between(rand, 120, 220),
 			sy: [h * 0.55, h * 0.68, h * 0.2][i],
 		}));
-		const fallFar = Array.from({length: 9}, (_, i) => ({
+		const farCount = countFor(w, h, 9);
+		const fallFar = Array.from({length: farCount}, (_, i) => ({
 			x: between(rand, 0, w),
 			r: between(rand, 1.2, 2.2) * s,
 			dur: between(rand, 9000, 14000),
-			delay: i * 1200,
+			delay: i * (10800 / farCount),
 			dx: between(rand, -12, 12),
 			sway: between(rand, 4, 8),
 			sy: between(rand, h * 0.25, h * 0.9),

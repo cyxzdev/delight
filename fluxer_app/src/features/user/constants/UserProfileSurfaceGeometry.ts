@@ -37,8 +37,12 @@ export const PROFILE_POPOUT_BANNER_AVATAR_CUTOUT = {
 	r: PROFILE_POPOUT_AVATAR_OUTER_RADIUS_PX,
 } as const;
 
+// Delight: the full profile modal shows a Discord-style profile card column (~370px wide) next to its tabs; the
+// banner/avatar geometry is laid out at that width (the header scales with the measured banner width).
+export const PROFILE_MODAL_CARD_WIDTH_PX = 370;
+
 export const PROFILE_MODAL_GEOMETRY = {
-	bannerViewBoxWidthPx: 600,
+	bannerViewBoxWidthPx: PROFILE_MODAL_CARD_WIDTH_PX,
 	bannerViewBoxHeightPx: 120,
 	avatarSizePx: PROFILE_MODAL_AVATAR_SIZE_PX,
 	avatarBorderPx: PROFILE_MODAL_AVATAR_BORDER_PX,

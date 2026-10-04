@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {isKeyboardActivationKey} from '@app/features/input/utils/KeyboardUtils';
+import type {ProfileFrameId} from '@app/features/user/utils/ProfileFrameIds';
 import type {ContextMenuTargetElement} from '@app/features/ui/state/ContextMenu';
 import ContextMenu, {isContextMenuNodeTarget} from '@app/features/ui/state/ContextMenu';
 import type {Profile} from '@app/features/user/models/Profile';
 import type {User} from '@app/features/user/models/User';
 import type * as ProfileDisplayUtils from '@app/features/user/utils/ProfileDisplayUtils';
+import type {ProfileEffectId} from '@app/features/user/utils/ProfileEffectIds';
 import {autorun} from 'mobx';
 import type React from 'react';
 import {useEffect, useState} from 'react';
@@ -13,7 +15,7 @@ import {useEffect, useState} from 'react';
 export const NOTE_MIN_ROWS = 2;
 export const NOTE_MAX_ROWS = 8;
 
-export type ProfileTab = 'overview' | 'mutual_friends' | 'mutual_communities_groups';
+export type ProfileTab = 'activity' | 'mutual_friends' | 'mutual_communities_groups';
 
 export interface UserInfoProps {
 	user: User;
@@ -53,10 +55,6 @@ export interface ProfileMediaHeaderProps {
 export interface ProfileBodyProps {
 	profile: Profile;
 	user: User;
-	userNote: string | null;
-	autoFocusNote?: boolean;
-	noteRef?: React.RefObject<HTMLTextAreaElement | null>;
-	showProfileDataWarning?: boolean;
 }
 
 export interface ProfileModalContentProps {
@@ -68,6 +66,10 @@ export interface ProfileModalContentProps {
 	renderActionButtons: () => React.ReactNode;
 	previewOverrides?: ProfileDisplayUtils.ProfilePreviewOverrides;
 	showProfileDataWarning?: boolean;
+	/** The profile effect drawn on the left profile card. */
+	effect?: ProfileEffectId | null;
+	/** Delight: the profile frame drawn around the left profile card. */
+	frame?: ProfileFrameId | null;
 }
 
 export function isKeyboardContextMenuTrigger(event: React.KeyboardEvent<HTMLElement>): boolean {

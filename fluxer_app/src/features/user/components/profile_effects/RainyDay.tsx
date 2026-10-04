@@ -4,6 +4,7 @@ import {
 	arcPath,
 	bannerBottomOf,
 	between,
+	countFor,
 	Drifter,
 	EffectSvg,
 	FadeIn,
@@ -184,7 +185,7 @@ function useLayout(geometry: ProfileEffectGeometry) {
 		const rand = seeded(0x7a1d);
 		const fall = h + 30;
 		const SLANT = 0.18;
-		const rain = Array.from({length: 10}, (_, i) => {
+		const rain = Array.from({length: countFor(w, h, 10)}, (_, i) => {
 			const left = i % 2 === 0;
 			const x = left ? between(rand, 4, w * 0.2) : between(rand, w * 0.8, w - 2);
 			return {
@@ -198,7 +199,7 @@ function useLayout(geometry: ProfileEffectGeometry) {
 				fall,
 			};
 		});
-		const backRain = Array.from({length: 9}, (_, i) => ({
+		const backRain = Array.from({length: countFor(w, h, 9)}, (_, i) => ({
 			x: between(rand, 0, w),
 			y: -20,
 			len: between(rand, 14, 22) * s,
@@ -211,7 +212,8 @@ function useLayout(geometry: ProfileEffectGeometry) {
 		// Condensation beads, massed along the side edges and the lower half; the middle stays clear.
 		const beads: Array<{x: number; y: number; r: number}> = [];
 		const top = bannerBottom + 6;
-		for (let i = 0; i < 34; i++) {
+		const beadCount = countFor(w, h, 34);
+		for (let i = 0; i < beadCount; i++) {
 			const side = i % 2 === 0;
 			const depth = Math.pow(rand(), 1.8) * 22 * s;
 			const y = top + Math.pow(rand(), 0.7) * (h - top - 14 * s);
@@ -225,8 +227,9 @@ function useLayout(geometry: ProfileEffectGeometry) {
 		];
 		const dripStart = avatar ? avatar.cx + avatar.r + 14 * s : 24 * s;
 		const dripEnd = w - 12 * s;
-		const drips = Array.from({length: 7}, (_, i) => ({
-			x: dripStart + ((i + between(rand, 0.1, 0.9)) / 7) * (dripEnd - dripStart),
+		const dripCount = countFor(w, h, 7);
+		const drips = Array.from({length: dripCount}, (_, i) => ({
+			x: dripStart + ((i + between(rand, 0.1, 0.9)) / dripCount) * (dripEnd - dripStart),
 			k: between(rand, 0.55, 1.05) * s,
 		}));
 		// Puddle surface: low in the middle, heaped into the bottom corners.

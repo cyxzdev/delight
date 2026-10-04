@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 //
-// Delight sidecar: small bits of per-user state that Fluxer's API has no field for (today: the profile effect each user
-// picked). Served by the edge at /delight/* (Caddy strips the prefix).
+// Delight sidecar: small bits of per-user state that Fluxer's API has no field for (the profile effect and profile frame
+// each user picked, badges). Served by the edge at /delight/* (Caddy strips the prefix).
 //
 //   GET  /effects?ids=1,2,3   → {"1": "snowfall", "3": "none"}   (only ids with a stored choice)
 //   PUT  /effects/@me          body {"effect": "<id>" | "none" | null}   (null clears → client falls back to default rule)
@@ -10,6 +10,9 @@
 //   PUT  /badges/:userId       body {"badges": ["og", ...]}      (staff only; replaces the set)
 //   POST /badges/:userId/:id   DELETE /badges/:userId/:id         (staff only; grant / revoke one)
 //   GET  /badge-assets/<id>.png, <id>@64.png                      (badge artwork, from ./badges)
+//   GET  /frames?ids=1,2,3    → {"1": "starlit_sparkles"}       (only ids with a stored choice)
+//   PUT  /frames/@me           body {"frame": "<id>" | "none" | null}   (null clears; default is no frame)
+//   GET  /frame-assets/<frameId>/<name>.webp                      (profile frame artwork, from ./frames)
 //   GET  /health               → "ok"
 //
 // Writes are authenticated by forwarding the caller's Authorization header to Fluxer's API (GET /v1/users/@me).
@@ -34,6 +37,14 @@ const EFFECT_IDS = new Set(
 		.map((id) => id.trim())
 		.filter(Boolean),
 );
+/** Keep in sync with PROFILE_FRAME_IDS in fluxer_app/src/features/user/utils/ProfileFrameIds.ts. */
+const FRAME_IDS = new Set(
+	(process.env.DELIGHT_FRAME_IDS ?? 'starlit_sparkles,candle_drip,eclipse,rose_filigree,kitty_ears')
+		.split(',')
+		.map((id) => id.trim())
+		.filter(Boolean),
+);
+const FRAME_ASSET_DIR = process.env.DELIGHT_FRAME_ASSET_DIR ?? `${import.meta.dir}/../frames`;
 const MAX_IDS = 200;
 const SNOWFLAKE = /^\d{1,20}$/;
 
@@ -55,6 +66,13 @@ const upsertEffect = db.prepare(
 	'INSERT INTO profile_effects (user_id, effect, updated_at) VALUES (?1, ?2, ?3) ON CONFLICT(user_id) DO UPDATE SET effect = ?2, updated_at = ?3',
 );
 const deleteEffect = db.prepare('DELETE FROM profile_effects WHERE user_id = ?1');
+db.exec(
+	'CREATE TABLE IF NOT EXISTS profile_frames (user_id TEXT PRIMARY KEY, frame TEXT NOT NULL, updated_at INTEGER NOT NULL)',
+);
+const upsertFrame = db.prepare(
+	'INSERT INTO profile_frames (user_id, frame, updated_at) VALUES (?1, ?2, ?3) ON CONFLICT(user_id) DO UPDATE SET frame = ?2, updated_at = ?3',
+);
+const deleteFrame = db.prepare('DELETE FROM profile_frames WHERE user_id = ?1');
 
 // --- auth: Authorization header → user id (cached briefly so a burst of saves costs one API call) ---
 
@@ -168,6 +186,49 @@ async function putOwnEffect(request: Request): Promise<Response> {
 	return json({user_id: userId, effect});
 }
 
+function getFrames(url: URL): Response {
+	const ids = parseIds(url);
+	if (ids instanceof Response) return ids;
+	if (ids.length === 0) return json({});
+	const rows = db
+		.query(`SELECT user_id, frame FROM profile_frames WHERE user_id IN (${ids.map(() => '?').join(',')})`)
+		.all(...ids) as Array<{user_id: string; frame: string}>;
+	const result: Record<string, string> = {};
+	for (const row of rows) result[row.user_id] = row.frame;
+	return json(result);
+}
+
+async function putOwnFrame(request: Request): Promise<Response> {
+	const userId = await resolveUserId(request.headers.get('authorization'), request.headers.get('x-forwarded-for'));
+	if (!userId) return json({error: 'unauthorized'}, 401);
+	let body: {frame?: unknown};
+	try {
+		body = (await request.json()) as {frame?: unknown};
+	} catch {
+		return json({error: 'invalid json'}, 400);
+	}
+	const frame = body?.frame;
+	if (frame !== null && frame !== 'none' && !(typeof frame === 'string' && FRAME_IDS.has(frame))) {
+		return json({error: 'unknown frame'}, 400);
+	}
+	if (!allowWrite(userId)) return json({error: 'slow down'}, 429);
+	if (frame === null) deleteFrame.run(userId);
+	else upsertFrame.run(userId, frame, Date.now());
+	return json({user_id: userId, frame});
+}
+
+const FRAME_ASSET = /^\/frame-assets\/([a-z_]+)\/([a-z0-9_-]+)\.(webp|png)$/;
+
+async function getFrameAsset(pathname: string): Promise<Response> {
+	const match = FRAME_ASSET.exec(pathname);
+	if (!match || !FRAME_IDS.has(match[1])) return json({error: 'not found'}, 404);
+	const file = Bun.file(`${FRAME_ASSET_DIR}/${match[1]}/${match[2]}.${match[3]}`);
+	if (!(await file.exists())) return json({error: 'not found'}, 404);
+	return new Response(file, {
+		headers: {'Content-Type': `image/${match[3]}`, 'Cache-Control': 'public, max-age=86400'},
+	});
+}
+
 function parseIds(url: URL): Array<string> | Response {
 	const ids = [
 		...new Set(
@@ -241,6 +302,11 @@ Bun.serve({
 			if (url.pathname === '/health') return new Response('ok');
 			if (url.pathname === '/effects' && request.method === 'GET') return getEffects(url);
 			if (url.pathname === '/effects/@me' && request.method === 'PUT') return await putOwnEffect(request);
+			if (url.pathname === '/frames' && request.method === 'GET') return getFrames(url);
+			if (url.pathname === '/frames/@me' && request.method === 'PUT') return await putOwnFrame(request);
+			if (url.pathname.startsWith('/frame-assets/') && request.method === 'GET') {
+				return await getFrameAsset(url.pathname);
+			}
 			if (url.pathname === '/badges' && request.method === 'GET') return getBadges(url);
 			if (url.pathname === '/badges/@me/manage' && request.method === 'GET') {
 				const caller = await resolveCaller(
@@ -268,4 +334,4 @@ Bun.serve({
 	},
 });
 
-console.log(`delight-svc listening on :${PORT} (${EFFECT_IDS.size} effects, ${BADGE_IDS.size} badges)`);
+console.log(`delight-svc listening on :${PORT} (${EFFECT_IDS.size} effects, ${FRAME_IDS.size} frames, ${BADGE_IDS.size} badges)`);

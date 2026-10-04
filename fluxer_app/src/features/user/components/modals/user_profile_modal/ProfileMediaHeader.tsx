@@ -37,7 +37,7 @@ const OPEN_AVATAR_OPTIONS_DESCRIPTOR = msg({
 	comment: 'Button or menu action label in the user profile modal. Keep it concise.',
 });
 
-const PROFILE_MODAL_DEFAULT_SCALE = 1.0666667;
+const PROFILE_MODAL_DEFAULT_SCALE = 1;
 
 function getProfileModalScale(bannerWidth: number | null): number {
 	return (
