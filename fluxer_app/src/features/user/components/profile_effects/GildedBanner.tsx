@@ -441,29 +441,10 @@ function AvatarFront({avatar, gid}: {avatar: NonNullable<ProfileEffectGeometry['
 
 function Back({geometry, radius, idPrefix}: IdProps) {
 	const {width: w, height: h, avatar} = geometry;
-	const {s, trim, hem} = useLayout(geometry);
+	const {s, hem} = useLayout(geometry);
 	const gid = `${idPrefix}b`;
 	const focusX = w / 2;
 	const focusY = h - hem - 26 * s;
-	// Thin gold rays fanning up from behind the emblem to the side trims.
-	const rays = [30, 40, 52].flatMap((deg, i) =>
-		[-1, 1].map((side) => {
-			const x0 = focusX + side * (12 + i * 8) * s;
-			const y0 = focusY + (2 - i * 2) * s;
-			const top = h * 0.6;
-			const rad = (deg * Math.PI) / 180;
-			let len = (y0 - top) / Math.cos(rad);
-			const room = side < 0 ? x0 - trim - 4 : w - trim - 4 - x0;
-			len = Math.min(len, room / Math.sin(rad));
-			const x1 = x0 + side * len * Math.sin(rad);
-			const y1 = y0 - len * Math.cos(rad);
-			return {d: `M${f1(x0)},${f1(y0)} L${f1(x1)},${f1(y1)}`, i};
-		}),
-	);
-	const arcs = [0, 1, 2, 3].map((i) => {
-		const y = h - hem - (40 + i * 26) * s;
-		return `M0,${f1(y)} Q${f1(w / 2)},${f1(y - 16 * s)} ${w},${f1(y)}`;
-	});
 	return (
 		<EffectSvg
 			geometry={geometry}
@@ -497,18 +478,8 @@ function Back({geometry, radius, idPrefix}: IdProps) {
 		>
 			<FadeIn dur={900}>
 				<rect x={0} y={0} width={w} height={h} fill={`url(#${gid}-cloth)`} />
-				<g fill="none" stroke={GOLD_LIGHT} strokeWidth={1}>
-					{arcs.map((d, i) => (
-						<path key={i} d={d} opacity={0.05 + i * 0.008} />
-					))}
-				</g>
 				<ellipse cx={focusX} cy={focusY} rx={90 * s} ry={60 * s} fill={`url(#${gid}-emblemglow)`} />
 			</FadeIn>
-			<g fill="none" strokeLinecap="round">
-				{rays.map((ray, i) => (
-					<DrawPath key={i} d={ray.d} stroke={GOLD_LIGHT} strokeWidth={0.8} opacity={0.4 - ray.i * 0.07} delay={900 + ray.i * 140} dur={1100} />
-				))}
-			</g>
 			{/* Embossed diamond emblem. */}
 			<At x={focusX} y={focusY} s={s}>
 				<FadeIn delay={1000} dur={900}>
