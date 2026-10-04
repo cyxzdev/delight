@@ -7,9 +7,11 @@
 	box-sizing: border-box;
 	gap: 0.5rem;
 	width: 100%;
-	padding-top: 1rem;
-	padding-left: 0.75rem;
-	padding-right: 0.75rem;
+	margin-top: 0.75rem;
+	padding-top: 0.75rem;
+	padding-left: 0.875rem;
+	padding-right: 0.875rem;
+	border-top: 0.0625rem solid var(--background-modifier-accent);
 }
 
 .footerSection > * {

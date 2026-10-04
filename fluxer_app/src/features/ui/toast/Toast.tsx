@@ -46,10 +46,10 @@ export const Toast = observer(
 		);
 		const toastMotion = getReducedMotionProps(
 			{
-				initial: {opacity: 0, y: -30},
+				initial: {opacity: 0, y: 4},
 				animate: {opacity: 1, y: 0},
-				exit: {opacity: 0, y: -30},
-				transition: {duration: 0.2, ease: 'easeOut'},
+				exit: {opacity: 0, y: 4},
+				transition: {duration: 0.14, ease: 'easeOut'},
 			},
 			Accessibility.useReducedMotion,
 		);

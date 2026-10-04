@@ -7,10 +7,10 @@
 	padding: var(--active-now-card-padding-block) var(--active-now-card-padding-inline);
 	border-radius: var(--active-now-card-radius);
 	background-color: var(--background-secondary);
-	border: 0.0625rem solid var(--border-color, rgba(255, 255, 255, 0.04));
+	border: 0.0625rem solid var(--background-modifier-accent);
 	width: 100%;
 	align-self: stretch;
-	box-shadow: var(--active-now-card-shadow);
+	box-shadow: none;
 }
 
 .headerContextGroup {

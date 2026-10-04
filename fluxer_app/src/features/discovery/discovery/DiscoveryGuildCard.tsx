@@ -36,7 +36,7 @@ const PREVIEW_NAMED_COMMUNITY_DESCRIPTOR = msg({
 });
 
 const DISCOVERY_NAME_BADGE_IGNORED_FEATURES = new Set<string>([GuildFeatures.DISCOVERABLE]);
-const CARD_ICON_SIZE_PX = 56;
+const CARD_ICON_SIZE_PX = 40;
 
 interface DiscoveryGuildCardProps {
 	guild: DiscoveryGuild;

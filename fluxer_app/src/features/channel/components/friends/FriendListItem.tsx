@@ -360,7 +360,7 @@ export const FriendListItem: React.FC<FriendListItemProps> = observer((props) =>
 				<div className={styles.friendInfo} data-flx="channel.friends.friend-list-item.friend-info">
 					<StatusAwareAvatar
 						user={user}
-						size={36}
+						size={32}
 						status={status}
 						data-flx="channel.friends.friend-list-item.status-aware-avatar"
 					/>

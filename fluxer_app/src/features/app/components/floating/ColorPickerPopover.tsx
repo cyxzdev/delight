@@ -35,12 +35,12 @@ export const ColorPickerPopover = observer(
 		onChange: (color: string) => void;
 		onReset: () => void;
 	}) => {
-		const hasCustomColor = color !== null && color !== '#4641D9';
+		const hasCustomColor = color !== null && color !== '#7F49B4';
 		const parsedColor = useMemo(() => {
 			try {
 				return parseColor(color).toFormat('hsb');
 			} catch {
-				return parseColor('#4641D9').toFormat('hsb');
+				return parseColor('#7F49B4').toFormat('hsb');
 			}
 		}, [color]);
 		const activeDragRef = useRef<{pointerId: number; target: DragTarget} | null>(null);

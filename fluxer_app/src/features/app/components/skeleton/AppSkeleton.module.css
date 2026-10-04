@@ -25,6 +25,12 @@
 }
 
 .containerGuilds {
+	/* Delight frame metrics; keep in sync with GuildsLayout.module.css. */
+	--layout-guild-list-width: 4rem;
+	--layout-sidebar-width: 15rem;
+	--layout-header-height: 3rem;
+	--layout-user-area-height: 3.25rem;
+	--user-area-box-inset-block-end: 0px;
 	--layout-user-area-overlay-height: 0px;
 	grid-template-columns: var(--layout-guild-list-width) minmax(0, 1fr);
 	background-color: var(--background-secondary);

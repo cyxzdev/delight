@@ -11,9 +11,9 @@
 }
 
 .name {
-	font-size: 0.95rem;
-	color: var(--text-chat);
-	font-weight: 600;
+	font-size: 0.875rem;
+	color: var(--text-primary);
+	font-weight: 500;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;

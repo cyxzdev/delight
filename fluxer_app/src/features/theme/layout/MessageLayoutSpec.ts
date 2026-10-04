@@ -100,7 +100,7 @@ function assertSameUnitOrder(name: string, left: CssLength, right: CssLength): v
 
 export const MESSAGE_LAYOUT_SPEC = {
 	cozy: {
-		avatarSize: '2.5rem',
+		avatarSize: '2.25rem',
 		timestampFontSize: '0.75rem',
 	},
 	dense: {
@@ -129,11 +129,11 @@ export const MESSAGE_LAYOUT_SPEC = {
 	},
 	systemMessageIconSize: '1.125rem',
 	reply: {
-		spacing: '0.25rem',
+		spacing: '0.125rem',
 		height: '1.125rem',
-		fontSize: '0.875rem',
+		fontSize: '0.8125rem',
 		spineWidth: '0.125rem',
-		spineRadius: '0.375rem',
+		spineRadius: '0.125rem',
 	},
 	edited: {
 		fontSize: '0.75rem',

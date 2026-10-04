@@ -43,7 +43,7 @@
 	cursor: pointer;
 	flex-direction: column;
 	overflow: hidden;
-	border-radius: 0.5rem;
+	border-radius: var(--radius-lg);
 	border: 0.125rem solid transparent;
 	background-color: var(--background-secondary);
 	transition: none;

@@ -691,7 +691,7 @@
 	gap: 0.0625rem;
 	padding: 0.125rem;
 	margin: 0;
-	border-radius: 0.5rem;
+	border-radius: var(--radius-lg);
 	background-color: transparent;
 }
 

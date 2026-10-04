@@ -177,3 +177,43 @@
 .triggerWrapper {
 	display: inline-flex;
 }
+
+/* ---- Delight: small inverted tooltips, no arrow ---- */
+.tooltip {
+	--tooltip-surface: color-mix(in srgb, var(--brand-primary-fill) 90%, black);
+	/* Text tokens flip inside the light tooltip so nested content stays legible. */
+	--text-primary: var(--background-primary);
+	--text-secondary: var(--background-tertiary);
+	--text-primary-muted: color-mix(in srgb, var(--background-primary) 70%, transparent);
+	--text-tertiary: color-mix(in srgb, var(--background-primary) 60%, transparent);
+	--text-tertiary-muted: color-mix(in srgb, var(--background-primary) 50%, transparent);
+	--keybind-hint-background: rgb(0 0 0 / 0.1);
+	--keybind-hint-color: var(--background-primary);
+	--tooltip-border-color: transparent;
+	--tooltip-shadow: 0 0.25rem 0.75rem rgb(0 0 0 / 0.4);
+	--tooltip-danger-text: #fff;
+	--tooltip-danger-surface: var(--status-danger);
+	--tooltip-danger-border: transparent;
+	max-width: 15rem;
+	border-radius: var(--radius-md);
+	color: var(--background-primary);
+	font-size: 0.75rem;
+	font-weight: 500;
+	line-height: 1rem;
+	letter-spacing: 0;
+}
+
+.tooltipContent {
+	padding: 0.3125rem 0.5rem;
+}
+
+.tooltipContentLarge {
+	padding: 0.5rem 0.625rem;
+	font-size: 0.8125rem;
+	line-height: 1.125rem;
+}
+
+.tooltipPointer,
+.tooltipPointer.tooltipPointerBg {
+	display: none;
+}

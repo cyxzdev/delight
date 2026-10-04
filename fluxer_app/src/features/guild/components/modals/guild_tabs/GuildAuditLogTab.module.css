@@ -13,14 +13,18 @@
 }
 
 .pageTitle {
-	font-size: 1.125rem;
-	font-weight: 650;
-	color: var(--text-primary);
-	margin: 0;
+	/* Delight: the settings header already shows this title; keep it for screen readers only. */
+	position: absolute;
+	width: 0.0625rem;
+	height: 0.0625rem;
+	margin: -0.0625rem;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
 }
 
 .pageSubtitle {
-	font-size: 0.9rem;
+	font-size: 0.8125rem;
 	color: var(--text-primary-muted);
 	margin: 0;
 }
@@ -59,7 +63,7 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	flex: 1;
-	font-size: 0.9rem;
+	font-size: 0.8125rem;
 	line-height: 1.2;
 }
 
@@ -109,7 +113,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 0.9rem;
+	font-size: 0.8125rem;
 }
 
 .entries {
@@ -159,13 +163,15 @@
 .entryList {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-2);
+	gap: 0;
+	border-top: 0.0625rem solid var(--background-modifier-accent);
 }
 
 .auditLog {
-	border-radius: var(--radius-xl);
-	border: 0.0625rem solid var(--background-modifier-accent);
-	background-color: var(--background-textarea);
+	border-radius: 0;
+	border: none;
+	border-bottom: 0.0625rem solid var(--background-modifier-accent);
+	background-color: transparent;
 	overflow: hidden;
 }
 
@@ -179,8 +185,9 @@
 	align-items: center;
 	justify-content: space-between;
 	width: 100%;
-	min-height: var(--list-row-min-height);
-	padding: 0 var(--input-container-padding);
+	min-height: 3rem;
+	padding: 0.375rem 0.5rem;
+	border-radius: var(--radius-md);
 	background: transparent;
 	border: none;
 	text-align: left;
@@ -211,9 +218,9 @@
 }
 
 .icon {
-	width: 2rem;
-	height: 2rem;
-	min-width: 2rem;
+	width: 1.75rem;
+	height: 1.75rem;
+	min-width: 1.75rem;
 	border-radius: 624.9375rem;
 	display: inline-flex;
 	align-items: center;
@@ -265,7 +272,7 @@
 
 .summary {
 	font-weight: 500;
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	line-height: 1.25rem;
 	color: var(--text-primary-muted);
 	overflow-wrap: anywhere;
@@ -321,7 +328,7 @@
 
 .reasonValue {
 	color: var(--text-primary);
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	line-height: 1.25rem;
 }
 
@@ -337,7 +344,7 @@
 	gap: var(--spacing-2);
 	min-height: 1.75rem;
 	color: var(--text-primary-muted);
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	line-height: 1.25rem;
 }
 

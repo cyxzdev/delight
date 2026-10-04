@@ -43,7 +43,7 @@
 .scroller::-webkit-scrollbar-track {
 	border: 0.25rem solid transparent;
 	background-clip: padding-box;
-	border-radius: 0.5rem;
+	border-radius: var(--radius-lg);
 }
 
 .scroller::-webkit-scrollbar-track {

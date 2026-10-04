@@ -201,7 +201,7 @@
 	align-items: center;
 	gap: 0.35rem;
 	padding: 0.15rem 0.4rem;
-	border-radius: 0.75rem;
+	border-radius: var(--radius-xl);
 	background: color-mix(in srgb, var(--background-secondary) 86%, transparent);
 	color: var(--text-secondary);
 	border: 0.0625rem solid color-mix(in srgb, var(--border-color) 80%, transparent);

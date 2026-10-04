@@ -5,7 +5,7 @@
 	flex-direction: column;
 	gap: 1rem;
 	max-width: 100%;
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 }
 
 .grid {
@@ -28,14 +28,8 @@
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
-	padding-top: 1rem;
+	padding-top: 0.25rem;
 	padding-bottom: 1.5rem;
-}
-
-@media (min-width: 640px) {
-	.rightScroller {
-		padding-top: 1.25rem;
-	}
 }
 
 .sectionRow {
@@ -59,7 +53,7 @@
 
 .sectionTitle {
 	font-weight: 600;
-	font-size: 1.125rem;
+	font-size: 0.9375rem;
 	letter-spacing: -0.01em;
 	margin-bottom: 0.25rem;
 	overflow: hidden;
@@ -102,10 +96,10 @@
 
 .sectionSubtitle {
 	font-weight: 600;
-	font-size: 0.75rem;
+	font-size: 0.6875rem;
 	text-transform: uppercase;
-	letter-spacing: 0.02em;
-	margin: 1rem 0 0.625rem 0;
+	letter-spacing: 0.04em;
+	margin: 0.75rem 0 0.375rem 0;
 	color: var(--text-tertiary);
 }
 
@@ -210,7 +204,7 @@
 	padding: 1rem 0;
 	text-align: center;
 	color: var(--text-primary-muted);
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 }
 
 .itemWrap {
@@ -242,10 +236,11 @@
 
 .leftTitle {
 	margin-bottom: 0.25rem;
-	font-weight: 600;
-	font-size: 0.75rem;
+	padding: 0 0.5rem;
+	font-weight: 500;
+	font-size: 0.6875rem;
 	text-transform: uppercase;
-	letter-spacing: 0.02em;
+	letter-spacing: 0.04em;
 	color: var(--text-tertiary);
 }
 
@@ -255,8 +250,11 @@
 	width: 100%;
 	align-items: center;
 	gap: 0.5rem;
-	border-radius: 0.25rem;
-	padding: 0.375rem 0.5rem;
+	border-radius: var(--radius-md, 0.25rem);
+	min-height: 1.875rem;
+	padding: 0.25rem 0.5rem;
+	box-sizing: border-box;
+	color: var(--text-primary-muted);
 	text-align: left;
 	cursor: pointer;
 	background: transparent;
@@ -268,13 +266,14 @@
 }
 
 .overwriteItemSelected {
-	background: var(--brand-primary);
-	color: var(--brand-primary-fill);
+	background: var(--background-modifier-selected);
+	color: var(--text-primary);
+	font-weight: 500;
 }
 
 .roleDot {
-	width: 0.75rem;
-	height: 0.75rem;
+	width: 0.625rem;
+	height: 0.625rem;
 	border-radius: 624.9375rem;
 	flex-shrink: 0;
 }
@@ -285,7 +284,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	line-height: 1.2;
 	max-height: 1.2em;
 }
@@ -306,7 +305,7 @@
 
 .mobileListTitle {
 	font-weight: 600;
-	font-size: 1rem;
+	font-size: 0.875rem;
 	color: var(--text-primary);
 }
 
@@ -338,7 +337,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	text-align: left;
 	line-height: 1.2;
 	max-height: 1.2em;

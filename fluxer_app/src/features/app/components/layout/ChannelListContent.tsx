@@ -1,17 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {Routes} from '@app/app/Routes';
 import Accessibility from '@app/features/accessibility/state/Accessibility';
 import {GenericErrorModal} from '@app/features/app/components/alerts/GenericErrorModal';
 import {ChannelItem} from '@app/features/app/components/layout/ChannelItem';
 import channelItemStyles from '@app/features/app/components/layout/ChannelItem.module.css';
-import {ChannelItemContent} from '@app/features/app/components/layout/ChannelItemContent';
 import styles from '@app/features/app/components/layout/ChannelListContent.module.css';
 import {
 	CollapsedCategoryVoiceParticipants,
 	CollapsedChannelAvatarStack,
 } from '@app/features/app/components/layout/CollapsedCategoryVoiceParticipants';
-import {GenericChannelItem} from '@app/features/app/components/layout/GenericChannelItem';
+import {GuildSidebarToolbar} from '@app/features/app/components/layout/GuildSidebarToolbar';
 import {GuildDetachedBanner} from '@app/features/app/components/layout/GuildDetachedBanner';
 import {NullSpaceDropIndicator} from '@app/features/app/components/layout/NullSpaceDropIndicator';
 import {ScrollIndicatorOverlay} from '@app/features/app/components/layout/ScrollIndicatorOverlay';
@@ -43,14 +41,10 @@ import type {Channel} from '@app/features/channel/models/Channel';
 import Channels from '@app/features/channel/state/Channels';
 import * as GuildCommands from '@app/features/guild/commands/GuildCommands';
 import type {Guild} from '@app/features/guild/models/Guild';
-import {MEMBERS_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
-import {isKeyboardActivationKey} from '@app/features/input/utils/KeyboardUtils';
-import * as RouterUtils from '@app/features/navigation/utils/RouterUtils';
 import Permission from '@app/features/permissions/state/Permission';
 import {useLocation} from '@app/features/platform/components/router/RouterReact';
 import {failureCode} from '@app/features/platform/utils/ResponseInspection';
 import ReadStates from '@app/features/read_state/state/ReadStates';
-import {remFromPx} from '@app/features/theme/layout/RemFromPx';
 import {ChannelListContextMenu} from '@app/features/ui/action_menu/ChannelListContextMenu';
 import * as ContextMenuCommands from '@app/features/ui/commands/ContextMenuCommands';
 import * as DimensionCommands from '@app/features/ui/commands/DimensionCommands';
@@ -69,7 +63,6 @@ import {Permissions} from '@fluxer/constants/src/ChannelConstants';
 import {MAX_CHANNELS_PER_CATEGORY} from '@fluxer/constants/src/LimitConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
-import {UsersIcon} from '@phosphor-icons/react';
 import {clsx} from 'clsx';
 import {observer} from 'mobx-react-lite';
 import type {MotionValue} from 'motion';
@@ -88,10 +81,6 @@ const THIS_CATEGORY_ALREADY_CONTAINS_THE_MAXIMUM_OF_CHANNELS_DESCRIPTOR = msg({
 const CHANNELS_DESCRIPTOR = msg({
 	message: '{guildName} channels',
 	comment: 'Short label in the app layout channel list content. Preserve {guildName}; it is inserted by code.',
-});
-const MEMBERS_SELECTED_DESCRIPTOR = msg({
-	message: 'Members, selected',
-	comment: 'Short label in the app layout channel list content.',
 });
 const NEW_MESSAGES_DESCRIPTOR = msg({
 	message: 'New messages',
@@ -218,17 +207,6 @@ export const ChannelListContent = observer(({guild, scrollY, banner}: ChannelLis
 			selectedChannelInGuildId = segment;
 		}
 	}
-	const handleMembersClick = useCallback(() => {
-		RouterUtils.transitionTo(Routes.guildMembers(guild.id));
-	}, [guild.id]);
-	const handleMembersKeyDown = useCallback(
-		(event: React.KeyboardEvent) => {
-			if (!isKeyboardActivationKey(event.key)) return;
-			event.preventDefault();
-			handleMembersClick();
-		},
-		[handleMembersClick],
-	);
 	const collapsedCategories = useMemo(() => {
 		const overrides = userGuildSettings?.channel_overrides;
 		if (!overrides) return null;
@@ -556,44 +534,13 @@ export const ChannelListContent = observer(({guild, scrollY, banner}: ChannelLis
 							data-flx="app.channel-list-content.null-space-drop-indicator"
 						/>
 					</div>
-					{canViewMembers && (
-						<>
-							<div className={styles.membersSection} data-flx="app.channel-list-content.members-section">
-								<GenericChannelItem
-									containerClassName={channelItemStyles.container}
-									className={clsx(
-										channelItemStyles.channelItem,
-										channelItemStyles.channelItemRegular,
-										isMembersSelected && channelItemStyles.channelItemSelected,
-										!isMembersSelected && channelItemStyles.channelItemHoverable,
-									)}
-									isSelected={isMembersSelected}
-									aria-label={isMembersSelected ? i18n._(MEMBERS_SELECTED_DESCRIPTOR) : i18n._(MEMBERS_DESCRIPTOR)}
-									aria-current={isMembersSelected ? 'page' : undefined}
-									onClick={handleMembersClick}
-									onKeyDown={handleMembersKeyDown}
-									data-flx="app.channel-list-content.generic-channel-item.members-click"
-								>
-									<ChannelItemContent
-										icon={
-											<UsersIcon
-												size={remFromPx(20)}
-												className={clsx(
-													channelItemStyles.channelItemIcon,
-													isMembersSelected
-														? channelItemStyles.channelItemIconSelected
-														: channelItemStyles.channelItemIconUnselected,
-												)}
-												data-flx="app.channel-list-content.users-icon"
-											/>
-										}
-										name={i18n._(MEMBERS_DESCRIPTOR)}
-										data-flx="app.channel-list-content.channel-item-content"
-									/>
-								</GenericChannelItem>
-							</div>
-							<div className={styles.membersSeparator} data-flx="app.channel-list-content.members-separator" />
-						</>
+					{!isMobile && (
+						<GuildSidebarToolbar
+							guild={guild}
+							canViewMembers={canViewMembers}
+							isMembersSelected={isMembersSelected}
+							data-flx="app.channel-list-content.guild-sidebar-toolbar"
+						/>
 					)}
 					<div
 						ref={channelGroupsContainerRef}

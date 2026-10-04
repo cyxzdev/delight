@@ -358,7 +358,7 @@ export const AvatarUploader = observer(
 							data-flx="user.my-profile-tab.avatar-uploader.button-group"
 						>
 							<Button
-								variant="primary"
+								variant="secondary"
 								small={true}
 								onClick={handleAvatarUpload}
 								disabled={disabled}
@@ -394,7 +394,7 @@ export const AvatarUploader = observer(
 				</div>
 				<div className={styles.buttonGroup} data-flx="user.my-profile-tab.avatar-uploader.button-group--2">
 					<Button
-						variant="primary"
+						variant="secondary"
 						small={true}
 						onClick={handleAvatarUpload}
 						disabled={disabled}

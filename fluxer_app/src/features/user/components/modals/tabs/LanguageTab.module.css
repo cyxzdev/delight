@@ -10,7 +10,7 @@
 .noticeText {
 	margin: 0;
 	color: var(--text-primary-muted);
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	line-height: 1.35;
 }
 
@@ -62,7 +62,7 @@
 .languageOptionMenu .flagImageText {
 	width: 1.125rem;
 	height: 1.125rem;
-	font-size: 0.95rem;
+	font-size: 0.8125rem;
 }
 
 .languageOptionCompact {
@@ -93,7 +93,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	color: var(--text-primary-muted);
 }
 
@@ -116,7 +116,7 @@
 	flex-shrink: 0;
 	align-items: center;
 	justify-content: center;
-	font-size: 1rem;
+	font-size: 0.875rem;
 	line-height: 1;
 }
 
@@ -178,7 +178,7 @@
 
 .dictionaryName {
 	flex: 1;
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	color: var(--text-primary);
 }
 
@@ -206,7 +206,7 @@
 	border: 0.0625rem solid var(--background-modifier-accent);
 	background: var(--background-input);
 	color: var(--text-primary);
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 }
 
 .personalDictList {
@@ -232,7 +232,7 @@
 	color: var(--text-primary-muted);
 	cursor: pointer;
 	padding: 0 0.125rem;
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	line-height: 1;
 }
 

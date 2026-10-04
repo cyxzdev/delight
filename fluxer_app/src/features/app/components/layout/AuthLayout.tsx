@@ -7,9 +7,7 @@ import {NativeDragRegion} from '@app/features/app/components/layout/NativeDragRe
 import {NativeTitlebar} from '@app/features/app/components/layout/NativeTitlebar';
 import {useNativePlatform} from '@app/features/app/hooks/useNativePlatform';
 import {useSetLayoutVariant} from '@app/features/app/state/LayoutVariantContext';
-import {AuthBackground} from '@app/features/auth/flow/AuthBackground';
 import {AuthCardContainer} from '@app/features/auth/flow/AuthCardContainer';
-import {useAuthBackground} from '@app/features/auth/hooks/useAuthBackground';
 import {type AuthCardVariant, AuthLayoutContext} from '@app/features/auth/state/AuthLayoutContext';
 import {AuthRegisterDraftContext, type AuthRegisterFormDraft} from '@app/features/auth/state/AuthRegisterDraftContext';
 import {AppI18nProvider} from '@app/features/i18n/components/AppI18nProvider';
@@ -19,7 +17,6 @@ import {Scroller, type ScrollerHandle} from '@app/features/ui/components/Scrolle
 import {isMobileExperienceEnabled} from '@app/features/ui/utils/MobileExperience';
 import {hasUnavailableElectronNativeContext} from '@app/features/ui/utils/NativeUtils';
 import {useNativeTitleBar} from '@app/features/window/hooks/useNativeTitleBar';
-import foodPatternUrl from '@app/media/images/i-like-food.svg';
 import type {GuildSplashCardAlignmentValue} from '@fluxer/constants/src/GuildConstants';
 import {GuildSplashCardAlignment} from '@fluxer/constants/src/GuildConstants';
 import clsx from 'clsx';
@@ -27,8 +24,6 @@ import {observer} from 'mobx-react-lite';
 import {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 const AuthLayoutContent = observer(function AuthLayoutContent({children}: {children?: ReactNode}) {
-	const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight);
-	const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
 	const [splashUrl, setSplashUrl] = useState<string | null>(null);
 	const [showLogoSide, setShowLogoSide] = useState(true);
 	const [cardVariant, setCardVariant] = useState<AuthCardVariant>('default');
@@ -41,7 +36,6 @@ const AuthLayoutContent = observer(function AuthLayoutContent({children}: {child
 	const registerFormDraftsRef = useRef<Map<string, AuthRegisterFormDraft>>(new Map());
 	const scrollerRef = useRef<ScrollerHandle>(null);
 	const location = useLocation();
-	const {patternReady, splashDimensions} = useAuthBackground(splashUrl, foodPatternUrl);
 	const handleSetSplashUrl = useCallback(
 		(url: string | null) => {
 			if (splashUrlRef.current === url) return;
@@ -54,15 +48,6 @@ const AuthLayoutContent = observer(function AuthLayoutContent({children}: {child
 		[setSplashAlignment],
 	);
 	useEffect(() => {
-		const handleResize = () => {
-			setViewportWidth(window.innerWidth);
-			setViewportHeight(window.innerHeight);
-		};
-		handleResize();
-		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
-	}, []);
-	useEffect(() => {
 		document.documentElement.classList.add('auth-page');
 		return () => {
 			document.documentElement.classList.remove('auth-page');
@@ -71,14 +56,6 @@ const AuthLayoutContent = observer(function AuthLayoutContent({children}: {child
 	useEffect(() => {
 		scrollerRef.current?.jumpToStartEdge();
 	}, [location.pathname]);
-	const splashScale = useMemo(() => {
-		if (!splashDimensions) return null;
-		const {width, height} = splashDimensions;
-		if (width <= 0 || height <= 0) return null;
-		const heightScale = viewportHeight / height;
-		const widthScale = viewportWidth / width;
-		return Math.max(heightScale, widthScale);
-	}, [splashDimensions, viewportHeight, viewportWidth]);
 	const getRegisterFormDraft = useCallback((draftKey: string): AuthRegisterFormDraft | undefined => {
 		const draft = registerFormDraftsRef.current.get(draftKey);
 		if (!draft) {
@@ -194,16 +171,6 @@ const AuthLayoutContent = observer(function AuthLayoutContent({children}: {child
 							className={styles.characterBackground}
 							data-flx="app.auth-layout.auth-layout-content.character-background"
 						>
-							<AuthBackground
-								splashUrl={splashUrl}
-								splashDimensions={splashDimensions}
-								splashScale={splashScale}
-								patternReady={patternReady}
-								patternImageUrl={foodPatternUrl}
-								splashAlignment={splashAlignment}
-								useFullCover={false}
-								data-flx="app.auth-layout.auth-layout-content.auth-background"
-							/>
 							<div
 								className={clsx(
 									styles.leftSplit,
@@ -226,6 +193,7 @@ const AuthLayoutContent = observer(function AuthLayoutContent({children}: {child
 											showLogoSide={showLogoSide}
 											variant={cardVariant}
 											isInert={false}
+											splashUrl={splashUrl}
 											data-flx="app.auth-layout.auth-layout-content.auth-card-container"
 										>
 											{children}

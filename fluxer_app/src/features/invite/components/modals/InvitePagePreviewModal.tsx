@@ -143,6 +143,7 @@ export const InvitePagePreviewModal: React.FC<InvitePagePreviewModalProps> = obs
 									<AuthCardContainer
 										showLogoSide={true}
 										isInert={true}
+										splashUrl={splashUrl}
 										className={clsx(authLayoutStyles.cardContainer, styles.cardContainer)}
 										data-flx="invite.invite-page-preview-modal.card-container"
 									>

@@ -7,9 +7,11 @@
 
 .groupHeader,
 .virtualGroupRow {
-	color: var(--text-primary-muted);
+	color: var(--text-tertiary);
 	font-weight: 600;
-	font-size: 0.875rem;
+	font-size: 0.6875rem;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
 	line-height: 1rem;
 }
 
@@ -74,11 +76,11 @@
 	display: flex;
 	height: var(--member-list-group-header-height);
 	min-height: var(--member-list-group-header-height);
-	align-items: flex-start;
+	align-items: flex-end;
 	padding-left: 0.5rem;
 	padding-right: 0.5rem;
-	padding-top: 0.75rem;
-	padding-bottom: 0.25rem;
+	padding-top: 0;
+	padding-bottom: 0.375rem;
 	box-sizing: border-box;
 }
 

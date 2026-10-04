@@ -14,9 +14,9 @@
 	height: var(--layout-header-height);
 	min-height: var(--layout-header-height);
 	min-width: 0;
-	border-bottom: 0.0625rem solid var(--user-area-divider-color);
+	border-bottom: 0.0625rem solid var(--background-modifier-accent);
 	background-color: var(--background-secondary);
-	transition: background-color var(--transition-normal);
+	transition: background-color 120ms ease-out;
 }
 
 .headerRounded {
@@ -90,11 +90,11 @@
 	z-index: 30;
 	display: flex;
 	align-items: center;
-	gap: var(--spacing-1);
+	gap: var(--spacing-1-5);
 	height: var(--layout-header-height);
 	width: 100%;
 	min-width: 0;
-	padding: 0 var(--spacing-4);
+	padding: 0 0.75rem 0 1rem;
 	cursor: pointer;
 	white-space: nowrap;
 	overflow: hidden;
@@ -133,6 +133,8 @@
 	flex: 1;
 	min-width: 0;
 	font-weight: 600;
+	font-size: 0.9375rem;
+	letter-spacing: -0.01em;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -153,8 +155,8 @@
 
 .caretIcon {
 	margin-left: auto;
-	height: 1rem;
-	width: 1rem;
+	height: 0.875rem;
+	width: 0.875rem;
 	flex-shrink: 0;
 	transition:
 		transform var(--transition-fast),
@@ -164,7 +166,7 @@
 
 .caretIconDefault {
 	composes: caretIcon;
-	color: var(--text-primary);
+	color: var(--text-tertiary);
 }
 
 .caretIconWithBanner {

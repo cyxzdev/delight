@@ -2,10 +2,10 @@
 
 .title {
 	margin: 0 0 1.25rem;
-	text-align: center;
+	text-align: left;
 	font-size: 1.25rem;
 	font-weight: 600;
-	letter-spacing: 0.025em;
+	letter-spacing: -0.01em;
 	color: var(--text-primary);
 }
 
@@ -139,13 +139,13 @@
 
 .footerLink {
 	font-size: 0.875rem;
-	color: var(--text-link);
+	color: color-mix(in srgb, var(--brand-primary) 55%, var(--text-primary));
 	text-decoration: none;
 	cursor: pointer;
 }
 
 .footerLink:hover {
-	color: var(--text-link);
+	color: color-mix(in srgb, var(--brand-primary) 55%, var(--text-primary));
 	text-decoration: underline;
 }
 

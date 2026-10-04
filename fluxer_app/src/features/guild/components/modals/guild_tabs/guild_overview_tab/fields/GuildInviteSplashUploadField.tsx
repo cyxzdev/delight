@@ -124,7 +124,7 @@ export const GuildInviteSplashUploadField: React.FC<{
 						data-flx="guild.guild-tabs.guild-overview-tab.fields.guild-invite-splash-upload-field.image-upload-buttons"
 					>
 						<Button
-							variant="primary"
+							variant="secondary"
 							small={true}
 							onClick={controller.openSourcePicker}
 							disabled={!canManageGuild || controller.isProcessing}

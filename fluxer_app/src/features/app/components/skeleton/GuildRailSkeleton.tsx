@@ -563,32 +563,39 @@ export const GuildRailSkeleton: React.FC<GuildRailSkeletonProps> = ({
 								{organizedItems.map((item, index) => renderOrganizedItem(item, index, selectedItemIndex))}
 							</flx-app-guild-rail-skeleton-items>
 						)}
-						{discoveryVisible && (
-							<RailActionButton
-								icon={CompassIcon}
-								weight="fill"
-								selected={isDiscoverySelected}
-								data-flx="app.skeleton.guild-rail-skeleton.rail-action-button"
-							/>
-						)}
-						{addGuildVisible && (
-							<RailActionButton icon={PlusIcon} data-flx="app.skeleton.guild-rail-skeleton.rail-action-button--2" />
-						)}
-						{downloadVisible && (
-							<RailActionButton
-								icon={DownloadSimpleIcon}
-								data-flx="app.skeleton.guild-rail-skeleton.rail-action-button--3"
-							/>
-						)}
-						{helpVisible && (
-							<RailActionButton
-								icon={QuestionMarkIcon}
-								data-flx="app.skeleton.guild-rail-skeleton.rail-action-button--4"
-							/>
-						)}
 					</flx-app-guild-rail-skeleton-guilds-section>
 				</flx-app-guild-rail-skeleton-content>
 			</flx-app-guild-rail-skeleton-scroller>
+			{(discoveryVisible || addGuildVisible || downloadVisible || helpVisible) && (
+				<flx-app-guild-rail-skeleton-footer
+					className={flxElementClassName(styles.footer)}
+					data-flx="app.skeleton.guild-rail-skeleton.footer"
+				>
+				{discoveryVisible && (
+					<RailActionButton
+						icon={CompassIcon}
+						weight="fill"
+						selected={isDiscoverySelected}
+						data-flx="app.skeleton.guild-rail-skeleton.rail-action-button"
+					/>
+				)}
+				{addGuildVisible && (
+					<RailActionButton icon={PlusIcon} data-flx="app.skeleton.guild-rail-skeleton.rail-action-button--2" />
+				)}
+				{downloadVisible && (
+					<RailActionButton
+						icon={DownloadSimpleIcon}
+						data-flx="app.skeleton.guild-rail-skeleton.rail-action-button--3"
+					/>
+				)}
+				{helpVisible && (
+					<RailActionButton
+						icon={QuestionMarkIcon}
+						data-flx="app.skeleton.guild-rail-skeleton.rail-action-button--4"
+					/>
+				)}
+				</flx-app-guild-rail-skeleton-footer>
+			)}
 		</flx-app-guild-rail-skeleton>
 	);
 };

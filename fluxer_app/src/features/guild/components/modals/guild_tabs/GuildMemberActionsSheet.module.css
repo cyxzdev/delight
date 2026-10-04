@@ -22,7 +22,7 @@
 
 .headerName {
 	font-weight: 600;
-	font-size: 1rem;
+	font-size: 0.875rem;
 	color: var(--text-primary);
 	overflow: hidden;
 	text-overflow: ellipsis;

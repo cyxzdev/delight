@@ -44,8 +44,9 @@
 	width: 100%;
 	height: calc(var(--sheet-viewport-height, 100dvh) - env(safe-area-inset-top, 0px) - var(--sheet-top-gap));
 	max-height: calc(100dvh - var(--sheet-viewport-offset-bottom));
-	border-top-left-radius: 1.5rem;
-	border-top-right-radius: 1.5rem;
+	border-top-left-radius: var(--radius-2xl);
+	border-top-right-radius: var(--radius-2xl);
+	border-top: 1px solid var(--background-modifier-accent);
 	overflow: hidden;
 	color: var(--text-primary);
 	background-color: var(--sheet-surface, var(--background-secondary));
@@ -54,7 +55,7 @@
 	transition: transform var(--sheet-transition-duration) var(--sheet-transition-easing);
 	touch-action: manipulation;
 	outline: none;
-	box-shadow: 0 -1rem 2.5rem rgb(0 0 0 / 0.24);
+	box-shadow: 0 -0.5rem 1.5rem rgb(0 0 0 / 0.4);
 }
 
 .overlayRoot[data-dragging='true'] .container,

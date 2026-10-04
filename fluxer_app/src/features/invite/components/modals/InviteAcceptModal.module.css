@@ -7,12 +7,10 @@
 	max-height: calc(100svh - 3rem);
 	display: flex;
 	flex-direction: column;
-	border-radius: clamp(0.75rem, 1.1vw, 1rem);
-	border: 0.0625rem solid var(--background-header-secondary);
+	border-radius: var(--radius-xl);
+	border: 1px solid var(--background-modifier-accent);
 	background: var(--background-secondary);
-	box-shadow:
-		0 0 0 0.0625rem hsla(223, 7%, 20%, 0.08),
-		0 1rem 2.5rem hsla(0, 0%, 0%, 0.16);
+	box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.5);
 	overflow: hidden;
 	pointer-events: all;
 }
@@ -21,7 +19,7 @@
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
-	background-color: var(--brand-primary);
+	background-color: var(--background-primary);
 }
 
 .splashImage {
@@ -33,7 +31,9 @@
 	pointer-events: none;
 }
 
+/* Delight: no decorative pattern. */
 .patternImage {
+	display: none;
 	position: absolute;
 	inset: 0;
 	background-size: 16.25rem 16.25rem;
@@ -61,11 +61,10 @@
 	max-height: calc(100% - 1.5rem);
 	display: flex;
 	flex-direction: column;
-	border-radius: 1.125rem;
-	border: 0.0625rem solid color-mix(in srgb, var(--background-modifier-accent) 70%, transparent);
-	background: color-mix(in srgb, var(--background-secondary) 86%, transparent);
-	backdrop-filter: blur(1.125rem);
-	box-shadow: 0 1.5rem 3.75rem rgba(0, 0, 0, 0.28);
+	border-radius: var(--radius-xl);
+	border: 1px solid var(--background-modifier-accent);
+	background: var(--background-secondary-alt);
+	box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.5);
 	overflow: auto;
 	pointer-events: all;
 }

@@ -120,5 +120,5 @@
 }
 
 .focusRingTight {
-	border-radius: 0.5rem;
+	border-radius: var(--radius-lg);
 }

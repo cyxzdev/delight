@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .popout {
-	--popout-shadow: rgb(0 0 0 / 0.24);
+	--popout-shadow: rgb(0 0 0 / 0.45);
 
 	pointer-events: auto;
 	transition: none;
 	-webkit-app-region: no-drag;
-	border-radius: var(--popout-radius, 0.5rem);
-	box-shadow: 0 0.5rem 1rem var(--popout-shadow);
+	border-radius: var(--popout-radius, var(--radius-xl));
+	box-shadow: 0 0.5rem 1.5rem var(--popout-shadow);
 }
 
 :global(.theme-light) .popout {
@@ -37,3 +37,4 @@
 .triggerWrapper {
 	display: inline-flex;
 }
+

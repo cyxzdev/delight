@@ -7,7 +7,7 @@ import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
 import {observer} from 'mobx-react-lite';
 
-const DEFAULT_PROFILE_ACCENT_COLOR = 0x4641d9;
+const DEFAULT_PROFILE_ACCENT_COLOR = 0x7f49b4;
 
 const ACCENT_COLOR_DESCRIPTOR = msg({
 	message: 'Accent color',

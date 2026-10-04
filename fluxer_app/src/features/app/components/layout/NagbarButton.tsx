@@ -24,9 +24,13 @@ export const NagbarButton = ({
 	submitting,
 	variant = 'inverted',
 }: NagbarButtonProps) => {
+	// Delight: nagbars are neutral strips, so their "inverted" buttons become a small accent button.
+	let resolvedVariant: ButtonVariant = variant;
+	if (variant === 'inverted') resolvedVariant = 'primary';
+	else if (variant === 'inverted-outline') resolvedVariant = 'secondary';
 	return (
 		<Button
-			variant={variant}
+			variant={resolvedVariant}
 			superCompact={!isMobile}
 			compact={isMobile}
 			fitContent

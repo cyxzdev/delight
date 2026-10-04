@@ -106,3 +106,13 @@
 		radial-gradient(ellipse 36rem 24rem at 82% 84%, rgb(91 65 151 / 0.14), transparent 72%),
 		linear-gradient(145deg, #05040d 0%, #080616 46%, #0d0a1c 100%);
 }
+
+/* Delight: no decorative art — a flat surface. */
+.starfield::before,
+.starfield::after {
+	display: none;
+}
+
+.spaceBackground {
+	background: var(--background-primary);
+}

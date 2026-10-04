@@ -43,7 +43,7 @@ export const MutualFriendItem: React.FC<MutualFriendItemProps> = ({
 			data-flx="user.user-profile-modal.mutual-friend-item.button.click"
 		>
 			<StatusAwareAvatar
-				size={40}
+				size={32}
 				user={user}
 				data-flx="user.user-profile-modal.mutual-friend-item.status-aware-avatar"
 			/>

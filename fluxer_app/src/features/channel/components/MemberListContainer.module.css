@@ -8,7 +8,7 @@
 	width: 100svw;
 	min-width: 0;
 	overflow: hidden;
-	background-color: var(--background-secondary-lighter);
+	background-color: var(--background-secondary);
 	--member-list-width: 100svw;
 }
 
@@ -16,13 +16,14 @@
 	.memberListContainer {
 		--member-list-width: var(--layout-member-list-width);
 		width: var(--member-list-width);
+		border-left: 0.0625rem solid var(--background-modifier-accent);
 	}
 }
 
 .memberListScroller {
 	flex: 1;
 	min-height: 0;
-	background-color: var(--background-secondary-lighter);
+	background-color: var(--background-secondary);
 	padding-top: var(--member-list-scroller-padding-block-start);
 	padding-left: var(--member-list-scroller-padding-inline);
 	padding-right: var(--member-list-scroller-padding-inline);

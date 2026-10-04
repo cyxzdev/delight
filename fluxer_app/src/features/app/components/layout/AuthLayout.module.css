@@ -33,7 +33,7 @@
 	position: relative;
 	min-height: 100svh;
 	width: 100%;
-	background-color: var(--brand-primary);
+	background-color: var(--background-secondary);
 }
 
 :global(.auth-page),
@@ -103,6 +103,7 @@
 }
 
 .patternHost {
+	display: none;
 	position: fixed;
 	inset: 0;
 	opacity: 0.06;
@@ -120,108 +121,162 @@
 	flex: 1;
 	min-height: 100svh;
 	width: 100%;
-	align-items: center;
-	justify-content: center;
-	padding: clamp(2rem, 6vw, 4rem);
 	box-sizing: border-box;
 }
 
+/* Delight: the "card" is a full-bleed split page — brand panel left, form right. */
 .card {
 	margin: 0;
 	display: flex;
-	height: auto;
-	min-height: 31.25rem;
 	width: 100%;
-	max-width: 56rem;
-	overflow: hidden;
-	border-radius: 1rem;
+	min-height: 100svh;
 	background-color: var(--background-secondary);
-	box-shadow: 0 1.5625rem 3.125rem -0.75rem rgb(0 0 0 / 0.25);
-	transition:
-		max-width 180ms ease,
-		min-height 180ms ease;
 }
 
-.cardSingle {
-	max-width: 42rem;
-}
-
-.cardStandard {
-	max-width: 32rem;
-	min-height: auto;
-}
-
-.cardCompact {
-	max-width: 27rem;
-	min-height: auto;
-}
-
+.cardSingle,
+.cardStandard,
+.cardCompact,
 .cardWide {
-	max-width: 38rem;
-	min-height: auto;
+	min-height: 100svh;
 }
 
 .logoSide {
+	position: relative;
 	display: flex;
-	width: 33.333333%;
+	flex: 0 0 40%;
+	max-width: 40rem;
 	flex-direction: column;
-	align-items: center;
+	justify-content: space-between;
+	padding: 2.5rem 3rem;
+	box-sizing: border-box;
+	overflow: hidden;
+	border-right: 1px solid var(--background-modifier-accent);
+	background-color: var(--background-primary);
+}
+
+.brandSplash {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+.brandSplashImage {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: 0.22;
+}
+
+.brandInner {
+	position: relative;
+	display: flex;
+	flex: 1;
+	flex-direction: column;
 	justify-content: center;
-	padding: 3rem 2rem;
-	border-right: 0.0625rem solid var(--background-modifier-accent);
-	background-color: var(--background-secondary);
+	align-items: flex-start;
+	gap: 1rem;
 }
 
 .logo {
-	margin-bottom: 1.5rem;
-	height: 8rem;
-	width: 8rem;
+	width: 2.5rem;
+	height: 2.5rem;
+	color: var(--brand-primary);
 }
 
 .wordmark {
-	height: 2rem;
+	display: block;
+	height: 2.75rem;
+	width: auto;
+	margin-left: -0.375rem;
+	color: var(--text-primary);
+	font-size: 1.75rem;
+}
+
+.tagline {
+	margin: 0;
+	max-width: 22rem;
+	font-size: 0.9375rem;
+	line-height: 1.5;
+	color: var(--text-secondary);
+}
+
+.brandFooter {
+	position: relative;
+	font-size: 0.75rem;
+	color: var(--text-tertiary);
 }
 
 .formSide {
 	display: flex;
-	width: 66.666667%;
+	flex: 1;
+	min-width: 0;
 	flex-direction: column;
+	align-items: center;
 	justify-content: center;
-	padding: 3rem;
+	padding: 3rem 2rem;
+	box-sizing: border-box;
 	background: var(--background-secondary);
 }
 
-.formSideSingle {
+.formInner {
+	display: flex;
+	flex-direction: column;
 	width: 100%;
+	max-width: 23.75rem;
 }
 
-.formSideStandard {
-	padding: 2.5rem;
+.formSideSingle .formInner {
+	max-width: 36rem;
 }
 
-.formSideCompact {
-	padding: 2rem;
+.formSideWide .formInner {
+	max-width: 28rem;
 }
 
-.formSideWide {
-	padding: 2.5rem;
+.formSideStandard .formInner {
+	max-width: 23.75rem;
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.card {
-		transition: none;
+.formSideCompact .formInner {
+	max-width: 22rem;
+}
+
+@media (max-width: 860px) {
+	.logoSide {
+		flex-basis: 34%;
+		padding: 2rem;
 	}
 }
 
 @media (max-width: 640px) {
-	.cardContainer {
-		padding: 1.5rem;
+	.card {
+		flex-direction: column;
 	}
 
-	.formSideStandard,
-	.formSideCompact,
-	.formSideWide {
-		padding: 1.5rem;
+	.logoSide {
+		flex: 0 0 auto;
+		max-width: none;
+		padding: 1.25rem 1.5rem;
+		border-right: none;
+		border-bottom: 1px solid var(--background-modifier-accent);
+	}
+
+	.brandInner {
+		gap: 0.5rem;
+	}
+
+	.tagline,
+	.brandFooter {
+		display: none;
+	}
+
+	.wordmark {
+		height: 2rem;
+	}
+
+	.formSide {
+		justify-content: flex-start;
+		padding: 2rem 1.5rem;
 	}
 }
 
@@ -253,28 +308,8 @@
 	color: var(--text-primary);
 }
 
-@media (min-width: 1600px) {
-	.leftSplit.alignLeft {
-		align-items: flex-start;
-		padding-left: clamp(10rem, 18vw, 22rem);
-	}
-
-	.alignLeft .leftSplitWrapper,
-	.alignLeft .leftSplitAnimated,
-	.alignLeft .cardContainer {
-		justify-content: flex-start;
-	}
-
-	.leftSplit.alignRight {
-		align-items: flex-end;
-		padding-right: clamp(10rem, 18vw, 22rem);
-	}
-
-	.alignRight .leftSplitWrapper,
-	.alignRight .leftSplitAnimated,
-	.alignRight .cardContainer {
-		justify-content: flex-end;
-	}
+.alignLeft,
+.alignRight {
 }
 
 :global(html:not(.auth-page) body),

@@ -4,8 +4,13 @@
 	--channel-header-text-primary: var(--text-primary);
 	--channel-header-text-muted: var(--text-primary-muted);
 	--channel-header-text-tertiary: var(--text-tertiary);
-	--channel-header-divider-color: var(--background-modifier-hover);
-	--channel-header-hover-background: color-mix(in srgb, #fff 6%, transparent);
+	--channel-header-divider-color: var(--background-modifier-accent);
+	--channel-header-hover-background: var(--background-modifier-hover);
+	--channel-header-icon-size: 1.25rem;
+	--channel-header-action-icon-size: 1.25rem;
+	--channel-header-actions-gap: 0.125rem;
+	--channel-header-name-gap: 0.375rem;
+	--channel-header-padding-inline: 0.75rem 0.5rem;
 	--channel-header-update-icon-color: #22c55e;
 	--voice-call-header-text: var(--text-primary);
 	z-index: 3;
@@ -15,7 +20,7 @@
 	gap: var(--channel-header-gap);
 	height: var(--layout-header-height);
 	min-height: var(--layout-header-height);
-	border-bottom: 0.0625rem solid var(--user-area-divider-color);
+	border-bottom: 0.0625rem solid var(--background-modifier-accent);
 	background-color: var(--background-secondary-lighter);
 	padding: 0 var(--channel-header-padding-inline);
 	color: var(--channel-header-text-primary);
@@ -337,7 +342,9 @@
 	margin-left: var(--channel-header-name-gap);
 	min-width: 0;
 	flex-shrink: 1;
-	font-weight: 500;
+	font-weight: 600;
+	font-size: 0.9375rem;
+	letter-spacing: -0.01em;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -366,7 +373,7 @@
 	height: var(--channel-header-icon-size);
 	width: var(--channel-header-icon-size);
 	flex-shrink: 0;
-	color: var(--channel-header-text-muted);
+	color: var(--channel-header-text-tertiary);
 }
 
 .caretRight {
@@ -391,10 +398,16 @@
 	flex-shrink: 0;
 }
 
+/* Delight: a thin vertical rule between the name and the topic (the bullet glyph is hidden). */
 .topicDivider {
-	margin: 0 var(--channel-header-topic-divider-gap);
+	margin: 0 0.75rem;
 	flex-shrink: 0;
-	color: var(--channel-header-divider-color);
+	width: 0.0625rem;
+	height: 1.25rem;
+	overflow: hidden;
+	font-size: 0;
+	color: transparent;
+	background-color: var(--channel-header-divider-color);
 }
 
 .topicContainer {
@@ -488,17 +501,28 @@
 }
 
 .messageSearchFocusWrapper {
+	--message-search-bar-width: 100%;
+	--message-search-bar-height: 2rem;
 	display: flex;
-	flex: 0 0 15.25rem;
-	width: 15.25rem;
-	min-width: 15.25rem;
-	max-width: 15.25rem;
+	flex: 0 0 auto;
+	width: 11.25rem;
+	min-width: 11.25rem;
+	max-width: 16.25rem;
+	margin-left: 0.375rem;
+	transition:
+		width 150ms ease-out,
+		min-width 150ms ease-out;
+}
+
+.messageSearchFocusWrapper:focus-within {
+	width: 16.25rem;
+	min-width: 16.25rem;
 }
 
 .messageSearchFocusWrapper > :first-child {
-	width: 15.25rem;
-	min-width: 15.25rem;
-	max-width: 15.25rem;
+	width: 100%;
+	min-width: 0;
+	max-width: 100%;
 }
 
 .iconButton {
@@ -509,28 +533,33 @@
 	width: var(--channel-header-action-size);
 	flex-shrink: 0;
 	cursor: pointer;
-	border-radius: var(--radius-full);
+	border-radius: var(--radius-md);
 	border: none;
 	background-color: transparent;
-	transition: color var(--transition-fast);
+	transition:
+		color 120ms ease-out,
+		background-color 120ms ease-out;
 }
 
 .iconButtonDefault {
 	composes: iconButton;
 	color: var(--channel-header-text-muted);
 	cursor: pointer;
-	transition: color var(--transition-fast);
+	transition:
+		color 120ms ease-out,
+		background-color 120ms ease-out;
 }
 
 :global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
 	.iconButtonDefault:hover {
 	color: var(--channel-header-text-primary);
+	background-color: var(--channel-header-hover-background);
 }
 
 .iconButtonSelected {
 	composes: iconButton;
 	color: var(--channel-header-text-primary);
-	background-color: transparent;
+	background-color: var(--background-modifier-selected);
 }
 
 .updateIconButton {

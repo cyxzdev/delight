@@ -349,13 +349,18 @@ function createGuildNavigationRows({
 	return rows;
 }
 
+function isGuildRailUtilityRow(row: GuildNavigationRow): boolean {
+	return row.kind === 'discovery' || row.kind === 'add-guild' || row.kind === 'download' || row.kind === 'help';
+}
+
 function hasGapAfterGuildNavigationRow(row: GuildNavigationRow, nextRow: GuildNavigationRow | null): boolean {
 	switch (row.kind) {
 		case 'fluxer':
+			return true;
 		case 'discovery':
 		case 'add-guild':
 		case 'download':
-			return true;
+			return false;
 		case 'favorites':
 			if (nextRow == null) {
 				return false;
@@ -1714,7 +1719,7 @@ const GuildList = observer(() => {
 	const handleDragStateChange = useCallback((item: GuildDragItem | null) => {
 		setActiveDragItem(item);
 	}, []);
-	const guildNavigationRows = useMemo(
+	const allGuildNavigationRows = useMemo(
 		() =>
 			createGuildNavigationRows({
 				hasUnavailableGuilds,
@@ -1732,6 +1737,14 @@ const GuildList = observer(() => {
 			visibleDMListRows,
 			guildNavigationVisibility,
 		],
+	);
+	const guildNavigationRows = useMemo(
+		() => allGuildNavigationRows.filter((row) => !isGuildRailUtilityRow(row)),
+		[allGuildNavigationRows],
+	);
+	const guildRailUtilityRows = useMemo(
+		() => allGuildNavigationRows.filter(isGuildRailUtilityRow),
+		[allGuildNavigationRows],
 	);
 	const selectedGuildNavigationKey = useMemo(
 		() =>
@@ -2122,6 +2135,15 @@ const GuildList = observer(() => {
 					{guildNavigationRows.map(renderGuildNavigationListItem)}
 				</div>
 			</Scroller>
+			{guildRailUtilityRows.length > 0 && (
+				<div className={styles.guildListFooter} data-flx="app.guilds-layout.guild-list.guild-list-footer">
+					{guildRailUtilityRows.map((row) => (
+						<div key={row.key} style={GUILD_ROW_STYLE} data-flx="app.guilds-layout.guild-list.guild-list-footer-item">
+							{renderGuildNavigationRow(row)}
+						</div>
+					))}
+				</div>
+			)}
 			<GuildScrollIndicators
 				dmListRows={visibleDMListRows}
 				getTargetBounds={getGuildTargetBounds}

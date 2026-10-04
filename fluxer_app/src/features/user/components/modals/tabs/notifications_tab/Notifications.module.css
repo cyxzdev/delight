@@ -24,14 +24,14 @@
 
 .pushHeading {
 	margin: 0;
-	font-size: 1rem;
+	font-size: 0.875rem;
 	font-weight: 600;
 }
 
 .pushDescription {
 	margin: 0;
 	color: var(--text-secondary);
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 }
 
 .pushButtons {
@@ -42,7 +42,7 @@
 
 .pushButton {
 	padding: 0.35rem 0.75rem;
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	border-radius: 0.5rem;
 	border: 0.0625rem solid transparent;
 	background: var(--brand-primary);
@@ -80,7 +80,7 @@
 	display: flex;
 	justify-content: space-between;
 	gap: 0.5rem;
-	font-size: 0.85rem;
+	font-size: 0.78125rem;
 	color: var(--text-primary);
 }
 

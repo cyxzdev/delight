@@ -4,7 +4,7 @@
 	margin-bottom: 0.5rem;
 	font-weight: 500;
 	color: var(--text-primary);
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 }
 
 .actions {
@@ -36,5 +36,5 @@
 
 .description {
 	color: var(--text-primary-muted);
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 }

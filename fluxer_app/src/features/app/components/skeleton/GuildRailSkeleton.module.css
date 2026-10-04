@@ -1,28 +1,58 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .rail {
+	/* Delight rail metrics; keep in sync with .guildListScrollerWrapper in GuildsLayout.module.css. */
+	--guild-icon-size: 2.5rem;
+	--guild-list-item-box-size: 2.5rem;
+	--guild-list-item-gap: 0.5rem;
+	--guild-list-divider-line-size: 0.0625rem;
+	--guild-list-item-target-size: calc(var(--guild-list-item-box-size) + var(--guild-list-item-gap));
+	--guild-list-item-target-half-extra: calc(
+		(var(--guild-list-item-target-size) - var(--guild-list-item-box-size)) / 2
+	);
+	--guild-list-divider-base-gap: var(--guild-list-item-gap);
+	--guild-folder-expanded-surface-size: var(--guild-list-item-box-size);
+	--folder-radius: 0.75rem;
+	--guilds-layout-item-bg: var(--background-tertiary);
+	--layout-user-area-overlay-height: 0px;
+	--layout-user-area-reserved-height: 0px;
 	grid-column: 1;
 	grid-row: 1;
 	position: relative;
 	z-index: var(--z-index-elevated-1);
-	height: calc(
-		100% -
-		var(--layout-user-area-reserved-height, 0px) -
-		var(--layout-mobile-bottom-nav-reserved-height, 0px)
-	);
+	display: flex;
+	flex-direction: column;
+	height: calc(100% - var(--layout-mobile-bottom-nav-reserved-height, 0px));
 	min-height: 0;
 	width: var(--layout-guild-list-width);
 	min-width: 0;
-	background-color: var(--background-secondary);
+	background-color: var(--background-primary);
+	border-right: var(--skeleton-chrome-border);
+}
+
+.footer {
+	display: flex;
+	flex: 0 0 auto;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.25rem;
+	margin: 0 0.75rem;
+	padding: 0.5rem 0 0.625rem;
+	border-top: var(--skeleton-chrome-border);
+}
+
+.footer > .item {
+	height: 2rem;
 }
 
 .scroller {
+	flex: 1 1 auto;
 	height: 100%;
 	width: 100%;
 	min-width: 0;
 	overflow: hidden;
 	clip-path: inset(0);
-	padding-top: var(--spacing-1);
+	padding-top: var(--spacing-2);
 	padding-bottom: var(--spacing-2);
 }
 
@@ -69,7 +99,7 @@
 }
 
 .itemSlot[data-selected='true'] flx-skeleton-circle {
-	border-radius: 30%;
+	border-radius: 0.75rem;
 }
 
 .folderSlot {
@@ -173,7 +203,7 @@
 }
 
 .expandedFolderGuild[data-selected='true'] flx-skeleton-circle {
-	border-radius: 30%;
+	border-radius: 0.75rem;
 }
 
 .item {
@@ -187,7 +217,7 @@
 }
 
 .item[data-selected='true'] flx-skeleton-circle {
-	border-radius: 30%;
+	border-radius: 0.75rem;
 }
 
 .fluxerIcon {
@@ -197,21 +227,23 @@
 	height: var(--guild-icon-size);
 	width: var(--guild-icon-size);
 	flex-shrink: 0;
-	border-radius: var(--radius-full);
+	border-radius: 0.75rem;
 	background-color: var(--guilds-layout-item-bg);
 	color: var(--text-primary);
 }
 
 .item[data-selected='true'] .fluxerIcon {
-	border-radius: 30%;
-	background-color: var(--brand-primary);
-	color: white;
+	border-radius: 0.75rem;
+	background-color: var(--background-header-primary);
+	color: var(--text-primary);
 }
 
+/* The live rail shows the Delight spark here; the skeleton keeps the tile plain. */
 .fluxerIconGlyph {
-	height: 1.75rem;
-	width: 1.75rem;
+	height: 1.25rem;
+	width: 1.25rem;
 	color: currentColor;
+	opacity: 0;
 }
 
 .dividerSlot {
@@ -235,9 +267,9 @@
 .divider {
 	grid-row: 2;
 	height: var(--guild-list-divider-line-size);
-	width: 2rem;
+	width: 2.5rem;
 	flex-shrink: 0;
-	border-radius: 0.0625rem;
+	border-radius: 0;
 	background-color: var(--background-modifier-hover);
 }
 
@@ -246,14 +278,14 @@
 }
 
 .item[data-selected='true'] .actionIcon {
-	border-radius: 30%;
-	background-color: var(--brand-primary);
-	color: white;
+	border-radius: var(--radius-lg);
+	background-color: var(--background-modifier-selected);
+	color: var(--text-primary);
 }
 
 .actionIconGlyph {
-	height: 1.25rem;
-	width: 1.25rem;
+	height: 1.125rem;
+	width: 1.125rem;
 	color: currentColor;
 }
 

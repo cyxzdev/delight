@@ -10,9 +10,12 @@
 	width: 100%;
 	position: relative;
 	overflow: hidden;
-	--settings-edge-gutter: clamp(1rem, 3vw, 1.5rem);
+	--settings-edge-gutter: 2.5rem;
+	--settings-nav-width: 14.5rem;
+	--settings-nav-background: var(--background-secondary);
+	--settings-content-background: var(--background-secondary-alt);
 	--settings-surface-background: var(--form-surface-background);
-	--settings-panel-background: color-mix(in srgb, var(--form-surface-background) 88%, var(--background-primary));
+	--settings-panel-background: var(--settings-content-background);
 	--settings-border-color: var(--background-modifier-accent);
 	--settings-hover-background: var(--surface-interactive-hover-bg);
 	--settings-hover-border-color: color-mix(in srgb, var(--background-modifier-accent) 72%, var(--text-tertiary));
@@ -25,11 +28,11 @@
 	--settings-danger-text: color-mix(in srgb, var(--status-danger) 78%, var(--text-primary) 22%);
 	--settings-danger-background: color-mix(in srgb, var(--status-danger) 6%, var(--surface-interactive-hover-bg));
 	--settings-danger-border-color: color-mix(in srgb, var(--status-danger) 32%, transparent);
-	--settings-control-radius: 0.5rem;
-	--settings-sidebar-item-border-width: 0.0625rem;
-	--settings-sidebar-item-padding-inline: 0.625rem;
-	--settings-sidebar-item-icon-size: 1.25rem;
-	--settings-sidebar-item-icon-radius: 0.625rem;
+	--settings-control-radius: var(--radius-md, 0.25rem);
+	--settings-sidebar-item-border-width: 0px;
+	--settings-sidebar-item-padding-inline: 0.5rem;
+	--settings-sidebar-item-icon-size: 1rem;
+	--settings-sidebar-item-icon-radius: 0.5rem;
 	--settings-sidebar-item-icon-gap: 0.5rem;
 	--settings-sidebar-subitem-border-width: 0.0625rem;
 	--settings-sidebar-subitem-padding-inline: 0.625rem;
@@ -56,40 +59,32 @@
 }
 
 .containerFullscreen {
-	--settings-edge-gutter: clamp(1rem, 3vw, 1.5rem);
-	max-width: 87.5rem;
 	width: 100%;
-	margin: 0 auto;
+	margin: 0;
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (max-width: 1023px) {
 	.container {
-		--settings-edge-gutter: clamp(1.25rem, 4vw, 2rem);
+		--settings-edge-gutter: 1.5rem;
 	}
 }
 
-@media screen and (min-width: 1024px) {
-	.container {
-		--settings-edge-gutter: clamp(1.5rem, 5vw, 3rem);
-	}
+/* Delight: settings are a flat full-window surface, not a floating card. */
+:global([data-flx='app.modal.layer']):has(.containerFullscreen) {
+	--fullscreen-pad-y: 0px !important;
+	--fullscreen-pad-x: 0px !important;
+	padding: 0 !important;
 }
 
-@media screen and (min-width: 1440px) {
-	.container {
-		--settings-edge-gutter: clamp(2rem, 6vw, 4rem);
-	}
-}
-
-@media screen and (min-width: 1920px) {
-	.container {
-		--settings-edge-gutter: clamp(2.5rem, 7vw, 5rem);
-	}
-}
-
-@media screen and (min-width: 2560px) {
-	.container {
-		--settings-edge-gutter: clamp(3rem, 8vw, 6rem);
-	}
+:global(div):has(> .containerFullscreen) {
+	width: 100% !important;
+	height: 100% !important;
+	max-width: none !important;
+	max-height: 100% !important;
+	border: none !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	background: var(--background-secondary-alt) !important;
 }
 
 .mobileWrapper {
@@ -163,10 +158,11 @@
 }
 
 .desktopSidebar {
-	flex: 0 0 clamp(15.75rem, 24svw, 20rem);
+	flex: 0 0 var(--settings-nav-width);
+	width: var(--settings-nav-width);
 	display: flex;
 	border-right: 0.0625rem solid var(--settings-border-color);
-	background: var(--settings-surface-background);
+	background: var(--settings-nav-background);
 	overflow: hidden;
 	position: relative;
 }
@@ -174,8 +170,8 @@
 .desktopSidebarInner {
 	display: flex;
 	flex-direction: column;
-	padding: 1rem 0.75rem 0;
-	gap: 0.25rem;
+	padding: 0.75rem 0.5rem 0;
+	gap: 0.125rem;
 	height: 100%;
 	flex: 1 1 auto;
 	min-width: 0;
@@ -195,7 +191,7 @@
 	flex: 1;
 	display: flex;
 	flex-direction: column;
-	background: var(--background-secondary);
+	background: var(--settings-content-background);
 	min-width: 0;
 	min-height: 0;
 	overflow: hidden;
@@ -226,14 +222,15 @@
 	position: sticky;
 	top: 0;
 	z-index: 10;
-	height: 3.75rem;
+	height: 3.5rem;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0 1rem;
+	padding: 0.5rem 0.75rem 0 var(--settings-edge-gutter);
+	box-sizing: border-box;
 	flex-shrink: 0;
-	background: var(--background-secondary);
-	border-bottom: 0.0625rem solid var(--settings-border-color);
+	background: var(--settings-content-background);
+	border-bottom: 0.0625rem solid transparent;
 	contain: layout style paint;
 }
 
@@ -246,33 +243,10 @@
 
 .desktopScrollInner {
 	width: 100%;
-	margin: 0 auto;
+	margin: 0;
 	padding: 0 var(--settings-edge-gutter);
-	max-width: clamp(40rem, 90%, 50rem);
-}
-
-@media screen and (min-width: 1024px) {
-	.desktopScrollInner {
-		max-width: clamp(46.25rem, 85%, 60rem);
-	}
-}
-
-@media screen and (min-width: 1440px) {
-	.desktopScrollInner {
-		max-width: clamp(51.25rem, 80%, 65rem);
-	}
-}
-
-@media screen and (min-width: 1920px) {
-	.desktopScrollInner {
-		max-width: clamp(56.25rem, 75%, 70rem);
-	}
-}
-
-@media screen and (min-width: 2560px) {
-	.desktopScrollInner {
-		max-width: clamp(62.5rem, 70%, 75rem);
-	}
+	max-width: calc(47.5rem + 2 * var(--settings-edge-gutter));
+	box-sizing: border-box;
 }
 
 :global(.theme-light) .desktopContent {
@@ -305,21 +279,21 @@
 .sidebarNavList {
 	display: flex;
 	flex-direction: column;
-	gap: 0.1875rem;
+	gap: 0.0625rem;
 }
 
 .sidebarNavList > * {
 	display: flex;
 	flex-direction: column;
-	gap: 0.1875rem;
+	gap: 0.0625rem;
 	min-width: 0;
 }
 
 .sidebarCategory {
 	display: flex;
 	flex-direction: column;
-	gap: 0.1875rem;
-	margin-bottom: 0.5rem;
+	gap: 0.0625rem;
+	margin-bottom: 0.625rem;
 	min-width: 0;
 }
 
@@ -330,14 +304,14 @@
 }
 
 .sidebarCategoryTitle {
-	margin: 0 0 0.0625rem;
-	padding: 0.25rem 0.625rem 0.1875rem;
+	margin: 0;
+	padding: 0.375rem 0.5rem 0.25rem;
 	font-size: 0.6875rem;
-	font-weight: 600;
+	font-weight: 500;
 	line-height: 1rem;
 	color: var(--text-tertiary);
 	text-transform: uppercase;
-	letter-spacing: 0.02em;
+	letter-spacing: 0.04em;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -351,12 +325,13 @@
 	background: transparent;
 	border: var(--settings-sidebar-item-border-width) solid transparent;
 	margin: 0;
-	padding: 0.3125rem var(--settings-sidebar-item-padding-inline);
+	padding: 0 var(--settings-sidebar-item-padding-inline);
 	border-radius: var(--settings-control-radius);
 	color: var(--text-primary-muted);
 	font-size: 0.8125rem;
 	line-height: 1.125rem;
-	font-weight: 500;
+	font-weight: 400;
+	position: relative;
 	display: flex;
 	align-items: center;
 	gap: var(--settings-sidebar-item-icon-gap);
@@ -365,10 +340,28 @@
 	-webkit-user-select: none;
 	-webkit-tap-highlight-color: transparent;
 	width: 100%;
-	min-height: 2.125rem;
+	min-height: 1.875rem;
+	height: 1.875rem;
 	text-align: left;
 	box-sizing: border-box;
-	transition: none;
+	transition:
+		background-color 0.12s ease,
+		color 0.12s ease;
+}
+
+.sidebarItemSelected {
+	font-weight: 500;
+}
+
+.sidebarItemSelected::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 0.5rem;
+	bottom: 0.5rem;
+	width: 0.1875rem;
+	border-radius: 0 0.125rem 0.125rem 0;
+	background: var(--brand-primary);
 }
 
 .sidebarItemSelected,
@@ -383,7 +376,7 @@
 	height: var(--settings-sidebar-item-icon-size);
 	font-size: 1rem;
 	color: var(--text-tertiary);
-	transition: none;
+	transition: color 0.12s ease;
 }
 
 .sidebarItemLabel {
@@ -512,8 +505,8 @@
 
 .sidebarFooter {
 	margin-top: auto;
-	padding: 1rem 0 1rem;
-	text-align: center;
+	padding: 0.75rem 0;
+	text-align: left;
 }
 
 .sidebarNavFooter {
@@ -521,15 +514,16 @@
 }
 
 .closeButton {
-	width: 2.125rem;
-	height: 2.125rem;
+	width: 2rem;
+	height: 2rem;
+	flex-shrink: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: var(--settings-control-radius);
+	border-radius: 50%;
 	color: var(--text-tertiary);
 	cursor: pointer;
-	border: 0.0625rem solid transparent;
+	border: 0.0625rem solid var(--background-modifier-accent);
 	background: transparent;
 	-webkit-app-region: no-drag;
 	box-sizing: border-box;
@@ -550,7 +544,7 @@
 }
 
 .desktopScrollSpacerTop {
-	height: 1.25rem;
+	height: 0.25rem;
 	flex-shrink: 0;
 }
 
@@ -567,7 +561,7 @@
 }
 .sidebarSubItemsWrap[data-expanded='true'] {
 	grid-template-rows: 1fr;
-	margin-block: 0.1875rem 0.25rem;
+	margin-block: 0.0625rem 0.25rem;
 }
 .sidebarSubItemsWrap[data-reduced-motion='true'] {
 	transition: none;
@@ -576,7 +570,7 @@
 .sidebarSubItems {
 	display: flex;
 	flex-direction: column;
-	gap: 0.125rem;
+	gap: 0;
 	margin-left: var(--settings-sidebar-subtree-line-x);
 	margin-right: 0;
 	padding-left: var(--settings-sidebar-subtree-content-gap);
@@ -630,12 +624,12 @@
 .sidebarSubItem {
 	background: transparent;
 	border: var(--settings-sidebar-subitem-border-width) solid transparent;
-	padding: 0.25rem var(--settings-sidebar-subitem-padding-inline);
-	border-radius: 0.375rem;
+	padding: 0 var(--settings-sidebar-subitem-padding-inline);
+	border-radius: var(--settings-control-radius);
 	color: var(--text-tertiary);
-	font-size: 0.8125rem;
-	line-height: 1.125rem;
-	font-weight: 500;
+	font-size: 0.78125rem;
+	line-height: 1rem;
+	font-weight: 400;
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
@@ -644,7 +638,7 @@
 	-webkit-user-select: none;
 	-webkit-tap-highlight-color: transparent;
 	width: 100%;
-	min-height: 1.875rem;
+	min-height: 1.625rem;
 	text-align: left;
 	position: relative;
 	z-index: 2;
@@ -666,8 +660,8 @@
 
 .sidebarSubItemActive {
 	color: var(--text-primary);
-	font-weight: 600;
-	background: var(--settings-sidebar-selected-background);
+	font-weight: 500;
+	background: transparent;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -693,4 +687,71 @@
 	.sidebarSubItems::before {
 		transition: none;
 	}
+}
+
+/* Delight: compact, hairline rows for the shared form pieces when they sit inside settings. */
+.container :global([data-flx='ui.switch-group.container']) {
+	margin: -0.5rem 0;
+}
+
+.container :global([data-flx='ui.switch-group.switch-group-item.item']) {
+	height: auto;
+	min-height: 2.75rem;
+	padding: 0.375rem 0;
+	box-sizing: border-box;
+}
+
+.container :global([data-flx='ui.form.switch.container']) {
+	min-height: 2.5rem;
+	gap: 1.5rem;
+	padding: 0.25rem 0;
+}
+
+.container :global([data-flx='ui.form.switch.label-container.label-toggle']) {
+	gap: 0.125rem;
+}
+
+.container :global([data-flx='ui.form.switch.label']),
+.container :global([data-flx='ui.switch-group.switch-group-item.label-text']) {
+	font-size: 0.8125rem;
+	font-weight: 500;
+	line-height: 1.125rem;
+}
+
+.container :global([data-flx='ui.form.switch.description']) {
+	font-size: 0.78125rem;
+	line-height: 1.125rem;
+	color: var(--text-tertiary);
+}
+
+.container :global([data-flx='ui.switch-group.switch-group-custom-item.group']) {
+	height: auto;
+	min-height: 2.75rem;
+	padding: 0.375rem 0;
+	box-sizing: border-box;
+}
+
+.container :global([data-flx='ui.radio-group.radio-group.group']) {
+	--radio-indicator-size: 1rem;
+	gap: 0.125rem;
+}
+
+.container :global([data-flx='ui.radio-group.radio-group.radio-option-item.radio-group-option']) {
+	padding: 0.3125rem 0;
+	gap: 0.625rem;
+}
+
+.container :global([data-flx='ui.radio-group.radio-group.radio-option-item.stack']) {
+	gap: 0.0625rem;
+}
+
+.container :global([data-flx='ui.radio-group.radio-group.radio-option-item.label-text']) {
+	font-size: 0.8125rem;
+	line-height: 1.125rem;
+}
+
+.container :global([data-flx='ui.radio-group.radio-group.radio-option-item.description']) {
+	font-size: 0.78125rem;
+	line-height: 1.125rem;
+	color: var(--text-tertiary);
 }

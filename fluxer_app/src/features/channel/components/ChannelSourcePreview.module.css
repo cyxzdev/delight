@@ -69,7 +69,7 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	font-size: 0.95rem;
-	font-weight: 700;
+	font-weight: 600;
 	color: var(--text-primary);
 }
 

@@ -10,8 +10,9 @@
 	height: var(--mobile-bottom-nav-height);
 	align-items: center;
 	justify-content: space-around;
-	border-top: 0.0625rem solid var(--background-header-secondary);
-	background-color: var(--background-secondary);
+	border-top: 0.0625rem solid var(--background-modifier-accent);
+	background-color: var(--background-primary);
+	padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 :global(.theme-light) .container {
@@ -19,12 +20,15 @@
 }
 
 .navButton {
+	position: relative;
 	display: flex;
 	flex: 1;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 0.25rem;
+	gap: 0.1875rem;
+	align-self: stretch;
+	transition: color 120ms ease-out;
 	padding-top: 0.5rem;
 	padding-bottom: 0.5rem;
 	cursor: pointer;
@@ -34,8 +38,21 @@
 	color: var(--text-primary);
 }
 
+/* Delight: the active tab is marked by a short accent bar on the top edge. */
+.navButtonActive::before {
+	content: '';
+	position: absolute;
+	top: -0.0625rem;
+	left: 50%;
+	width: 1.5rem;
+	height: 0.125rem;
+	transform: translateX(-50%);
+	border-radius: 0 0 0.125rem 0.125rem;
+	background-color: var(--brand-primary);
+}
+
 .navButtonInactive {
-	color: var(--text-primary-muted);
+	color: var(--text-tertiary);
 }
 
 .voiceButton {
@@ -43,11 +60,11 @@
 }
 
 .icon {
-	height: 1.5rem;
-	width: 1.5rem;
+	height: 1.375rem;
+	width: 1.375rem;
 }
 
 .label {
-	font-weight: 600;
-	font-size: 0.625rem;
+	font-weight: 500;
+	font-size: 0.6875rem;
 }

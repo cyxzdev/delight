@@ -13,7 +13,7 @@
 
 .banner {
 	position: relative;
-	height: 11.5rem;
+	height: 6rem;
 	width: 100%;
 	overflow: hidden;
 }
@@ -29,7 +29,7 @@
 .bannerDefault {
 	height: 100%;
 	width: 100%;
-	background-color: var(--brand-primary);
+	background-color: color-mix(in srgb, var(--brand-primary) 35%, var(--background-tertiary));
 }
 
 .profile {
@@ -40,7 +40,7 @@
 .avatarButton {
 	position: absolute;
 	left: 1rem;
-	top: -2.5rem;
+	top: -2.25rem;
 	border: 0.25rem solid var(--background-primary);
 	background-color: var(--background-primary);
 	border-radius: 624.9375rem;
@@ -64,18 +64,19 @@
 
 .settingsButton {
 	display: flex;
-	height: 2.5rem;
-	width: 2.5rem;
+	height: 2rem;
+	width: 2rem;
 	align-items: center;
 	justify-content: center;
 	border-radius: 624.9375rem;
-	background-color: var(--background-tertiary);
+	border: 0.0625rem solid var(--background-modifier-accent);
+	background-color: var(--background-secondary);
 	color: var(--text-primary);
 }
 
 .settingsIcon {
-	height: 1.25rem;
-	width: 1.25rem;
+	height: 1rem;
+	width: 1rem;
 }
 
 .userInfo {
@@ -90,9 +91,9 @@
 }
 
 .username {
-	font-weight: 700;
-	font-size: 1.5rem;
-	line-height: 2rem;
+	font-weight: 600;
+	font-size: 1.25rem;
+	line-height: 1.625rem;
 	color: var(--text-primary);
 	word-break: break-word;
 	overflow-wrap: break-word;
@@ -138,14 +139,15 @@
 	align-items: center;
 	justify-content: center;
 	gap: 0.5rem;
-	border-radius: 0.75rem;
+	min-height: 2.25rem;
+	border-radius: var(--radius-lg);
 	background-color: var(--brand-primary);
-	padding: 0.75rem 1rem;
+	padding: 0 1rem;
 }
 
 .editIcon {
-	height: 1.25rem;
-	width: 1.25rem;
+	height: 1rem;
+	width: 1rem;
 	color: white;
 }
 
@@ -156,9 +158,10 @@
 
 .section {
 	margin-top: 1rem;
-	border-radius: 0.75rem;
-	background-color: var(--background-secondary);
-	padding: 1rem;
+	border-top: 0.0625rem solid var(--background-modifier-accent);
+	border-radius: 0;
+	background-color: transparent;
+	padding: 0.875rem 0 0;
 }
 
 .sectionHeader {
@@ -168,8 +171,10 @@
 .sectionTitle {
 	margin-bottom: 0.5rem;
 	font-weight: 600;
-	font-size: 0.875rem;
-	color: var(--text-primary);
+	font-size: 0.6875rem;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
 }
 
 .noteButton {
@@ -178,9 +183,10 @@
 	width: 100%;
 	align-items: center;
 	justify-content: space-between;
-	border-radius: 0.75rem;
+	border-radius: var(--radius-lg);
+	border: 0.0625rem solid var(--background-modifier-accent);
 	background-color: var(--background-secondary);
-	padding: 1rem;
+	padding: 0.75rem 0.875rem;
 	text-align: left;
 }
 

@@ -22,8 +22,8 @@
 	);
 	display: flex;
 	box-sizing: border-box;
-	width: max-content;
-	min-width: var(--layout-header-popout-width);
+	width: 14rem;
+	min-width: 0;
 	max-width: min(22rem, calc(100vw - 1rem));
 	flex-direction: column;
 	gap: 0.125rem;

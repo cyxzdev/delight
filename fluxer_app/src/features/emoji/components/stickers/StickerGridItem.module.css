@@ -7,7 +7,7 @@
 	gap: var(--sticker-card-gap, 0.75rem);
 	height: 100%;
 	min-height: 0;
-	border-radius: 0.5rem;
+	border-radius: var(--radius-lg);
 	border: 0.0625rem solid var(--background-header-secondary);
 	padding: var(--sticker-card-padding, 0.75rem);
 	transition: box-shadow 0.15s ease-in-out;

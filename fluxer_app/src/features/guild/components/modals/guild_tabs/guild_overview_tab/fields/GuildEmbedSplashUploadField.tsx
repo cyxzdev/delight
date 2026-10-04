@@ -106,7 +106,7 @@ export const GuildEmbedSplashUploadField: React.FC<{
 						data-flx="guild.guild-tabs.guild-overview-tab.fields.guild-embed-splash-upload-field.image-upload-buttons"
 					>
 						<Button
-							variant="primary"
+							variant="secondary"
 							small={true}
 							onClick={controller.openSourcePicker}
 							disabled={!canManageGuild || controller.isProcessing}

@@ -10,7 +10,7 @@
 	background: var(--reaction-tooltip-surface);
 	font-weight: 500;
 	color: var(--text-primary);
-	border-radius: 0.5rem;
+	border-radius: var(--radius-lg);
 	border: 0.0625rem solid var(--reaction-tooltip-border);
 	box-shadow: var(--reaction-tooltip-shadow);
 }

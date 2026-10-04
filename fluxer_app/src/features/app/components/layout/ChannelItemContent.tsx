@@ -24,6 +24,7 @@ export const ChannelItemContent: React.FC<ChannelItemContentProps> = observer(
 			return (
 				<>
 					<div className={styles.categoryContent} data-flx="app.channel-item-content.category-content">
+						{icon}
 						<Tooltip text={isNameOverflowing && name ? name : ''} data-flx="app.channel-item-content.tooltip">
 							<span
 								ref={nameRef}

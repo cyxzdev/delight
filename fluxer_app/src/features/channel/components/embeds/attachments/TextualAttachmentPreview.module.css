@@ -323,7 +323,7 @@
 	width: 16rem;
 	max-width: var(--available-width);
 	max-height: var(--available-height);
-	border-radius: 0.5rem;
+	border-radius: var(--radius-lg);
 	border: 0.0625rem solid var(--background-modifier-accent);
 	background-color: var(--form-surface-background);
 	box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 0.24);
@@ -342,7 +342,7 @@
 	box-sizing: border-box;
 	width: 100%;
 	border: 0.0625rem solid var(--background-modifier-accent);
-	border-radius: 0.5rem;
+	border-radius: var(--radius-lg);
 	background-color: transparent;
 	color: var(--text-primary);
 	font-size: 0.8125rem;

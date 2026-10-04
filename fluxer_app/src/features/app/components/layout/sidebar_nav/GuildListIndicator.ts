@@ -13,8 +13,8 @@ export type GuildListIndicatorBarTarget = {
 };
 
 function resolveGuildListIndicatorHeight({isSelected, showHoverState}: ResolveGuildListIndicatorHeightRequest): number {
-	if (isSelected) return 40;
-	if (showHoverState) return 20;
+	if (isSelected) return 32;
+	if (showHoverState) return 16;
 	return 8;
 }
 

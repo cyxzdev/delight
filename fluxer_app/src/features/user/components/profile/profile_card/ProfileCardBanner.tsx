@@ -6,14 +6,16 @@ import {remFromPx} from '@app/features/theme/layout/RemFromPx';
 import {StatusAwareAvatar} from '@app/features/ui/components/StatusAwareAvatar';
 import FocusRing from '@app/features/ui/focus_ring/FocusRing';
 import styles from '@app/features/user/components/profile/profile_card/ProfileCardBanner.module.css';
-import {
-	PROFILE_POPOUT_BANNER_AVATAR_CUTOUT,
-	PROFILE_POPOUT_GEOMETRY,
-} from '@app/features/user/constants/UserProfileSurfaceGeometry';
 import type {User} from '@app/features/user/models/User';
 import {observer} from 'mobx-react-lite';
 import type React from 'react';
-import {useId, useMemo} from 'react';
+import {useMemo} from 'react';
+
+// Delight: a short flat banner with the avatar overlapping its bottom edge, ringed in the card colour.
+const DELIGHT_BANNER_HEIGHT_PX = 60;
+const DELIGHT_AVATAR_SIZE_PX = 56;
+const DELIGHT_AVATAR_RING_PX = 4;
+const DELIGHT_HEADER_HEIGHT_PX = DELIGHT_BANNER_HEIGHT_PX + DELIGHT_AVATAR_SIZE_PX / 2 + DELIGHT_AVATAR_RING_PX;
 
 interface ProfileCardBannerProps {
 	bannerUrl: string | null;
@@ -43,15 +45,12 @@ export const ProfileCardBanner: React.FC<ProfileCardBannerProps> = observer(
 		onAvatarClick,
 		onAvatarContextMenu,
 		onBannerContextMenu,
-		headerHeight = PROFILE_POPOUT_GEOMETRY.headerHeightPx,
+		headerHeight = DELIGHT_HEADER_HEIGHT_PX,
 	}) => {
-		const bannerHeight = PROFILE_POPOUT_GEOMETRY.bannerHeightPx;
-		const reactId = useId();
-		const safeId = reactId.replace(/[^a-zA-Z0-9_-]/g, '');
-		const maskId = `uid_${safeId}`;
+		const bannerHeight = DELIGHT_BANNER_HEIGHT_PX;
 		const headerStyle = useMemo<React.CSSProperties>(() => ({height: remFromPx(headerHeight)}), [headerHeight]);
 		const bannerWrapperStyle = useMemo<React.CSSProperties>(
-			() => ({minHeight: remFromPx(bannerHeight)}),
+			() => ({height: remFromPx(bannerHeight), minHeight: remFromPx(bannerHeight)}),
 			[bannerHeight],
 		);
 		const {
@@ -66,7 +65,10 @@ export const ProfileCardBanner: React.FC<ProfileCardBannerProps> = observer(
 		const bannerStyle = useMemo<React.CSSProperties>(
 			() => ({
 				height: '100%',
-				backgroundColor: bannerColor,
+				// Delight: a plain colour banner is toned down into the card surface; images stay as-is.
+				backgroundColor: activeBannerUrl
+					? bannerColor
+					: `color-mix(in srgb, ${bannerColor} 55%, var(--profile-card-surface, var(--background-tertiary)))`,
 				...(activeBannerUrl ? {backgroundImage: `url(${activeBannerUrl})`} : {}),
 			}),
 			[activeBannerUrl, bannerColor],
@@ -85,45 +87,11 @@ export const ProfileCardBanner: React.FC<ProfileCardBannerProps> = observer(
 					onContextMenu={onBannerContextMenu}
 					data-flx="user.profile.profile-card.profile-card-banner.banner-wrapper.banner-context-menu"
 				>
-					<svg
-						className={styles.bannerMask}
-						viewBox={`0 0 ${PROFILE_POPOUT_BANNER_AVATAR_CUTOUT.viewBoxWidthPx} ${PROFILE_POPOUT_BANNER_AVATAR_CUTOUT.viewBoxHeightPx}`}
-						preserveAspectRatio="none"
-						data-flx="user.profile.profile-card.profile-card-banner.banner-mask"
-					>
-						<mask id={maskId} data-flx="user.profile.profile-card.profile-card-banner.mask">
-							<rect
-								fill="white"
-								x="0"
-								y="0"
-								width={PROFILE_POPOUT_BANNER_AVATAR_CUTOUT.viewBoxWidthPx}
-								height={PROFILE_POPOUT_BANNER_AVATAR_CUTOUT.viewBoxHeightPx}
-								data-flx="user.profile.profile-card.profile-card-banner.rect"
-							/>
-							<circle
-								fill="black"
-								cx={PROFILE_POPOUT_BANNER_AVATAR_CUTOUT.cx}
-								cy={PROFILE_POPOUT_BANNER_AVATAR_CUTOUT.cy}
-								r={PROFILE_POPOUT_BANNER_AVATAR_CUTOUT.r}
-								data-flx="user.profile.profile-card.profile-card-banner.circle"
-							/>
-						</mask>
-						<foreignObject
-							x="0"
-							y="0"
-							width={PROFILE_POPOUT_BANNER_AVATAR_CUTOUT.viewBoxWidthPx}
-							height={PROFILE_POPOUT_BANNER_AVATAR_CUTOUT.viewBoxHeightPx}
-							overflow="visible"
-							mask={`url(#${maskId})`}
-							data-flx="user.profile.profile-card.profile-card-banner.foreign-object"
-						>
-							<div
-								className={styles.banner}
-								style={bannerStyle}
-								data-flx="user.profile.profile-card.profile-card-banner.banner"
-							/>
-						</foreignObject>
-					</svg>
+					<div
+						className={styles.banner}
+						style={bannerStyle}
+						data-flx="user.profile.profile-card.profile-card-banner.banner"
+					/>
 					{showGifIndicator && <GifIndicator data-flx="user.profile.profile-card.profile-card-banner.gif-indicator" />}
 				</div>
 				<FocusRing offset={-2} data-flx="user.profile.profile-card.profile-card-banner.focus-ring">
@@ -135,7 +103,7 @@ export const ProfileCardBanner: React.FC<ProfileCardBannerProps> = observer(
 						data-flx="user.profile.profile-card.profile-card-banner.avatar-button.avatar-click"
 					>
 						<StatusAwareAvatar
-							size={80}
+							size={DELIGHT_AVATAR_SIZE_PX}
 							user={user}
 							avatarUrl={avatarUrl}
 							hoverAvatarUrl={hoverAvatarUrl}

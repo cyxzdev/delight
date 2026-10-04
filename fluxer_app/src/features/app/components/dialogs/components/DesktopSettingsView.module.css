@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .searchContainer {
-	margin-bottom: 0.625rem;
+	margin-bottom: 0.5rem;
 	-webkit-app-region: no-drag;
 }
 
@@ -49,7 +49,9 @@
 }
 
 .legalLinks {
-	margin-top: 0.75rem;
+	display: flex;
+	gap: 0.75rem;
+	margin-top: 0.5rem;
 	font-size: 0.6875rem;
 	line-height: 1.25;
 	text-align: left;
@@ -59,22 +61,24 @@
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	padding-inline-start: 0.75rem;
+	padding-inline-start: 0.5rem;
 	width: 100%;
+	opacity: 0.7;
 }
 
 .legalLink {
 	display: block;
-	color: var(--text-link);
+	color: var(--text-tertiary);
 	cursor: pointer;
 }
 
 .legalLink:hover {
+	color: var(--text-secondary);
 	text-decoration: underline;
 }
 
 .footerSpacer {
-	height: 0.75rem;
+	height: 0.25rem;
 }
 
 .logoutIcon {

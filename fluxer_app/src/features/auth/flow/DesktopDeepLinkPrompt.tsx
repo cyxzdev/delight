@@ -77,15 +77,16 @@ export const DesktopDeepLinkPrompt: React.FC<DesktopDeepLinkPromptProps> = ({cod
 				)}
 			</div>
 			<Button
-				variant="primary"
+				variant="secondary"
+				small
 				onClick={handleOpen}
 				className={styles.cta}
 				submitting={isLoading}
 				data-flx="auth.flow.desktop-deep-link-prompt.cta.open"
 			>
 				<ArrowSquareOutIcon
-					size={remFromPx(18)}
-					weight="fill"
+					size={remFromPx(14)}
+					weight="bold"
 					data-flx="auth.flow.desktop-deep-link-prompt.arrow-square-out-icon"
 				/>
 				<span data-flx="auth.flow.desktop-deep-link-prompt.span">

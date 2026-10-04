@@ -2,11 +2,7 @@
 
 import styles from '@app/features/app/components/layout/SidebarResizeHandle.module.css';
 import FocusRing from '@app/features/ui/focus_ring/FocusRing';
-import SidebarWidth, {
-	SIDEBAR_WIDTH_DEFAULT,
-	SIDEBAR_WIDTH_MAX,
-	SIDEBAR_WIDTH_MIN,
-} from '@app/features/ui/state/SidebarWidth';
+import SidebarWidth, {SIDEBAR_WIDTH_MAX, SIDEBAR_WIDTH_MIN} from '@app/features/ui/state/SidebarWidth';
 import {getAppRemScale} from '@app/features/ui/utils/AppZoomUtils';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
@@ -19,6 +15,8 @@ const RESIZE_SIDEBAR_HANDLE_DESCRIPTOR = msg({
 	comment: 'Accessible label for the draggable handle that resizes the channel or direct message sidebar.',
 });
 const RESIZING_CLASS = 'sidebar-resizing';
+// Delight's default sidebar is 240px (15rem, set in GuildsLayout.module.css), narrower than Fluxer's 320px.
+const SIDEBAR_WIDTH_DEFAULT = 240;
 const KEYBOARD_STEP = 12;
 const KEYBOARD_STEP_LARGE = 48;
 

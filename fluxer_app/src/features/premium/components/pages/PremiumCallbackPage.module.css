@@ -6,21 +6,21 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 2rem;
+	gap: 1.25rem;
 	padding-left: 1rem;
 	padding-right: 1rem;
 	text-align: center;
 }
 
 .successIcon {
-	height: 4rem;
-	width: 4rem;
+	height: 2.5rem;
+	width: 2.5rem;
 	color: var(--status-online);
 }
 
 .errorIcon {
-	height: 4rem;
-	width: 4rem;
+	height: 2.5rem;
+	width: 2.5rem;
 	color: var(--status-danger);
 }
 
@@ -34,7 +34,7 @@
 
 .title {
 	font-weight: 600;
-	font-size: 1.875rem;
+	font-size: 1.25rem;
 }
 
 .description {

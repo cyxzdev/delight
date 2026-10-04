@@ -106,7 +106,7 @@
 .actionButton {
 	font-weight: 500;
 	color: var(--text-link);
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	line-height: 1.25rem;
 	cursor: pointer;
 }
@@ -140,7 +140,7 @@
 
 .masterLabel {
 	font-weight: 600;
-	font-size: 0.9375rem;
+	font-size: 0.8125rem;
 	color: var(--text-primary);
 }
 
@@ -274,7 +274,7 @@
 	flex: 1;
 	min-width: 0;
 	font-weight: 500;
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	color: var(--text-primary);
 	white-space: nowrap;
 	overflow: hidden;

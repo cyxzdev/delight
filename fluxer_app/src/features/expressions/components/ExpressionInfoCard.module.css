@@ -190,7 +190,7 @@
 
 .joinConfirmName {
 	font-size: 1.25rem;
-	font-weight: 700;
+	font-weight: 600;
 	line-height: 1.25;
 	color: var(--text-primary);
 	overflow-wrap: anywhere;

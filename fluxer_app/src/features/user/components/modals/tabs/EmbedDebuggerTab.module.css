@@ -72,12 +72,12 @@
 
 .statusText {
 	color: var(--text-primary-muted);
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 }
 
 .errorText {
 	color: var(--accent-danger, #ef4444);
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 }
 
 @media (max-width: 720px) {

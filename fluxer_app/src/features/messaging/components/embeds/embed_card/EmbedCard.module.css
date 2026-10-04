@@ -2,7 +2,7 @@
 
 .wrapper {
 	--embed-splash-height: 3.75rem;
-	--embed-radius: 0.75rem;
+	--embed-radius: var(--radius-lg);
 
 	width: 100%;
 	max-width: 22.5rem;

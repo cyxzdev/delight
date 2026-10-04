@@ -19,24 +19,25 @@
 
 .errorIcon {
 	display: flex;
-	height: 5rem;
-	width: 5rem;
+	height: 3rem;
+	width: 3rem;
 	align-items: center;
 	justify-content: center;
-	border-radius: 624.9375rem;
-	background-color: var(--background-tertiary);
+	border-radius: var(--radius-xl);
+	border: 1px solid var(--background-modifier-accent);
+	background-color: var(--background-secondary-alt);
 }
 
 .errorIconSvg {
-	height: 2.5rem;
-	width: 2.5rem;
+	height: 1.5rem;
+	width: 1.5rem;
 	color: var(--text-tertiary);
 }
 
 .errorTitle {
 	text-align: center;
 	font-weight: 600;
-	font-size: 1.25rem;
+	font-size: 1.125rem;
 	color: var(--text-primary);
 }
 
@@ -80,7 +81,7 @@
 }
 
 .entityTitle {
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 1.25rem;
 	color: var(--text-primary);
 }
@@ -128,7 +129,7 @@
 	height: 5rem;
 	min-width: 5rem;
 	min-height: 5rem;
-	border-radius: 624.9375rem;
+	border-radius: 1rem;
 	overflow: hidden;
 	display: inline-flex;
 	align-items: center;
@@ -140,7 +141,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: 624.9375rem;
+	border-radius: 1rem;
 	background-color: var(--background-primary);
 	object-fit: cover;
 }
@@ -156,8 +157,8 @@ img.entityIcon {
 	width: 5rem;
 	align-items: center;
 	justify-content: center;
-	border-radius: 624.9375rem;
-	background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary, #4752c4) 100%);
+	border-radius: var(--radius-xl);
+	background: var(--brand-primary);
 }
 
 .themeIcon {
@@ -167,18 +168,18 @@ img.entityIcon {
 }
 
 .form {
-	margin-top: 1.5rem;
+	margin-top: 1.25rem;
 	flex: 1 1 0%;
 	display: flex;
 	flex-direction: column;
-	gap: 1.25rem;
+	gap: 1rem;
 }
 
 .registrationNotice {
 	padding: 0.75rem 1rem;
 	border: 0.0625rem solid var(--background-modifier-accent);
-	border-radius: 0.5rem;
-	background: var(--background-secondary);
+	border-radius: var(--radius-lg);
+	background: var(--background-secondary-alt);
 	color: var(--text-primary);
 	font-size: 0.875rem;
 	line-height: 1.4;
@@ -186,10 +187,10 @@ img.entityIcon {
 }
 
 .loginForm {
-	margin-top: 2rem;
+	margin-top: 1.25rem;
 	display: flex;
 	flex-direction: column;
-	gap: 1.5rem;
+	gap: 1rem;
 }
 
 .bottomLink {
@@ -211,7 +212,7 @@ img.entityIcon {
 
 .bottomLinkAnchor {
 	font-size: 0.875rem;
-	color: var(--text-link);
+	color: color-mix(in srgb, var(--brand-primary) 55%, var(--text-primary));
 	transition-property: color;
 	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 	transition-duration: 150ms;
@@ -219,13 +220,13 @@ img.entityIcon {
 }
 
 .bottomLinkAnchor:hover {
-	color: var(--text-link);
+	color: color-mix(in srgb, var(--brand-primary) 55%, var(--text-primary));
 	text-decoration: underline;
 }
 
 .divider {
-	margin-top: 1.5rem;
-	margin-bottom: 1.5rem;
+	margin-top: 1.25rem;
+	margin-bottom: 1.25rem;
 	display: flex;
 	align-items: center;
 	gap: 1rem;
@@ -237,7 +238,7 @@ img.entityIcon {
 }
 
 .dividerText {
-	font-size: 0.875rem;
+	font-size: 0.75rem;
 	color: var(--text-tertiary);
 }
 
@@ -274,7 +275,7 @@ img.entityIcon {
 	background: none;
 	border: none;
 	font-size: 0.75rem;
-	color: var(--text-link);
+	color: color-mix(in srgb, var(--brand-primary) 55%, var(--text-primary));
 	cursor: pointer;
 	text-decoration: none;
 	transition: text-decoration 150ms ease;
@@ -305,7 +306,7 @@ img.entityIcon {
 }
 
 .policyLink {
-	color: var(--text-link);
+	color: color-mix(in srgb, var(--brand-primary) 55%, var(--text-primary));
 	text-decoration: none;
 	transition-property: color;
 	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -353,12 +354,12 @@ img.entityIcon {
 }
 
 .title {
-	margin-bottom: 1.5rem;
-	text-align: center;
+	margin-bottom: 1.25rem;
+	text-align: left;
 	font-size: 1.25rem;
 	line-height: 1.75rem;
 	font-weight: 600;
-	letter-spacing: 0.025em;
+	letter-spacing: -0.01em;
 	color: var(--text-primary);
 }
 
@@ -368,8 +369,8 @@ img.entityIcon {
 	width: 5rem;
 	align-items: center;
 	justify-content: center;
-	border-radius: 624.9375rem;
-	background: linear-gradient(to bottom right, rgb(168, 85, 247), rgb(236, 72, 153));
+	border-radius: var(--radius-xl);
+	background: var(--brand-primary);
 }
 
 .giftIcon {
@@ -397,10 +398,15 @@ img.entityIcon {
 	border: none;
 	text-align: left;
 	font-size: 0.875rem;
-	color: var(--text-link);
+	color: color-mix(in srgb, var(--brand-primary) 55%, var(--text-primary));
 	cursor: pointer;
 }
 
 .secondaryInlineAction:hover {
 	text-decoration: underline;
+}
+
+/* Delight: entity icons are rounded squares, like the server rail. */
+.entityIconWrapper .entityIcon {
+	border-radius: 1rem;
 }

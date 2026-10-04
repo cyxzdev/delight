@@ -26,7 +26,6 @@ import {ME} from '@fluxer/constants/src/AppConstants';
 import {RelationshipTypes} from '@fluxer/constants/src/UserConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
-import {ChatCircleIcon} from '@phosphor-icons/react';
 import {clsx} from 'clsx';
 import {AnimatePresence, motion} from 'framer-motion';
 import {observer} from 'mobx-react-lite';
@@ -109,7 +108,6 @@ export const FluxerButton = observer(() => {
 	}, []);
 	const shouldShowHoverState = isHovering || contextMenuOpen;
 	const indicatorTarget = resolveGuildListIndicatorBarTarget({isSelected, showHoverState: shouldShowHoverState});
-	const isActive = shouldShowHoverState || isSelected;
 	if (RuntimeConfig.directMessagesDisabled) {
 		return null;
 	}
@@ -155,16 +153,20 @@ export const FluxerButton = observer(() => {
 						<motion.div
 							ref={iconRef}
 							className={clsx(styles.fluxerButtonIcon, isSelected && styles.fluxerButtonIconSelected)}
-							animate={{borderRadius: isActive ? '30%' : '50%'}}
+							animate={{borderRadius: '0.75rem'}}
 							initial={false}
 							transition={{duration: 0.07, ease: 'easeOut'}}
 							data-flx="app.sidebar-nav.fluxer-button.fluxer-button-icon"
 						>
-							<ChatCircleIcon
-								weight="fill"
+							{/* Delight spark in place of Fluxer's ChatCircleIcon. */}
+							<svg
+								viewBox="0 0 64 64"
+								aria-hidden="true"
 								className={styles.messageBubbleIcon}
 								data-flx="app.sidebar-nav.fluxer-button.message-bubble-icon"
-							/>
+							>
+								<path fill="currentColor" d="M32 4L39.6 24.4L60 32L39.6 39.6L32 60L24.4 39.6L4 32L24.4 24.4Z" />
+							</svg>
 						</motion.div>
 						<div
 							className={clsx(styles.guildBadge, badgeCount > 0 && styles.guildBadgeActive)}

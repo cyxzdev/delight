@@ -1,19 +1,21 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .channelIcon {
+	grid-row: 1 / span 2;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	height: 5rem;
-	width: 5rem;
+	height: 3rem;
+	width: 3rem;
 	flex-shrink: 0;
-	border-radius: var(--radius-full);
-	background-color: var(--channel-welcome-icon-bg, var(--guild-list-foreground));
+	border-radius: var(--radius-2xl);
+	border: 0.0625rem solid var(--background-modifier-accent);
+	background-color: var(--channel-welcome-icon-bg, var(--background-tertiary));
 	background-size: cover;
 	background-position: center;
 	font-weight: 600;
-	font-size: 1.25rem;
-	color: var(--text-primary);
+	font-size: 1rem;
+	color: var(--text-secondary);
 	container-type: size;
 }
 
@@ -30,34 +32,44 @@
 }
 
 .container {
-	display: flex;
-	flex-direction: column;
-	gap: 0.25rem;
+	display: grid;
+	grid-template-columns: 3rem minmax(0, 1fr);
+	column-gap: 0.875rem;
+	row-gap: 0.125rem;
+	align-items: center;
 	margin: 1rem;
 	margin-top: auto;
-	margin-bottom: 2rem;
+	margin-bottom: 1.25rem;
 	min-width: 0;
-	padding-top: 7.5rem;
+	padding-top: 4rem;
+	padding-bottom: 1.25rem;
+	border-bottom: 0.0625rem solid var(--background-modifier-accent);
 	color: var(--text-primary);
 }
 
 .heading {
-	margin-top: 0.75rem;
-	font-size: 1.875rem;
+	align-self: end;
+	margin: 0;
+	font-size: 1.25rem;
+	line-height: 1.5rem;
 	font-weight: 600;
+	letter-spacing: -0.01em;
 	word-break: break-word;
 	overflow-wrap: break-word;
 	overflow: hidden;
 }
 
 .description {
+	align-self: start;
 	min-width: 0;
-	font-size: 1.125rem;
-	color: var(--text-primary-muted);
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+	color: var(--text-tertiary);
 	overflow: hidden;
 }
 
 .iconSize {
-	height: 3rem;
-	width: 3rem;
+	height: 1.5rem;
+	width: 1.5rem;
 }

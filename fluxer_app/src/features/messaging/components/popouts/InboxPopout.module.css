@@ -10,9 +10,10 @@
 	max-height: calc(100dvh - 1rem);
 	flex-direction: column;
 	overflow: hidden;
-	border-radius: 0.5rem;
+	border-radius: var(--radius-lg);
 	border: 0.0625rem solid var(--background-modifier-accent);
-	background-color: var(--form-surface-background);
+	background-color: var(--background-tertiary);
+	box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.4);
 }
 
 .containerWithSidebar {
@@ -30,7 +31,7 @@
 	align-items: center;
 	justify-content: space-between;
 	overflow: hidden;
-	background-color: var(--form-surface-background);
+	background-color: var(--background-secondary-alt);
 	box-shadow: inset -0.0625rem 0 0 var(--background-modifier-accent);
 }
 
@@ -57,7 +58,7 @@
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	border-radius: 0.375rem;
+	border-radius: var(--radius-md);
 	padding: 0;
 	color: var(--text-primary-muted);
 	cursor: pointer;
@@ -90,17 +91,28 @@
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	border-radius: 0.375rem;
+	position: relative;
+	border-radius: var(--radius-md);
 	padding: 0;
 	transition:
-		color 0.1s ease,
-		background-color 0.1s ease;
+		color 120ms ease,
+		background-color 120ms ease;
 	cursor: pointer;
 }
 
 .tabActive {
 	background-color: var(--background-modifier-selected);
 	color: var(--text-primary);
+}
+
+.sidebarTab.tabActive::before {
+	content: '';
+	position: absolute;
+	inset-inline-start: -0.5rem;
+	inset-block: 0.375rem;
+	width: 0.1875rem;
+	border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	background-color: var(--text-primary);
 }
 
 .tabInactive {

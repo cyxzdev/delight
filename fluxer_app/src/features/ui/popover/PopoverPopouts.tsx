@@ -139,9 +139,9 @@ function getPopoutMotion(
 		};
 	}
 	return {
-		initial: {opacity: 0, scale: 0.98},
-		animate: {opacity: isOpen ? 1 : 0, scale: isOpen ? 1 : 0.98, x: 0},
-		transition: {duration: 0.25, ease: 'easeInOut'},
+		initial: {opacity: 0, y: 4},
+		animate: {opacity: isOpen ? 1 : 0, y: isOpen ? 0 : 4, x: 0},
+		transition: {duration: 0.14, ease: 'easeOut'},
 	};
 }
 

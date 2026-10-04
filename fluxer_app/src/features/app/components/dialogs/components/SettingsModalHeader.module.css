@@ -15,7 +15,7 @@
 
 .bannerText {
 	font-weight: 500;
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	line-height: 1.25rem;
 }
 
@@ -55,6 +55,7 @@
 	font-weight: 600;
 	font-size: 1.125rem;
 	line-height: 1.5rem;
+	letter-spacing: -0.01em;
 	color: var(--text-primary);
 	flex: 0 1 auto;
 	min-width: 0;
@@ -70,5 +71,5 @@
 
 .headerTransition {
 	transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-	transition-duration: 200ms;
+	transition-duration: 120ms;
 }

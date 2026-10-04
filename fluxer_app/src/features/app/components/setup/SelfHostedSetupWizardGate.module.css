@@ -2,27 +2,21 @@
 
 .backdrop {
 	min-height: 100vh;
-	background:
-		radial-gradient(ellipse at 50% 0%, rgba(75, 168, 255, 0.34), transparent 58%),
-		linear-gradient(135deg, #071125 0%, #0b3f96 36%, #092151 68%, #050913 100%);
+	background: var(--background-primary);
 }
 
 .backdropVisual {
 	position: absolute;
 	inset: 0;
-	background:
-		linear-gradient(160deg, rgba(31, 147, 255, 0.24) 0%, transparent 42%),
-		linear-gradient(135deg, #071225 0%, #0a4cbd 40%, #0b1d45 72%, #050812 100%);
+	background: var(--background-primary);
 }
 
 .modal {
 	width: min(34rem, calc(100vw - 2rem)) !important;
 	min-height: 0 !important;
-	border-color: rgba(148, 180, 255, 0.16) !important;
-	background: color-mix(in srgb, var(--background-secondary) 92%, #0b1830) !important;
-	box-shadow:
-		0 1.5rem 4rem rgba(0, 0, 0, 0.36),
-		0 0 0 0.0625rem rgba(160, 190, 255, 0.08) !important;
+	border-color: var(--background-modifier-accent) !important;
+	background: var(--background-secondary-alt) !important;
+	box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.5) !important;
 }
 
 .modal :global([data-flx='app.self-hosted-setup-wizard-gate.header']) {
@@ -236,7 +230,7 @@
 .noticeLink {
 	align-self: flex-start;
 	border-radius: 0.25rem;
-	color: var(--text-link);
+	color: color-mix(in srgb, var(--brand-primary) 55%, var(--text-primary));
 	font-size: 0.875rem;
 	line-height: 1.45;
 	text-decoration: underline;

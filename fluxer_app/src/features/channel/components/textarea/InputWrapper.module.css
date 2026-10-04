@@ -44,7 +44,7 @@
 
 .composerRoot {
 	--composer-action-button-size: 2rem;
-	--composer-divider-color: var(--floating-surface-ring-color);
+	--composer-divider-color: var(--background-modifier-accent);
 	--composer-surface-fill: var(--composer-surface-color, var(--background-secondary-lighter));
 }
 
@@ -105,9 +105,9 @@
 	width: auto;
 	overflow: hidden;
 	box-sizing: border-box;
-	border-bottom: 0.0625rem solid var(--composer-divider-color, var(--background-modifier-accent));
-	border-radius: var(--composer-box-radius, 0px) var(--composer-box-radius, 0px) 0 0;
-	background-color: color-mix(in srgb, var(--background-textarea) 84%, var(--background-tertiary) 16%);
+	border-bottom: 0.0625rem solid var(--background-modifier-accent);
+	border-radius: 0;
+	background-color: var(--background-secondary-alt);
 }
 
 .composerActionRow {
@@ -145,7 +145,7 @@
 }
 
 .composerActionRow .barInner {
-	min-height: 2.25rem;
+	min-height: 2rem;
 	padding-inline: 0.75rem 0.375rem;
 }
 
