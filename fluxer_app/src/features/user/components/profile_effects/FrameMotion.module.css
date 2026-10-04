@@ -1,0 +1,292 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* Motion for the illustrated "frame" effects (see frameKit.tsx). Transform + opacity (and stroke-dashoffset for
+   draw-ins) only. Per-element timing from custom properties: --dur, --delay, --dy, --rot, --origin.
+   `[data-pfx-static]` (reduced motion, still thumbnails) shows the finished, composed frame. */
+
+.drawIn,
+.runDash,
+.pop,
+.bob,
+.breathe,
+.flip,
+.swing,
+.growIn,
+.spinRev,
+.slowSpin,
+.shoot,
+.glint,
+.beat,
+.rise {
+	transform-box: fill-box;
+	transform-origin: var(--origin, 50% 50%);
+}
+
+/* ---------- intros (play once) ---------- */
+
+/* Strokes draw themselves (paths need pathLength="1"). */
+.drawIn {
+	stroke-dasharray: 1 1;
+	stroke-dashoffset: 1;
+	animation: draw-in var(--dur, 600ms) cubic-bezier(0.2, 0, 0, 1) var(--delay, 0ms) forwards;
+}
+
+@keyframes draw-in {
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+/* Grows out of its anchor (set --origin, e.g. "50% 0%" for icicles, "50% 100%" for flames). */
+.growIn {
+	animation: grow-in var(--dur, 520ms) cubic-bezier(0.2, 0, 0, 1) var(--delay, 0ms) both;
+}
+
+@keyframes grow-in {
+	0% {
+		transform: scale(0.1);
+		opacity: 0;
+	}
+	30% {
+		opacity: 1;
+	}
+	70% {
+		transform: scale(1.06);
+	}
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+/* ---------- loops ---------- */
+
+/* A bright dash travelling along a path (pathLength="1"), then waiting out the rest of the cycle. */
+.runDash {
+	stroke-dasharray: 0.1 1.3;
+	stroke-dashoffset: 0.1;
+	opacity: 0;
+	animation: run-dash var(--dur, 3.2s) linear var(--delay, 900ms) infinite;
+}
+
+@keyframes run-dash {
+	0% {
+		stroke-dashoffset: 0.1;
+		opacity: 1;
+	}
+	40% {
+		stroke-dashoffset: -1.05;
+		opacity: 1;
+	}
+	41%,
+	100% {
+		stroke-dashoffset: -1.05;
+		opacity: 0;
+	}
+}
+
+/* Pops in with a twist, holds, pops out, waits. */
+.pop {
+	animation: pop var(--dur, 2.8s) cubic-bezier(0.2, 0, 0, 1) var(--delay, 0ms) infinite both;
+}
+
+@keyframes pop {
+	0% {
+		transform: scale(0) rotate(-30deg);
+		opacity: 0;
+	}
+	8% {
+		transform: scale(1.25) rotate(10deg);
+		opacity: 1;
+	}
+	16%,
+	36% {
+		transform: scale(1) rotate(0deg);
+		opacity: 1;
+	}
+	46%,
+	100% {
+		transform: scale(0) rotate(30deg);
+		opacity: 0;
+	}
+}
+
+/* Glint: a quick sparkle flash with a long rest. */
+.glint {
+	animation: glint var(--dur, 3.6s) ease-out var(--delay, 0ms) infinite both;
+}
+
+@keyframes glint {
+	0%,
+	100% {
+		transform: scale(0) rotate(0deg);
+		opacity: 0;
+	}
+	6% {
+		transform: scale(1.15) rotate(45deg);
+		opacity: 1;
+	}
+	16% {
+		transform: scale(0) rotate(90deg);
+		opacity: 0;
+	}
+}
+
+.bob {
+	animation: bob var(--dur, 3s) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes bob {
+	from {
+		transform: translateY(calc(var(--dy, 3px) * -1));
+	}
+	to {
+		transform: translateY(var(--dy, 3px));
+	}
+}
+
+.breathe {
+	animation: breathe var(--dur, 3s) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes breathe {
+	from {
+		opacity: 0.45;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* Tumbling in 3D: the shape flips over its vertical axis. */
+.flip {
+	animation: flip var(--dur, 1.8s) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes flip {
+	from {
+		transform: scaleX(1);
+	}
+	to {
+		transform: scaleX(-0.35);
+	}
+}
+
+/* Swings (rotates back and forth) around --origin. */
+.swing {
+	animation: swing var(--dur, 4s) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes swing {
+	from {
+		transform: rotate(calc(var(--rot, 3deg) * -1));
+	}
+	to {
+		transform: rotate(var(--rot, 3deg));
+	}
+}
+
+.slowSpin {
+	animation: slow-spin var(--dur, 24s) linear infinite;
+}
+
+.spinRev {
+	animation: slow-spin var(--dur, 30s) linear infinite reverse;
+}
+
+@keyframes slow-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* Rises from its spot by --dy while shrinking and fading (sparks, hearts). */
+.rise {
+	animation: rise var(--dur, 3s) ease-out var(--delay, 0ms) infinite both;
+}
+
+@keyframes rise {
+	0% {
+		transform: translate(0, 0) scale(0.4);
+		opacity: 0;
+	}
+	15% {
+		transform: translate(calc(var(--dx, 0px) * 0.15), calc(var(--dy, -40px) * 0.15)) scale(1);
+		opacity: 1;
+	}
+	70% {
+		opacity: 1;
+	}
+	100% {
+		transform: translate(var(--dx, 0px), var(--dy, -40px)) scale(0.5);
+		opacity: 0;
+	}
+}
+
+/* Heartbeat: lub-dub, rest. */
+.beat {
+	animation: beat var(--dur, 1.4s) ease-out var(--delay, 0ms) infinite both;
+}
+
+@keyframes beat {
+	0%,
+	45%,
+	100% {
+		transform: scale(1);
+	}
+	10% {
+		transform: scale(1.16);
+	}
+	20% {
+		transform: scale(1.02);
+	}
+	30% {
+		transform: scale(1.12);
+	}
+}
+
+/* A streak that crosses quickly, then waits out the rest of the cycle. */
+.shoot {
+	opacity: 0;
+	animation: shoot var(--dur, 6s) cubic-bezier(0.3, 0, 0.6, 1) var(--delay, 0ms) infinite both;
+}
+
+@keyframes shoot {
+	0% {
+		transform: translate(0, 0);
+		opacity: 0;
+	}
+	2% {
+		opacity: 1;
+	}
+	12% {
+		opacity: 1;
+	}
+	16%,
+	100% {
+		transform: translate(var(--dx, 0px), var(--dy, 0px));
+		opacity: 0;
+	}
+}
+
+/* ---------- still frame ---------- */
+
+[data-pfx-static] .drawIn {
+	animation: none;
+	stroke-dasharray: none;
+	stroke-dashoffset: 0;
+}
+
+[data-pfx-static] :is(.growIn, .pop, .glint, .rise) {
+	animation: none;
+	opacity: 1;
+	transform: none;
+}
+
+[data-pfx-static] :is(.bob, .breathe, .flip, .swing, .slowSpin, .spinRev, .beat) {
+	animation: none;
+}
+
+[data-pfx-static] :is(.runDash, .shoot) {
+	display: none;
+}

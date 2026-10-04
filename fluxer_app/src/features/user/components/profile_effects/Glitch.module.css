@@ -1,8 +1,22 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
+/* Glitch motion. Transform + opacity only, mostly stepped so it reads as digital. Timing from --dur/--delay/--dx/--dy. */
+
+.boot,
+.slip,
+.flick,
+.tear,
+.sweep,
+.lockOn,
+.blink,
+.shift {
+	transform-box: fill-box;
+	transform-origin: 50% 50%;
+}
+
 /* Boot-up: the overlay stutters on. */
 .boot {
-	animation: boot 520ms steps(1, end) both;
+	animation: boot 560ms steps(1, end) var(--delay, 0ms) both;
 }
 
 @keyframes boot {
@@ -27,124 +41,178 @@
 	}
 }
 
-/* RGB split: the red/cyan copies jump sideways every so often. */
-.jitterA,
-.jitterB {
-	animation: jitter-a var(--dur, 2.6s) steps(1, end) var(--delay, 0ms) infinite;
+/* A horizontal slice of the frame jumps sideways for a few frames. */
+.slip {
+	animation: slip var(--dur, 4s) steps(1, end) var(--delay, 0ms) infinite both;
 }
 
-.jitterB {
-	animation-name: jitter-b;
-}
-
-@keyframes jitter-a {
+@keyframes slip {
 	0%,
-	62%,
+	80%,
 	100% {
-		transform: translate(0, 0);
+		transform: translateX(0);
+	}
+	81% {
+		transform: translateX(var(--dx, 6px));
+	}
+	83% {
+		transform: translateX(calc(var(--dx, 6px) * -0.5));
+	}
+	85% {
+		transform: translateX(calc(var(--dx, 6px) * 0.3));
+	}
+	87% {
+		transform: translateX(0);
+	}
+}
+
+/* Pixels drop out and come back. */
+.flick {
+	animation: flick var(--dur, 2.4s) steps(1, end) var(--delay, 0ms) infinite both;
+}
+
+@keyframes flick {
+	0%,
+	55%,
+	100% {
+		opacity: 1;
+	}
+	56% {
+		opacity: 0;
 	}
 	64% {
-		transform: translate(-3px, 1px);
-	}
-	67% {
-		transform: translate(2px, 0);
+		opacity: 1;
 	}
 	70% {
-		transform: translate(-1px, -1px);
+		opacity: 0.2;
 	}
-	88% {
-		transform: translate(-4px, 0);
-	}
-	90% {
-		transform: translate(0, 0);
+	74% {
+		opacity: 1;
 	}
 }
 
-@keyframes jitter-b {
+/* Tear bars flash in at an offset, then vanish. */
+.tear {
+	animation: tear var(--dur, 3s) steps(1, end) var(--delay, 0ms) infinite both;
+}
+
+@keyframes tear {
 	0%,
-	62%,
-	100% {
-		transform: translate(0, 0);
-	}
-	64% {
-		transform: translate(3px, -1px);
-	}
-	67% {
-		transform: translate(-2px, 1px);
-	}
-	70% {
-		transform: translate(1px, 0);
-	}
-	88% {
-		transform: translate(4px, 0);
-	}
-	90% {
-		transform: translate(0, 0);
-	}
-}
-
-/* Corrupted blocks: flash on briefly at their own moment in the cycle, shifted sideways. */
-.block {
-	opacity: 0;
-	animation: block var(--dur, 3s) steps(1, end) var(--delay, 0ms) infinite both;
-}
-
-@keyframes block {
-	0%,
+	70%,
 	100% {
 		opacity: 0;
 		transform: translateX(0);
 	}
-	4% {
+	71% {
 		opacity: 1;
-		transform: translateX(var(--dx, 0px));
+		transform: translateX(var(--dx, 8px));
 	}
-	7% {
+	75% {
+		opacity: 1;
+		transform: translateX(calc(var(--dx, 8px) * -0.4));
+	}
+	79% {
 		opacity: 0.6;
 		transform: translateX(0);
 	}
-	10% {
-		opacity: 1;
-		transform: translateX(calc(var(--dx, 0px) * -0.5));
-	}
-	13% {
+	82% {
 		opacity: 0;
 	}
 }
 
-/* A faint bright scanline sweeps down the card. */
-.scan {
-	animation: scan var(--dur, 5s) linear var(--delay, 0ms) infinite both;
+/* A datamosh band sweeps down the card every few seconds. */
+.sweep {
+	animation: sweep var(--dur, 6s) linear var(--delay, 0ms) infinite both;
 }
 
-@keyframes scan {
+@keyframes sweep {
 	0% {
 		transform: translateY(0);
 		opacity: 0;
 	}
-	5% {
+	2% {
 		opacity: 1;
 	}
-	60% {
-		transform: translateY(var(--dy, 0px));
+	24% {
 		opacity: 1;
 	}
-	61%,
+	26%,
 	100% {
-		transform: translateY(var(--dy, 0px));
+		transform: translateY(var(--dy, 300px));
 		opacity: 0;
 	}
 }
 
-[data-pfx-static] :is(.boot, .jitterA, .jitterB) {
-	animation: none;
+/* Pixel blocks hop one cell sideways. */
+.shift {
+	animation: shift var(--dur, 3s) steps(1, end) var(--delay, 0ms) infinite both;
 }
 
-[data-pfx-static] .block {
+@keyframes shift {
+	0%,
+	60%,
+	100% {
+		transform: translate(0, 0);
+	}
+	61% {
+		transform: translate(var(--dx, 4px), 0);
+	}
+	78% {
+		transform: translate(var(--dx, 4px), var(--dy, 0px));
+	}
+}
+
+/* The reticle locks on: drops in big and rotated, snaps to size. */
+.lockOn {
+	animation: lock-on 620ms cubic-bezier(0.2, 0, 0, 1) var(--delay, 300ms) both;
+}
+
+@keyframes lock-on {
+	0% {
+		transform: scale(1.7) rotate(45deg);
+		opacity: 0;
+	}
+	60% {
+		transform: scale(0.94) rotate(0deg);
+		opacity: 1;
+	}
+	75% {
+		transform: scale(1.04);
+	}
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+.blink {
+	animation: blink 1.2s steps(1, end) infinite both;
+}
+
+@keyframes blink {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
+}
+
+[data-pfx-static] :is(.boot, .slip, .flick, .shift, .lockOn, .blink) {
+	animation: none;
+	opacity: 1;
+	transform: none;
+}
+
+[data-pfx-static] .tear {
+	animation: none;
+	opacity: 1;
+	transform: translateX(var(--dx, 0px));
+}
+
+[data-pfx-static] .sweep {
 	animation: none;
 	opacity: 0.8;
-}
-
-[data-pfx-static] .scan {
-	display: none;
+	transform: translateY(calc(var(--dy, 300px) * 0.62));
 }

@@ -1,9 +1,17 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
-/* Paper tumbling: squash horizontally so a flat piece looks like it flips over. */
-.flutter {
+/* Confetti motion. Transform + opacity only; timing from --dur/--delay (see effectKit `vars`). */
+
+.flutter,
+.pennant,
+.streamer,
+.hat {
 	transform-box: fill-box;
 	transform-origin: 50% 50%;
+}
+
+/* Paper tumbling: squash horizontally so a flat piece looks like it flips over. */
+.flutter {
 	animation: flutter var(--dur, 900ms) ease-in-out var(--delay, 0ms) infinite alternate both;
 }
 
@@ -16,22 +24,51 @@
 	}
 }
 
+/* Bunting flags swing on their string. */
+.pennant {
+	transform-origin: 50% 0%;
+	animation: pennant var(--dur, 2.4s) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes pennant {
+	from {
+		transform: rotate(-7deg);
+	}
+	to {
+		transform: rotate(6deg);
+	}
+}
+
 /* Streamers sway a little from where they hang. */
 .streamer {
-	transform-box: fill-box;
 	transform-origin: 50% 0%;
-	animation: streamer 3.6s ease-in-out var(--delay, 0ms) infinite alternate both;
+	animation: streamer var(--dur, 3.6s) ease-in-out var(--delay, 0ms) infinite alternate both;
 }
 
 @keyframes streamer {
 	from {
-		transform: rotate(-4deg);
+		transform: rotate(-3deg);
 	}
 	to {
-		transform: rotate(4deg);
+		transform: rotate(3deg);
 	}
 }
 
-[data-pfx-static] :is(.flutter, .streamer) {
+/* The party hat bobs on the avatar. */
+.hat {
+	transform-origin: 30% 100%;
+	animation: hat var(--dur, 1.8s) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes hat {
+	from {
+		transform: rotate(-4deg);
+	}
+	to {
+		transform: rotate(5deg);
+	}
+}
+
+[data-pfx-static] :is(.flutter, .pennant, .streamer, .hat) {
 	animation: none;
 }

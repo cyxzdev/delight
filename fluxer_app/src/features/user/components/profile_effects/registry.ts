@@ -43,7 +43,7 @@ const DEFINITIONS: Record<ProfileEffectId, Omit<ProfileEffectDefinition, 'id'>> 
 	sakura_drift: {
 		name: msg({message: 'Sakura Drift', comment: 'Name of a profile effect: cherry blossom petals falling.'}),
 		description: msg({
-			message: 'A blossoming branch sheds drifting petals.',
+			message: 'Blossoming branches frame your card and shed petals.',
 			comment: 'Short description of the Sakura Drift profile effect.',
 		}),
 		Layer: SakuraDrift,
@@ -51,7 +51,7 @@ const DEFINITIONS: Record<ProfileEffectId, Omit<ProfileEffectDefinition, 'id'>> 
 	snowfall: {
 		name: msg({message: 'Snowfall', comment: 'Name of a profile effect: falling snow.'}),
 		description: msg({
-			message: 'Soft snow that settles on your avatar.',
+			message: 'An icy frame with icicles, frost and falling snow.',
 			comment: 'Short description of the Snowfall profile effect.',
 		}),
 		Layer: Snowfall,
@@ -59,7 +59,7 @@ const DEFINITIONS: Record<ProfileEffectId, Omit<ProfileEffectDefinition, 'id'>> 
 	ember: {
 		name: msg({message: 'Ember', comment: 'Name of a profile effect: flames and rising embers.'}),
 		description: msg({
-			message: 'Low flames and embers rising from below.',
+			message: 'Flames climb your card while sparks spiral up.',
 			comment: 'Short description of the Ember profile effect.',
 		}),
 		Layer: Ember,
@@ -67,7 +67,7 @@ const DEFINITIONS: Record<ProfileEffectId, Omit<ProfileEffectDefinition, 'id'>> 
 	starlight: {
 		name: msg({message: 'Starlight', comment: 'Name of a profile effect: twinkling stars and shooting stars.'}),
 		description: msg({
-			message: 'Twinkling stars, a crescent moon and shooting stars.',
+			message: 'A night-sky frame with constellations and shooting stars.',
 			comment: 'Short description of the Starlight profile effect.',
 		}),
 		Layer: Starlight,
@@ -75,7 +75,7 @@ const DEFINITIONS: Record<ProfileEffectId, Omit<ProfileEffectDefinition, 'id'>> 
 	heartbeat: {
 		name: msg({message: 'Heartbeat', comment: 'Name of a profile effect: floating hearts and a pulse.'}),
 		description: msg({
-			message: 'Floating hearts and a beating pulse.',
+			message: 'Lace, a satin bow and glossy hearts that beat.',
 			comment: 'Short description of the Heartbeat profile effect.',
 		}),
 		Layer: Heartbeat,
@@ -83,7 +83,7 @@ const DEFINITIONS: Record<ProfileEffectId, Omit<ProfileEffectDefinition, 'id'>> 
 	rainy_day: {
 		name: msg({message: 'Rainy Day', comment: 'Name of a profile effect: rain and clouds.'}),
 		description: msg({
-			message: 'Little clouds, slanting rain and ripples.',
+			message: 'Rain on glass, storm clouds and an umbrella.',
 			comment: 'Short description of the Rainy Day profile effect.',
 		}),
 		Layer: RainyDay,
@@ -91,7 +91,7 @@ const DEFINITIONS: Record<ProfileEffectId, Omit<ProfileEffectDefinition, 'id'>> 
 	bubbles: {
 		name: msg({message: 'Bubbles', comment: 'Name of a profile effect: soap bubbles rising.'}),
 		description: msg({
-			message: 'Soap bubbles wobbling up the edges.',
+			message: 'Shimmering bubbles that wobble, rise and pop.',
 			comment: 'Short description of the Bubbles profile effect.',
 		}),
 		Layer: Bubbles,
@@ -99,7 +99,7 @@ const DEFINITIONS: Record<ProfileEffectId, Omit<ProfileEffectDefinition, 'id'>> 
 	confetti: {
 		name: msg({message: 'Confetti', comment: 'Name of a profile effect: confetti and streamers.'}),
 		description: msg({
-			message: 'A confetti pop, streamers and tumbling paper.',
+			message: 'Party poppers, bunting and tumbling confetti.',
 			comment: 'Short description of the Confetti profile effect.',
 		}),
 		Layer: Confetti,
@@ -107,7 +107,7 @@ const DEFINITIONS: Record<ProfileEffectId, Omit<ProfileEffectDefinition, 'id'>> 
 	glitch: {
 		name: msg({message: 'Glitch', comment: 'Name of a profile effect: digital RGB-split glitches.'}),
 		description: msg({
-			message: 'RGB-split brackets and flickering pixel blocks.',
+			message: 'A glitching HUD frame with a target on your avatar.',
 			comment: 'Short description of the Glitch profile effect.',
 		}),
 		Layer: Glitch,

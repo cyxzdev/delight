@@ -1,0 +1,216 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* Rainy Day motion. Transform + opacity only; timing from --dur/--delay/--dx/--dy (see effectKit `vars`). */
+
+.flash,
+.cloudFlash,
+.runDrop,
+.runTrail,
+.splash,
+.rock,
+.rise,
+.slosh {
+	transform-box: fill-box;
+	transform-origin: 50% 50%;
+}
+
+/* Lightning: dark most of the time, then a stuttering double strike. */
+.flash {
+	animation: bolt-flash var(--dur, 6s) steps(1, end) var(--delay, 0ms) infinite both;
+}
+
+@keyframes bolt-flash {
+	0%,
+	72%,
+	100% {
+		opacity: 0;
+	}
+	73% {
+		opacity: 1;
+	}
+	75% {
+		opacity: 0.15;
+	}
+	77% {
+		opacity: 1;
+	}
+	83% {
+		opacity: 0;
+	}
+}
+
+/* The cloud lights up from inside while the bolt strikes. */
+.cloudFlash {
+	animation: cloud-flash var(--dur, 6s) steps(1, end) var(--delay, 0ms) infinite both;
+}
+
+@keyframes cloud-flash {
+	0%,
+	72%,
+	100% {
+		opacity: 0;
+	}
+	73% {
+		opacity: 0.85;
+	}
+	75% {
+		opacity: 0.2;
+	}
+	77% {
+		opacity: 0.7;
+	}
+	81% {
+		opacity: 0.35;
+	}
+	85% {
+		opacity: 0;
+	}
+}
+
+/* A bead on the glass gives way and runs down, its wet trail growing behind it. */
+.runDrop {
+	animation: run-drop var(--dur, 4s) cubic-bezier(0.55, 0, 0.75, 0.7) var(--delay, 0ms) infinite both;
+}
+
+@keyframes run-drop {
+	0% {
+		transform: translate(0, 0) scale(0.6);
+		opacity: 0;
+	}
+	12% {
+		transform: translate(0, 0) scale(1);
+		opacity: 1;
+	}
+	70% {
+		transform: translate(0, var(--dy, 40px)) scale(1);
+		opacity: 1;
+	}
+	88%,
+	100% {
+		transform: translate(0, var(--dy, 40px)) scale(0.85);
+		opacity: 0;
+	}
+}
+
+.runTrail {
+	transform-origin: 50% 0%;
+	animation: run-trail var(--dur, 4s) cubic-bezier(0.55, 0, 0.75, 0.7) var(--delay, 0ms) infinite both;
+}
+
+@keyframes run-trail {
+	0%,
+	12% {
+		transform: scaleY(0);
+		opacity: 1;
+	}
+	70% {
+		transform: scaleY(1);
+		opacity: 1;
+	}
+	100% {
+		transform: scaleY(1);
+		opacity: 0;
+	}
+}
+
+/* Splash droplets hop out of a ripple. */
+.splash {
+	animation: splash var(--dur, 2.2s) ease-out var(--delay, 0ms) infinite both;
+}
+
+@keyframes splash {
+	0% {
+		transform: translate(0, 0) scale(0.4);
+		opacity: 0;
+	}
+	6% {
+		opacity: 1;
+	}
+	22% {
+		transform: translate(calc(var(--dx, 0px) * 0.6), var(--dy, -8px)) scale(1);
+		opacity: 1;
+	}
+	40% {
+		transform: translate(var(--dx, 0px), 0) scale(0.7);
+		opacity: 0;
+	}
+	100% {
+		transform: translate(var(--dx, 0px), 0) scale(0.7);
+		opacity: 0;
+	}
+}
+
+/* The umbrella rocks gently on its handle. */
+.rock {
+	transform-origin: 50% 100%;
+	animation: rock var(--dur, 3.6s) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes rock {
+	from {
+		transform: rotate(-5deg);
+	}
+	to {
+		transform: rotate(4deg);
+	}
+}
+
+/* Intro: the puddle fills up from the bottom edge. */
+.rise {
+	transform-origin: 50% 100%;
+	animation: rise 900ms cubic-bezier(0.2, 0, 0, 1) var(--delay, 200ms) both;
+}
+
+@keyframes rise {
+	from {
+		transform: scaleY(0);
+	}
+	to {
+		transform: scaleY(1);
+	}
+}
+
+/* Highlights on the water slosh sideways. */
+.slosh {
+	animation: slosh var(--dur, 3s) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes slosh {
+	from {
+		transform: translateX(calc(var(--dx, 6px) * -1));
+	}
+	to {
+		transform: translateX(var(--dx, 6px));
+	}
+}
+
+/* Still frame: a bolt mid-strike, drops part-way down their trails, splashes hidden. */
+[data-pfx-static] :is(.rock, .rise, .slosh, .cloudFlash) {
+	animation: none;
+	transform: none;
+}
+
+[data-pfx-static] .cloudFlash {
+	opacity: 0;
+}
+
+[data-pfx-static] .flash {
+	animation: none;
+	opacity: 1;
+}
+
+[data-pfx-static] .runDrop {
+	animation: none;
+	opacity: 1;
+	transform: translate(0, calc(var(--dy, 40px) * 0.7));
+}
+
+[data-pfx-static] .runTrail {
+	animation: none;
+	transform: scaleY(0.7);
+}
+
+[data-pfx-static] .splash {
+	animation: none;
+	opacity: 0;
+}

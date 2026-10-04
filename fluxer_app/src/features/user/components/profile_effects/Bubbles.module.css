@@ -1,0 +1,132 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* Bubbles motion. Transform + opacity only; timing from --dur/--delay (see effectKit `vars`). */
+
+.wobble,
+.pop,
+.popRing,
+.beam,
+.foamIn,
+.orbit {
+	transform-box: fill-box;
+	transform-origin: 50% 50%;
+}
+
+/* Soap film wobbles: squash one way, then the other. */
+.wobble {
+	animation: wobble var(--dur, 2.2s) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes wobble {
+	from {
+		transform: scale(1.05, 0.95);
+	}
+	to {
+		transform: scale(0.96, 1.04);
+	}
+}
+
+/* A bubble swells, pops, and a fresh one grows back in its place. */
+.pop {
+	animation: pop var(--dur, 5s) ease-out var(--delay, 0ms) infinite both;
+}
+
+@keyframes pop {
+	0% {
+		transform: scale(0);
+		opacity: 0;
+	}
+	12% {
+		transform: scale(1);
+		opacity: 1;
+	}
+	70% {
+		transform: scale(1.04, 0.97);
+		opacity: 1;
+	}
+	76% {
+		transform: scale(1.16);
+		opacity: 1;
+	}
+	77%,
+	100% {
+		transform: scale(1.25);
+		opacity: 0;
+	}
+}
+
+.popRing {
+	animation: pop-ring var(--dur, 5s) ease-out var(--delay, 0ms) infinite both;
+}
+
+@keyframes pop-ring {
+	0%,
+	76% {
+		transform: scale(0.7);
+		opacity: 0;
+	}
+	77% {
+		transform: scale(0.9);
+		opacity: 1;
+	}
+	90%,
+	100% {
+		transform: scale(1.5);
+		opacity: 0;
+	}
+}
+
+/* Shafts of light through the water breathe. */
+.beam {
+	animation: beam var(--dur, 5s) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes beam {
+	from {
+		opacity: 0.35;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* Intro: foam swells up from the bottom edge. */
+.foamIn {
+	transform-origin: 50% 100%;
+	animation: foam-in 700ms cubic-bezier(0.2, 0, 0, 1.2) var(--delay, 150ms) both;
+}
+
+@keyframes foam-in {
+	from {
+		transform: scaleY(0);
+	}
+	to {
+		transform: scaleY(1);
+	}
+}
+
+/* Bubbles circling the avatar. The group is centred on the avatar, so a plain spin orbits them. */
+.orbit {
+	animation: orbit var(--dur, 16s) linear var(--delay, 0ms) infinite;
+}
+
+@keyframes orbit {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+[data-pfx-static] :is(.wobble, .pop, .beam, .foamIn, .orbit) {
+	animation: none;
+	opacity: 1;
+	transform: none;
+}
+
+[data-pfx-static] .beam {
+	opacity: 0.7;
+}
+
+[data-pfx-static] .popRing {
+	animation: none;
+	opacity: 0;
+}

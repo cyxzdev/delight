@@ -48,3 +48,51 @@
 	opacity: 1;
 	transform: none;
 }
+
+/* Palm fronds stir in a warm breeze. */
+.frond {
+	transform-box: fill-box;
+	transform-origin: 0% 100%;
+	animation: frond var(--dur, 3.4s) ease-in-out var(--delay, 0ms) infinite alternate both;
+}
+
+@keyframes frond {
+	from {
+		transform: rotate(-3deg);
+	}
+	to {
+		transform: rotate(4deg);
+	}
+}
+
+/* A shooting star streaks across the sky now and then. */
+.shoot {
+	animation: shoot var(--dur, 7s) cubic-bezier(0.3, 0, 0.7, 1) var(--delay, 0ms) infinite both;
+}
+
+@keyframes shoot {
+	0% {
+		transform: translate(0, 0);
+		opacity: 0;
+	}
+	2% {
+		opacity: 1;
+	}
+	12% {
+		transform: translate(var(--dx, -120px), var(--dy, 40px));
+		opacity: 0;
+	}
+	100% {
+		transform: translate(var(--dx, -120px), var(--dy, 40px));
+		opacity: 0;
+	}
+}
+
+[data-pfx-static] .frond {
+	animation: none;
+}
+
+[data-pfx-static] .shoot {
+	animation: none;
+	opacity: 0;
+}
