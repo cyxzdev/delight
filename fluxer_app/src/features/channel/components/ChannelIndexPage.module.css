@@ -29,7 +29,7 @@
 
 @media (min-width: 768px) {
 	.channelGrid {
-		grid-template-rows: 3.5rem minmax(0, 1fr);
+		grid-template-rows: var(--layout-header-height) minmax(0, 1fr);
 	}
 }
 

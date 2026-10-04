@@ -17,14 +17,19 @@
 }
 
 .header {
+	/* Delight: same 48px bar and hairline as every other top bar. */
 	display: flex;
 	align-items: center;
-	padding: var(--active-now-sidebar-header-padding-block-start) var(--active-now-sidebar-header-padding-inline);
-	padding-bottom: var(--active-now-sidebar-header-padding-block-end);
+	flex-shrink: 0;
+	box-sizing: border-box;
+	height: var(--layout-header-height);
+	min-height: var(--layout-header-height);
+	padding: 0 var(--active-now-sidebar-header-padding-inline);
+	border-bottom: 0.0625rem solid var(--background-modifier-accent);
 }
 
 .headerTitle {
-	font-size: 1.25rem;
+	font-size: 0.9375rem;
 	font-weight: 600;
 	color: var(--text-primary);
 }

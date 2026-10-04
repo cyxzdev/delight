@@ -9,7 +9,6 @@ import {
 	CollapsedCategoryVoiceParticipants,
 	CollapsedChannelAvatarStack,
 } from '@app/features/app/components/layout/CollapsedCategoryVoiceParticipants';
-import {GuildSidebarToolbar} from '@app/features/app/components/layout/GuildSidebarToolbar';
 import {GuildDetachedBanner} from '@app/features/app/components/layout/GuildDetachedBanner';
 import {NullSpaceDropIndicator} from '@app/features/app/components/layout/NullSpaceDropIndicator';
 import {ScrollIndicatorOverlay} from '@app/features/app/components/layout/ScrollIndicatorOverlay';
@@ -534,14 +533,6 @@ export const ChannelListContent = observer(({guild, scrollY, banner}: ChannelLis
 							data-flx="app.channel-list-content.null-space-drop-indicator"
 						/>
 					</div>
-					{!isMobile && (
-						<GuildSidebarToolbar
-							guild={guild}
-							canViewMembers={canViewMembers}
-							isMembersSelected={isMembersSelected}
-							data-flx="app.channel-list-content.guild-sidebar-toolbar"
-						/>
-					)}
 					<div
 						ref={channelGroupsContainerRef}
 						className={styles.channelGroupsContainer}

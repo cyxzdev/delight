@@ -22,7 +22,8 @@
 	min-height: var(--layout-header-height);
 	border-bottom: 0.0625rem solid var(--background-modifier-accent);
 	background-color: var(--background-secondary-lighter);
-	padding: 0 var(--channel-header-padding-inline);
+	padding-block: 0;
+	padding-inline: var(--channel-header-padding-inline);
 	color: var(--channel-header-text-primary);
 }
 

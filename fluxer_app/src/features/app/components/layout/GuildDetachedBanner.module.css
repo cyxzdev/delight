@@ -1,11 +1,14 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
+/* Delight: a short rounded banner card under the server header. */
 .container {
 	position: relative;
-	width: 100%;
+	height: 5.5rem;
+	margin: 0.5rem 0.5rem 0;
 	overflow: hidden;
-	border-bottom: 0.0625rem solid var(--user-area-divider-color);
-	background-color: var(--background-secondary);
+	border-radius: var(--radius-lg);
+	border: 0.0625rem solid var(--background-modifier-accent);
+	background-color: var(--background-tertiary);
 }
 
 .banner {

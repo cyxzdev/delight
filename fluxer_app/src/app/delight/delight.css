@@ -36,6 +36,9 @@
 	--radius-2xl: 1rem;
 	--media-border-radius: 0.5rem;
 	--footer-box-radius: var(--radius-lg);
+
+	/* One header height for every top bar (server, channel, home, settings). */
+	--layout-header-height: 3rem;
 }
 
 body {
