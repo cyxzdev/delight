@@ -5,7 +5,7 @@
 import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 
-const PORT = 9474;
+const PORT = +(process.env.SHOT_PORT || 9474);
 const BASE = process.env.DELIGHT_URL || 'http://localhost:3131';
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
@@ -14,7 +14,7 @@ async function ensureChrome() {
 		await fetch(`http://127.0.0.1:${PORT}/json/version`);
 		return;
 	} catch {}
-	spawn(CHROME, [`--remote-debugging-port=${PORT}`, '--headless=new', '--user-data-dir=/tmp/delight-fluxer-shot-profile', '--no-first-run', '--hide-scrollbars', '--window-size=1440,900', 'about:blank'], { detached: true, stdio: 'ignore' }).unref();
+	spawn(CHROME, [`--remote-debugging-port=${PORT}`, '--headless=new', `--user-data-dir=/tmp/delight-fluxer-shot-${PORT}`, '--no-first-run', '--hide-scrollbars', '--window-size=1440,900', 'about:blank'], { detached: true, stdio: 'ignore' }).unref();
 	for (let i = 0; i < 50; i++) {
 		await Bun.sleep(200);
 		try {
