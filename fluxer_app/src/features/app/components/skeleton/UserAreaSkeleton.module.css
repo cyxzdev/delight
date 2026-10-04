@@ -1,22 +1,23 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
+/* Delight: mirrors the floating user card spanning rail + sidebar (UserArea.module.css). */
 .userArea {
 	position: absolute;
 	bottom: 0;
-	left: var(--layout-guild-list-width);
-	width: var(--layout-sidebar-width);
-	padding: 0;
+	left: 0;
+	width: calc(var(--layout-guild-list-width) + var(--layout-sidebar-width));
+	padding: 0 0.5rem 0.5rem;
 	box-sizing: border-box;
-	background-color: var(--background-secondary);
+	background-color: transparent;
 	pointer-events: none;
 	z-index: var(--z-index-elevated-1);
 }
 
 .panel {
 	width: 100%;
-	background-color: var(--background-primary);
-	border-radius: 0;
-	border-top: var(--skeleton-chrome-border);
+	background-color: var(--background-tertiary);
+	border-radius: var(--radius-lg);
+	border: var(--skeleton-chrome-border);
 	overflow: hidden;
 }
 

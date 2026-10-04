@@ -16,7 +16,7 @@ const RESIZE_SIDEBAR_HANDLE_DESCRIPTOR = msg({
 });
 const RESIZING_CLASS = 'sidebar-resizing';
 // Delight's default sidebar is 240px (15rem, set in GuildsLayout.module.css), narrower than Fluxer's 320px.
-const SIDEBAR_WIDTH_DEFAULT = 240;
+const SIDEBAR_WIDTH_DEFAULT = 260;
 const KEYBOARD_STEP = 12;
 const KEYBOARD_STEP_LARGE = 48;
 

@@ -1,13 +1,12 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
-/* Delight: a short rounded banner card under the server header. */
+/* Delight: Discord-style banner, full-bleed directly under the server header; scrolls away with the list. */
 .container {
 	position: relative;
-	height: 5.5rem;
-	margin: 0.5rem 0.5rem 0;
+	height: 7.5rem;
+	/* The channel list pads its right edge by 0.5rem; bleed through it. */
+	margin: 0 -0.5rem 0 0;
 	overflow: hidden;
-	border-radius: var(--radius-lg);
-	border: 0.0625rem solid var(--background-modifier-accent);
 	background-color: var(--background-tertiary);
 }
 

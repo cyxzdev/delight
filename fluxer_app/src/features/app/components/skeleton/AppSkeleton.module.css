@@ -26,14 +26,14 @@
 
 .containerGuilds {
 	/* Delight frame metrics; keep in sync with GuildsLayout.module.css. */
-	--layout-guild-list-width: 4rem;
-	--layout-sidebar-width: 15rem;
+	--layout-guild-list-width: 4.5rem;
+	--layout-sidebar-width: 16.25rem;
 	--layout-header-height: 3rem;
-	--layout-user-area-height: 3.25rem;
+	--layout-user-area-height: 3.375rem;
 	--user-area-box-inset-block-end: 0px;
 	--layout-user-area-overlay-height: 0px;
 	grid-template-columns: var(--layout-guild-list-width) minmax(0, 1fr);
-	background-color: var(--background-secondary);
+	background-color: var(--background-primary);
 }
 
 .containerRailless {
@@ -56,17 +56,13 @@
 	padding-top: var(--native-titlebar-height);
 }
 
-.outlineFrame {
-	--outline-radius: 0px;
-}
-
-:global(html:not(.platform-native)) .outlineFrame {
-	border-top: none;
-}
-
-:global(html.platform-native) .outlineFrame {
-	border-top: 0.0625rem solid var(--user-area-divider-color);
-	--outline-radius: var(--outline-frame-radius-native);
+.outlineFrame.outlineFrame {
+	--outline-radius: 0.75rem;
+	border: 0;
+	border-top: var(--skeleton-chrome-border);
+	border-left: var(--skeleton-chrome-border);
+	border-top-left-radius: 0.75rem;
+	background: var(--background-secondary);
 }
 
 .content {

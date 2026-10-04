@@ -7,7 +7,7 @@ import * as AvatarUtils from '@app/features/user/utils/AvatarUtils';
 import {observer} from 'mobx-react-lite';
 import {useMemo} from 'react';
 
-// Delight: every banner shows as a short rounded card under the header.
+// Delight: every banner shows full-bleed directly under the header, like Discord.
 export const GuildDetachedBanner = observer(function GuildDetachedBanner({guild}: {guild: Guild}) {
 	const staticBannerURL = useMemo(
 		() => AvatarUtils.getGuildBannerURL({id: guild.id, banner: guild.banner}, false) || null,

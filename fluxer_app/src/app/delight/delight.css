@@ -39,6 +39,16 @@
 
 	/* One header height for every top bar (server, channel, home, settings). */
 	--layout-header-height: 3rem;
+
+	/* Discord proportions: 240px member list with 42px rows, 40px message avatars, 16px chat padding. */
+	--layout-member-list-width: 15rem;
+	--member-list-item-content-height: 2.125rem;
+	--member-list-item-content-gap: 0.75rem;
+	--message-search-bar-width: 15rem;
+	--message-search-bar-height: 2rem;
+	--message-avatar-size: 2.5rem;
+	--message-gutter: 1rem;
+	--message-avatar-align-offset: 0.125rem;
 }
 
 body {

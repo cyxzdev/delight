@@ -1,11 +1,13 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .guildsLayoutContainer {
-	/* Delight: 64px flush rail, 48px headers, 52px user panel. */
-	--layout-guild-list-width: 4rem;
-	--layout-sidebar-width: 15rem;
+	/* Delight: Discord's frame. 72px rail on the darkest surface; everything to its right is one panel with a
+	   rounded, hairlined top-left corner; 48px headers; the user card floats over the bottom of rail + sidebar. */
+	--layout-guild-list-width: 4.5rem;
+	--layout-sidebar-width: 16.25rem;
 	--layout-header-height: 3rem;
-	--layout-user-area-height: 3.25rem;
+	--layout-user-area-height: 3.375rem;
+	--layout-frame-radius: 0.75rem;
 	--user-area-box-inset-block-end: 0px;
 	--layout-user-area-overlay-height: 0px;
 	--layout-user-area-reserved-height: 0px;
@@ -21,7 +23,7 @@
 	width: 100%;
 	min-width: 0;
 	max-width: 100%;
-	background-color: var(--background-secondary);
+	background-color: var(--background-primary);
 }
 
 .guildsLayoutReserveSpace {
@@ -61,8 +63,6 @@
 	--guild-list-divider-base-gap: var(--guild-list-item-gap);
 	--guild-folder-expanded-surface-size: var(--guild-list-item-box-size);
 	--folder-radius: 0.75rem;
-	--layout-user-area-overlay-height: 0px;
-	--layout-user-area-reserved-height: 0px;
 	--guild-badge-surface: var(--background-primary);
 	--guilds-layout-item-bg: var(--background-tertiary);
 	grid-column: 1;
@@ -73,8 +73,10 @@
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
+	/* The user card overlaps the bottom of the rail, so the rail's list and buttons end above it. */
+	padding-bottom: var(--layout-user-area-overlay-height, 0px);
+	box-sizing: border-box;
 	background-color: var(--background-primary);
-	border-right: 0.0625rem solid var(--background-modifier-accent);
 	position: relative;
 	z-index: var(--z-index-elevated-1);
 }
@@ -91,8 +93,8 @@
 	flex-direction: column;
 	align-items: center;
 	gap: 0.25rem;
-	margin: 0 0.75rem;
-	padding: 0.5rem 0 0.625rem;
+	margin: 0 1rem;
+	padding: 0.5rem 0;
 	border-top: 0.0625rem solid var(--background-modifier-accent);
 }
 
@@ -105,6 +107,9 @@
 }
 
 .guildListScrollContainer {
+	/* The rail itself is padded above the user card (see .guildListScrollerWrapper). */
+	--layout-user-area-overlay-height: 0px;
+	--layout-user-area-reserved-height: 0px;
 	height: 100%;
 	width: 100%;
 	min-width: 0;
@@ -144,7 +149,7 @@
 	grid-template-rows: minmax(0, 1fr);
 	min-height: 0;
 	min-width: 0;
-	background-color: var(--background-secondary);
+	background-color: var(--background-primary);
 	position: relative;
 	height: 100%;
 	max-height: 100%;
@@ -189,12 +194,12 @@
 .userAreaWrapper {
 	position: absolute;
 	bottom: 0;
-	left: var(--layout-guild-list-width);
-	width: var(--layout-sidebar-width);
+	left: 0;
+	width: calc(var(--layout-guild-list-width) + var(--layout-sidebar-width));
 	display: flex;
 	align-items: flex-end;
 	padding: 0;
-	background-color: var(--background-secondary);
+	background-color: transparent;
 	pointer-events: none;
 	z-index: var(--z-index-elevated-1);
 }
@@ -640,8 +645,13 @@
 	color: var(--status-danger);
 }
 
-.outlineFrame {
-	--outline-radius: 0px;
+.outlineFrame.outlineFrame {
+	--outline-radius: var(--layout-frame-radius);
+	border: 0;
+	border-top: 0.0625rem solid var(--background-modifier-accent);
+	border-left: 0.0625rem solid var(--background-modifier-accent);
+	border-top-left-radius: var(--layout-frame-radius);
+	background: var(--background-secondary);
 }
 
 .outlineFrameFullscreen {
@@ -658,17 +668,10 @@
 	padding-top: 0;
 }
 
-:global(html:not(.platform-native)) .outlineFrame {
-	border-top: none;
-}
-
-:global(html.platform-native) .outlineFrame {
-	border-top: 0.0625rem solid var(--user-area-divider-color);
-	--outline-radius: var(--outline-frame-radius-native);
-}
-
-:global(html.platform-native) .outlineFrame.outlineFrameFullscreen {
+:global(html.platform-native) .outlineFrame.outlineFrame.outlineFrameFullscreen,
+.outlineFrame.outlineFrame.outlineFrameFullscreen {
 	border: none;
+	border-radius: 0;
 }
 
 .guildMutedInfo {

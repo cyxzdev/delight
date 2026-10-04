@@ -60,7 +60,7 @@
 	align-items: center;
 	gap: var(--member-list-item-content-gap);
 	font-weight: 500;
-	font-size: 0.875rem;
+	font-size: 1rem;
 }
 
 .avatarContainer {
@@ -92,7 +92,7 @@
 .memberCustomStatus {
 	max-width: 100%;
 	color: var(--text-tertiary);
-	font-size: 0.6875rem;
+	font-size: 0.75rem;
 	line-height: var(--member-list-item-status-line-height);
 	font-weight: 500;
 	overflow: hidden;

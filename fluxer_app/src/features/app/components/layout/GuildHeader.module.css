@@ -9,7 +9,7 @@
 	position: relative;
 	z-index: 2;
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	overflow: hidden;
 	height: var(--layout-header-height);
 	min-height: var(--layout-header-height);
@@ -36,7 +36,7 @@
 }
 
 :global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
-	.headerContainerNoBanner:hover {
+	.headerContainerNoBanner:has(.headerContent:hover) {
 	background-color: var(--background-modifier-hover);
 }
 
@@ -90,11 +90,12 @@
 	z-index: 30;
 	display: flex;
 	align-items: center;
-	gap: var(--spacing-1-5);
+	gap: 0.25rem;
 	height: var(--layout-header-height);
-	width: 100%;
+	flex: 1 1 auto;
+	width: auto;
 	min-width: 0;
-	padding: 0 0.75rem 0 1rem;
+	padding: 0 0.5rem 0 1rem;
 	cursor: pointer;
 	white-space: nowrap;
 	overflow: hidden;
@@ -130,10 +131,10 @@
 	transition:
 		color var(--transition-normal),
 		text-shadow var(--transition-normal);
-	flex: 1;
+	flex: 0 1 auto;
 	min-width: 0;
 	font-weight: 600;
-	font-size: 0.9375rem;
+	font-size: 1rem;
 	letter-spacing: -0.01em;
 	white-space: nowrap;
 	overflow: hidden;
@@ -154,7 +155,7 @@
 }
 
 .caretIcon {
-	margin-left: auto;
+	margin-left: 0.125rem;
 	height: 0.875rem;
 	width: 0.875rem;
 	flex-shrink: 0;
@@ -166,7 +167,7 @@
 
 .caretIconDefault {
 	composes: caretIcon;
-	color: var(--text-tertiary);
+	color: var(--text-primary-muted);
 }
 
 .caretIconWithBanner {
@@ -198,4 +199,43 @@
 	composes: dotsIcon;
 	color: white;
 	filter: drop-shadow(0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.9));
+}
+
+/* Delight: invite shortcut at the far right of the server header (like Discord's). */
+.inviteButton {
+	position: relative;
+	z-index: 30;
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	height: 2rem;
+	width: 2rem;
+	margin-right: 0.5rem;
+	padding: 0;
+	border: none;
+	border-radius: var(--radius-md);
+	background-color: transparent;
+	color: var(--text-primary-muted);
+	cursor: pointer;
+	transition:
+		background-color 120ms ease-out,
+		color 120ms ease-out;
+	-webkit-app-region: no-drag;
+}
+
+:global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
+	.inviteButton:hover {
+	background-color: var(--background-modifier-hover);
+	color: var(--text-primary);
+}
+
+.inviteButtonWithBanner {
+	color: white;
+	filter: drop-shadow(0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.9));
+}
+
+.inviteIcon {
+	height: 1.125rem;
+	width: 1.125rem;
 }

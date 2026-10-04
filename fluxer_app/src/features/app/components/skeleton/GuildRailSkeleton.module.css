@@ -26,8 +26,9 @@
 	min-height: 0;
 	width: var(--layout-guild-list-width);
 	min-width: 0;
+	padding-bottom: calc(var(--layout-user-area-height) + 0.5rem);
+	box-sizing: border-box;
 	background-color: var(--background-primary);
-	border-right: var(--skeleton-chrome-border);
 }
 
 .footer {
@@ -36,8 +37,8 @@
 	flex-direction: column;
 	align-items: center;
 	gap: 0.25rem;
-	margin: 0 0.75rem;
-	padding: 0.5rem 0 0.625rem;
+	margin: 0 1rem;
+	padding: 0.5rem 0;
 	border-top: var(--skeleton-chrome-border);
 }
 

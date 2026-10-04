@@ -24,28 +24,18 @@ Use Fluxer's existing CSS variables, never hard-coded hex values, so the theme s
 - Compact: list rows 32px, member rows 40px, buttons 32px (small 28px), inputs 36px, headers 48px.
 - Motion: 120ms colour/opacity transitions; floating layers fade + 4px lift in ≤150ms. No bounces or springs.
 
-## Signature placement changes (what makes it not-Fluxer)
-1. **Server rail**: 64px, flush `--background-primary`, no dashed circles. Icons 40px with 12px corners (never circles,
-   even when selected). Selected/unread indicator: a 3px vertical bar in `--text-primary` on the rail's left edge
-   (unread 8px tall, hover 16px, selected 32px). Home/DM button at top is the Delight spark. Utility buttons (discover,
-   add server, download, help) are grouped at the bottom of the rail as plain 32px icon buttons, separated by a hairline.
-2. **Server header**: flush 48px bar with server name (15px/600) and a chevron; under it, the "Members"/"Events"-style
-   entries become a single compact row of icon buttons with tooltips instead of full-width list rows.
-3. **User panel**: a flush 52px bar spanning the bottom of the channel sidebar (no floating rounded card, no margin),
-   avatar + name/status left, mic/headset/settings as 28px ghost icons right; muted state shown in red icon only.
-4. **Channel header**: 48px, `# name` 15px/600, topic muted after a thin vertical divider, actions as 32px ghost icons;
-   the search field is compact (180px, grows to 260px on focus).
-5. **Composer**: no floating rounded box. A flush bar attached to the bottom of the chat with a top hairline,
-   `--background-secondary-alt` fill, attach button left, emoji/gif/sticker icons right, 44px min height.
-6. **Messages**: 15px text, avatars 36px, name 15px/500 + muted 12px timestamp on one line, tight grouping, hover row
-   fill `--background-modifier-hover`, hover action toolbar flat with a hairline border.
-7. **Auth pages**: split layout — left 40% brand panel on `--background-primary` with the spark, "Delight" wordmark and
-   a one-line tagline; right side the form (max 380px) on `--background-secondary`. No background art/gradients.
-8. **Settings (user and server)**: left nav 232px on `--background-secondary` with 11px section labels and 30px rows;
-   content max 760px, sections as hairline-separated rows (label + description left, control right). Close button top
-   right, 32px circle with hairline.
-9. **Nagbars** (e.g. "Enable desktop notifications"): neutral `--background-tertiary` strip with a small accent button,
-   not a full purple bar.
+## Layout (Discord's proportions, our colours)
+- Server rail 72px on `--background-primary`, rounded-square icons. Everything to its right is one panel with a 12px
+  rounded top-left corner and a hairline on its top/left edges, flush to the right edge of the window.
+- Channel sidebar 260px: 48px header (name 16px/600 + chevron, invite button on the right); server banner full-bleed
+  directly under it (120px, cover); channel rows 34px / 16px text / 6px radius, no left-edge bars; category names as
+  typed, 13px, chevron after the name.
+- User card spans the rail + sidebar at the bottom left (8px margin, rounded); its height and bottom line match the
+  composer.
+- Every top bar is 48px (`--layout-header-height`) and shares one bottom hairline.
+- Chat: 16px text, 40px avatars, 16px padding; composer is a rounded box inset 8px.
+- Member list 240px, sentence-case role headers, 44px rows with 32px avatars.
+- Corners are soft (tokens in `src/app/delight/delight.css`: 6/8/10/12/16px).
 
 ## Rules for agents
 - Edit only your scope (given in your prompt). CSS modules first; change TSX markup only where placement changes need it.
