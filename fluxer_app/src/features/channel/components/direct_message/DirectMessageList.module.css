@@ -309,18 +309,6 @@
 	color: var(--text-primary);
 }
 
-.clickableItemSelected::before,
-.dmItemSelected::before {
-	content: '';
-	position: absolute;
-	left: 0;
-	top: 0.4375rem;
-	bottom: 0.4375rem;
-	width: 0.125rem;
-	border-radius: 0 0.125rem 0.125rem 0;
-	background-color: var(--brand-primary);
-}
-
 .clickableItemInner {
 	display: flex;
 	width: 100%;

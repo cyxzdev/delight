@@ -353,17 +353,6 @@
 	font-weight: 500;
 }
 
-.sidebarItemSelected::before {
-	content: '';
-	position: absolute;
-	left: 0;
-	top: 0.5rem;
-	bottom: 0.5rem;
-	width: 0.1875rem;
-	border-radius: 0 0.125rem 0.125rem 0;
-	background: var(--brand-primary);
-}
-
 .sidebarItemSelected,
 .sidebarItem.sidebarItemFocused:not(.sidebarItemDanger) {
 	background: var(--settings-sidebar-selected-background);
