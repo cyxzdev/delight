@@ -5,7 +5,7 @@ import type {MessageDescriptor} from '@lingui/core';
 import {msg} from '@lingui/core/macro';
 
 /** Bump when badge artwork changes, so browsers drop their cached copies. */
-const BADGE_ART_VERSION = '1';
+const BADGE_ART_VERSION = '2';
 
 export interface DelightBadge {
 	id: string;
