@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .guildNavbarContainer {
-	/* Delight: the list ends above the floating user card instead of scrolling underneath it. */
-	--scroller-track-block-end-inset: 0px;
-	padding-bottom: calc(var(--layout-user-area-overlay-height, 0px) + 0.5rem);
-	box-sizing: border-box;
+	--scroller-track-block-end-inset: var(
+		--layout-user-area-overlay-height,
+		var(--layout-user-area-reserved-height, 0px)
+	);
 	display: grid;
 	grid-template-rows: auto 1fr;
 	height: calc(
@@ -109,9 +109,4 @@
 	.hoverRoll .hovered {
 		display: none;
 	}
-}
-
-.guildNavbarContainer > * {
-	--layout-user-area-overlay-height: 0px;
-	--layout-user-area-reserved-height: 0px;
 }

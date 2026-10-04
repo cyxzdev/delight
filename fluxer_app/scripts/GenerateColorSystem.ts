@@ -315,7 +315,7 @@ const CONFIG: Config = {
 	scales: {
 		darkSurface: {
 			family: 'neutralDark',
-			range: [5, 15],
+			range: [6, 23],
 			curve: 'easeOut',
 			stops: [
 				{name: '--background-primary', position: 0},
@@ -350,7 +350,7 @@ const CONFIG: Config = {
 		},
 		darkText: {
 			family: 'neutralDark',
-			range: [40, 90],
+			range: [60, 97],
 			curve: 'easeInOut',
 			stops: [
 				{name: '--text-tertiary-secondary', position: 0},
@@ -457,8 +457,8 @@ hsl(258, calc(10% * var(--saturation-factor)), 2%) 10%
 			{name: '--control-button-active-text', value: 'var(--text-primary)'},
 			{name: '--control-button-danger-text', hue: 1, saturation: 77, useSaturationFactor: true, lightness: 60},
 			{name: '--control-button-danger-hover-bg', hue: 1, saturation: 77, useSaturationFactor: true, lightness: 20},
-			{name: '--brand-primary', family: 'brand', lightness: 50},
-			{name: '--brand-secondary', family: 'brand', saturation: 42, lightness: 45},
+			{name: '--brand-primary', family: 'brand', saturation: 48, lightness: 54},
+			{name: '--brand-secondary', family: 'brand', saturation: 45, lightness: 48},
 			{name: '--brand-primary-light', family: 'brand', saturation: 100, lightness: 84},
 			{name: '--brand-primary-fill', hue: 0, saturation: 0, lightness: 100},
 			{name: '--status-online', family: 'statusOnline', lightness: 40},
@@ -520,8 +520,8 @@ hsl(0, calc(0% * var(--saturation-factor)), 100%) 100%,
 hsl(245, calc(100% * var(--saturation-factor)), 80%) 40%
 )`,
 			},
-			{name: '--button-primary-fill', hue: 270, saturation: 42, useSaturationFactor: true, lightness: 50},
-			{name: '--button-primary-active-fill', hue: 270, saturation: 42, useSaturationFactor: true, lightness: 44},
+			{name: '--button-primary-fill', hue: 270, saturation: 48, useSaturationFactor: true, lightness: 54},
+			{name: '--button-primary-active-fill', hue: 270, saturation: 45, useSaturationFactor: true, lightness: 48},
 			{name: '--button-primary-text', hue: 0, saturation: 0, lightness: 100},
 			{name: '--button-secondary-fill', hue: 0, saturation: 0, lightness: 100, alpha: 0.1, useSaturationFactor: false},
 			{

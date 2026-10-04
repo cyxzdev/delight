@@ -75,7 +75,7 @@
 	border: 0.0625rem solid var(--background-modifier-accent);
 	color: var(--text-primary);
 	font-family: var(--font-mono);
-	font-size: 0.8125rem;
+	font-size: 0.9rem;
 	word-break: break-all;
 	min-width: 15rem;
 }
@@ -95,7 +95,7 @@
 	background: var(--background-tertiary);
 	color: var(--text-primary);
 	font-weight: 700;
-	font-size: 0.78125rem;
+	font-size: 0.85rem;
 }
 
 .actions {
@@ -161,7 +161,7 @@
 
 .cardTitle {
 	margin: 0;
-	font-size: 0.875rem;
+	font-size: 1.05rem;
 	font-weight: 750;
 	color: var(--text-primary);
 }
@@ -169,7 +169,7 @@
 .cardSubtitle {
 	margin: 0.35rem 0 0 0;
 	color: var(--text-primary-muted);
-	font-size: 0.8125rem;
+	font-size: 0.95rem;
 	line-height: 1.5;
 }
 
@@ -243,7 +243,7 @@
 }
 
 .toggleDescription {
-	font-size: 0.78125rem;
+	font-size: 0.85rem;
 	color: var(--text-primary-muted);
 }
 
@@ -319,7 +319,7 @@
 .fieldLabel {
 	margin: 0;
 	font-weight: 500;
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 	line-height: 1.25rem;
 	color: var(--text-primary);
 }
@@ -359,7 +359,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 	line-height: 1.25rem;
 	font-weight: 500;
 	color: var(--text-primary);
@@ -488,7 +488,7 @@
 
 .errorTitle {
 	margin: 0;
-	font-size: 0.875rem;
+	font-size: 1.05rem;
 	font-weight: 700;
 	color: var(--text-primary);
 }
@@ -506,7 +506,7 @@
 
 .helperText {
 	color: var(--text-primary-muted);
-	font-size: 0.8125rem;
+	font-size: 0.9rem;
 }
 
 .dangerContent {
@@ -531,7 +531,7 @@
 
 .error {
 	color: var(--accent-danger);
-	font-size: 0.8125rem;
+	font-size: 0.95rem;
 	padding-top: var(--spacing-2);
 	border-radius: var(--radius-lg);
 	background: color-mix(in srgb, var(--status-danger) 12%, transparent);

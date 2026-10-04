@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
-/* Delight: form fields read as inset wells — darker than the surface they sit on. */
 .surface {
-	background-color: var(--background-primary);
-	transition: background-color 0.12s ease;
+	background-color: var(--form-surface-background);
+	transition: background-color 0.15s ease;
 }

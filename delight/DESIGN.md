@@ -24,18 +24,10 @@ Use Fluxer's existing CSS variables, never hard-coded hex values, so the theme s
 - Compact: list rows 32px, member rows 40px, buttons 32px (small 28px), inputs 36px, headers 48px.
 - Motion: 120ms colour/opacity transitions; floating layers fade + 4px lift in ≤150ms. No bounces or springs.
 
-## Layout (Discord's proportions, our colours)
-- Server rail 72px on `--background-primary`, rounded-square icons. Everything to its right is one panel with a 12px
-  rounded top-left corner and a hairline on its top/left edges, flush to the right edge of the window.
-- Channel sidebar 260px: 48px header (name 16px/600 + chevron, invite button on the right); server banner full-bleed
-  directly under it (120px, cover); channel rows 34px / 16px text / 6px radius, no left-edge bars; category names as
-  typed, 13px, chevron after the name.
-- User card spans the rail + sidebar at the bottom left (8px margin, rounded); its height and bottom line match the
-  composer.
-- Every top bar is 48px (`--layout-header-height`) and shares one bottom hairline.
-- Chat: 16px text, 40px avatars, 16px padding; composer is a rounded box inset 8px.
-- Member list 240px, sentence-case role headers, 44px rows with 32px avatars.
-- Corners are soft (tokens in `src/app/delight/delight.css`: 6/8/10/12/16px).
+## Layout
+Use the base app's own layout, sizes, spacing and corners (the user prefers its compact proportions). Delight changes
+are colour (GenerateColorSystem.ts), the Inter font, branding, and the 32px title strip above the app
+(WindowTitleStrip). Don't enlarge text, rows or padding, and don't add custom radii.
 
 ## Rules for agents
 - Edit only your scope (given in your prompt). CSS modules first; change TSX markup only where placement changes need it.

@@ -1,26 +1,18 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .sectionTitle {
-	margin-bottom: 0.25rem;
-	padding: 0 0.5rem;
+	margin-bottom: 1rem;
 	font-weight: 600;
-	font-size: 0.6875rem;
+	font-size: 0.75rem;
 	line-height: 1rem;
-	letter-spacing: 0.04em;
 	text-transform: uppercase;
-	color: var(--text-tertiary);
+	color: var(--text-primary-muted);
 }
 
 .sectionContent {
-	display: flex;
-	flex-direction: column;
-	gap: 0.0625rem;
-	margin: 0;
+	margin: 0 -1rem;
 }
 
 .sectionContentWithMargin {
-	display: flex;
-	flex-direction: column;
-	gap: 0.0625rem;
-	margin: 0 0 1.25rem;
+	margin: 0 -1rem 2rem;
 }

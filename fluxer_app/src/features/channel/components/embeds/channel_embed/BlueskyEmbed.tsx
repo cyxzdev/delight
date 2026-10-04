@@ -184,7 +184,7 @@ export const BlueskyEmbed: FC<BlueskyEmbedProps> = observer(
 					...(isNested
 						? {maxWidth: '100%', width: '100%'}
 						: {
-								borderLeft: `2px solid ${getBorderColor(embed.color)}`,
+								borderLeft: `4px solid ${getBorderColor(embed.color)}`,
 								maxWidth: formatResponsiveEmbedWidth(blueskyOuterMaxWidth),
 							}),
 				}}

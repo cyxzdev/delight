@@ -121,7 +121,7 @@ export const GuildIconUploadField: React.FC<{
 						data-flx="guild.guild-tabs.guild-overview-tab.fields.guild-icon-upload-field.icon-upload-buttons"
 					>
 						<Button
-							variant="secondary"
+							variant="primary"
 							small={true}
 							onClick={controller.openSourcePicker}
 							disabled={!canManageGuild || controller.isProcessing}

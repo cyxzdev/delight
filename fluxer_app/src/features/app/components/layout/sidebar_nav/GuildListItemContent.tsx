@@ -24,8 +24,11 @@ interface GuildListItemContentProps extends GuildListItemProps {
 	readonly dragAndDrop: GuildListItemDragAndDrop | null;
 }
 
-function guildIconBorderRadius(_isEmphasized: boolean): string {
-	return '0.75rem';
+function guildIconBorderRadius(isEmphasized: boolean): string {
+	if (isEmphasized) {
+		return '30%';
+	}
+	return '50%';
 }
 
 export const GuildListItemContent = observer((props: GuildListItemContentProps) => {

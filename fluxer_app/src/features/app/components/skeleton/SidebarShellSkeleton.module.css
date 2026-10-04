@@ -60,7 +60,7 @@
 	width: 100%;
 	min-width: 0;
 	overflow: hidden;
-	padding: 0 0.75rem 0 1rem;
+	padding: 0 var(--spacing-4);
 }
 
 .headerCaret {

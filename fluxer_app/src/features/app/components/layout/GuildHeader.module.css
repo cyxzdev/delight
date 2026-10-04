@@ -9,14 +9,14 @@
 	position: relative;
 	z-index: 2;
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	overflow: hidden;
 	height: var(--layout-header-height);
 	min-height: var(--layout-header-height);
 	min-width: 0;
-	border-bottom: 0.0625rem solid var(--background-modifier-accent);
+	border-bottom: 0.0625rem solid var(--user-area-divider-color);
 	background-color: var(--background-secondary);
-	transition: background-color 120ms ease-out;
+	transition: background-color var(--transition-normal);
 }
 
 .headerRounded {
@@ -36,7 +36,7 @@
 }
 
 :global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
-	.headerContainerNoBanner:has(.headerContent:hover) {
+	.headerContainerNoBanner:hover {
 	background-color: var(--background-modifier-hover);
 }
 
@@ -90,12 +90,11 @@
 	z-index: 30;
 	display: flex;
 	align-items: center;
-	gap: 0.25rem;
+	gap: var(--spacing-1);
 	height: var(--layout-header-height);
-	flex: 1 1 auto;
-	width: auto;
+	width: 100%;
 	min-width: 0;
-	padding: 0 0.5rem 0 1rem;
+	padding: 0 var(--spacing-4);
 	cursor: pointer;
 	white-space: nowrap;
 	overflow: hidden;
@@ -131,11 +130,9 @@
 	transition:
 		color var(--transition-normal),
 		text-shadow var(--transition-normal);
-	flex: 0 1 auto;
+	flex: 1;
 	min-width: 0;
 	font-weight: 600;
-	font-size: 1rem;
-	letter-spacing: -0.01em;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -155,9 +152,9 @@
 }
 
 .caretIcon {
-	margin-left: 0.125rem;
-	height: 0.875rem;
-	width: 0.875rem;
+	margin-left: auto;
+	height: 1rem;
+	width: 1rem;
 	flex-shrink: 0;
 	transition:
 		transform var(--transition-fast),
@@ -167,7 +164,7 @@
 
 .caretIconDefault {
 	composes: caretIcon;
-	color: var(--text-primary-muted);
+	color: var(--text-primary);
 }
 
 .caretIconWithBanner {
@@ -199,43 +196,4 @@
 	composes: dotsIcon;
 	color: white;
 	filter: drop-shadow(0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.9));
-}
-
-/* Delight: invite shortcut at the far right of the server header (like Discord's). */
-.inviteButton {
-	position: relative;
-	z-index: 30;
-	display: flex;
-	flex: 0 0 auto;
-	align-items: center;
-	justify-content: center;
-	height: 2rem;
-	width: 2rem;
-	margin-right: 0.5rem;
-	padding: 0;
-	border: none;
-	border-radius: var(--radius-md);
-	background-color: transparent;
-	color: var(--text-primary-muted);
-	cursor: pointer;
-	transition:
-		background-color 120ms ease-out,
-		color 120ms ease-out;
-	-webkit-app-region: no-drag;
-}
-
-:global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
-	.inviteButton:hover {
-	background-color: var(--background-modifier-hover);
-	color: var(--text-primary);
-}
-
-.inviteButtonWithBanner {
-	color: white;
-	filter: drop-shadow(0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.9));
-}
-
-.inviteIcon {
-	height: 1.125rem;
-	width: 1.125rem;
 }

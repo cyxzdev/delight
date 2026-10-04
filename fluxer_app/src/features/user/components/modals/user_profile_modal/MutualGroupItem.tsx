@@ -49,7 +49,7 @@ export const MutualGroupItem: React.FC<MutualGroupItemProps> = ({group, onClick,
 				className={userProfileModalStyles.mutualItemIconFrame}
 				data-flx="user.user-profile-modal.mutual-group-item.icon-frame"
 			>
-				<GroupDMAvatar channel={group} size={32} data-flx="user.user-profile-modal.mutual-group-item.group-dm-avatar" />
+				<GroupDMAvatar channel={group} size={40} data-flx="user.user-profile-modal.mutual-group-item.group-dm-avatar" />
 			</div>
 			<div className={userProfileModalStyles.mutualFriendInfo} data-flx="user.user-profile-modal.mutual-group-item.div">
 				<span

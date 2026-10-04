@@ -323,18 +323,3 @@
 		border-color: CanvasText;
 	}
 }
-
-/* ---- Delight: flat slider ---- */
-.barFill,
-.vertical .barFill,
-:global(.theme-light) .barFill,
-:global(.theme-light) .vertical .barFill {
-	background: var(--brand-primary);
-	box-shadow: none;
-}
-
-.grabber {
-	background: var(--brand-primary-fill);
-	border: none;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
-}

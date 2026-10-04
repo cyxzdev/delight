@@ -7,7 +7,7 @@ import {makeAutoObservable} from 'mobx';
 const SIDEBAR_WIDTH_STORAGE_KEY = 'fluxer:ui:sidebar-width';
 const SIDEBAR_WIDTH_MIN = 200;
 const SIDEBAR_WIDTH_MAX = 480;
-const SIDEBAR_WIDTH_DEFAULT = 260;
+const SIDEBAR_WIDTH_DEFAULT = 320;
 
 function clampSidebarWidth(value: number): number {
 	return Math.max(SIDEBAR_WIDTH_MIN, Math.min(Math.round(value), SIDEBAR_WIDTH_MAX));

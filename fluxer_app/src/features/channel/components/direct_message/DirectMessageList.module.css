@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .dmListContainer {
-	/* Delight: the list ends above the floating user card instead of scrolling underneath it. */
-	--scroller-track-block-end-inset: 0px;
-	padding-bottom: calc(var(--layout-user-area-overlay-height, 0px) + 0.5rem);
-	box-sizing: border-box;
+	--scroller-track-block-end-inset: var(
+		--layout-user-area-overlay-height,
+		var(--layout-user-area-reserved-height, 0px)
+	);
 	display: grid;
 	grid-template-rows: auto 1fr auto;
 	height: calc(100% - var(--layout-user-area-reserved-height, 0px));
@@ -15,6 +15,7 @@
 	-webkit-user-select: none;
 	overflow: hidden;
 	background-color: var(--background-secondary);
+	padding-bottom: 0;
 }
 
 .dmListHeader {
@@ -23,10 +24,10 @@
 	height: var(--layout-header-height);
 	min-height: var(--layout-header-height);
 	background-color: var(--background-secondary);
-	padding: 0 0.625rem;
+	padding: 0 var(--spacing-2);
 	width: 100%;
 	border: none;
-	border-bottom: 0.0625rem solid var(--background-modifier-accent);
+	border-bottom: 0.0625rem solid var(--user-area-divider-color);
 	cursor: pointer;
 	text-align: left;
 }
@@ -37,28 +38,24 @@
 	align-items: center;
 	width: 100%;
 	height: 1.75rem;
-	padding: 0 0.625rem;
-	border: 0.0625rem solid var(--background-modifier-accent);
+	padding: 0 var(--spacing-3);
+	border: none;
 	border-radius: var(--radius-md);
-	background-color: var(--background-primary);
-	color: var(--text-tertiary);
+	background-color: transparent;
+	color: var(--text-primary-muted);
 	font-size: 0.8125rem;
-	font-weight: 400;
-	transition:
-		border-color 120ms ease-out,
-		color 120ms ease-out;
+	font-weight: 500;
 }
 
 :global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
 	.dmListHeader:hover {
-	background-color: transparent;
+	background-color: var(--background-modifier-hover);
 }
 
 :global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
 	.dmListHeader:hover
 	.dmListHeaderButton {
-	color: var(--text-primary-muted);
-	border-color: color-mix(in srgb, var(--text-primary) 18%, transparent);
+	color: var(--text-primary);
 }
 
 .dmListHeaderText {
@@ -84,8 +81,8 @@
 	justify-content: center;
 	padding: 0 0.25rem;
 	border-radius: var(--radius-sm);
-	background-color: var(--background-modifier-hover);
-	color: var(--text-tertiary);
+	background-color: var(--background-modifier-accent);
+	color: var(--surface-interactive-selected-color);
 	font-size: 0.625rem;
 	font-weight: 500;
 	font-family: var(--font-keybind);
@@ -141,8 +138,8 @@
 	width: 2rem;
 	align-items: center;
 	justify-content: center;
-	border-radius: var(--radius-md);
-	background-color: var(--background-tertiary);
+	border-radius: var(--radius-full);
+	background-color: var(--guild-list-foreground);
 	color: var(--text-primary);
 	border: none;
 	cursor: pointer;
@@ -158,12 +155,12 @@
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
-	border-radius: var(--radius-md);
-	background-color: var(--background-tertiary);
-	padding-left: 0.75rem;
-	padding-right: 0.75rem;
-	padding-top: 0.375rem;
-	padding-bottom: 0.375rem;
+	border-radius: var(--radius-full);
+	background-color: var(--guild-list-foreground);
+	padding-left: 1rem;
+	padding-right: 1rem;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
 	font-weight: 500;
 	font-size: 0.875rem;
 	line-height: 1.25rem;
@@ -219,13 +216,15 @@
 	bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px) + 1rem);
 	z-index: 50;
 	display: flex;
-	height: 3rem;
-	width: 3rem;
+	height: 3.5rem;
+	width: 3.5rem;
 	align-items: center;
 	justify-content: center;
-	border-radius: 0.75rem;
+	border-radius: var(--radius-full);
 	background-color: var(--brand-primary);
-	box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.45);
+	box-shadow:
+		0 0.625rem 0.9375rem -0.1875rem rgb(0 0 0 / 0.1),
+		0 0.25rem 0.375rem -0.25rem rgb(0 0 0 / 0.1);
 	border: none;
 	cursor: pointer;
 }
@@ -234,7 +233,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.0625rem;
-	padding-top: 0.5rem;
+	padding-top: 0;
 	padding-bottom: 0;
 	padding-left: var(--spacing-2);
 	padding-right: var(--spacing-2);
@@ -246,7 +245,6 @@
 }
 
 .clickableItem {
-	position: relative;
 	display: flex;
 	height: 2.625rem;
 	width: 100%;
@@ -255,38 +253,35 @@
 	border-radius: var(--radius-md);
 	border: none;
 	padding-left: 0.5rem;
-	padding-right: 0.375rem;
+	padding-right: 0.5rem;
 	text-align: left;
 	background-color: transparent;
-	color: var(--text-tertiary);
+	color: var(--text-primary-muted);
 	box-shadow: none;
-	transition:
-		background-color 120ms ease-out,
-		color 120ms ease-out;
 }
 
 .clickableItemIcon {
 	display: flex;
-	height: 1.5rem;
-	width: 1.5rem;
+	height: 2rem;
+	width: 2rem;
 	align-items: center;
 	justify-content: center;
-	border-radius: 0;
-	background-color: transparent;
-	color: inherit;
+	border-radius: var(--radius-full);
+	background-color: var(--guild-list-foreground);
+	color: var(--text-primary);
 }
 
 @media (hover: hover) and (pointer: fine) {
 	:global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
 		.clickableItem:hover:not(.clickableItemSelected)
 		.clickableItemIcon {
-		background-color: transparent;
+		background-color: color-mix(in srgb, var(--guild-list-foreground) 90%, white);
 	}
 }
 
 .clickableItemSelected .clickableItemIcon {
-	background-color: transparent;
-	color: var(--text-primary);
+	background-color: var(--brand-primary);
+	color: white;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -304,8 +299,8 @@
 
 .clickableItemSelected {
 	composes: clickableItem;
-	background-color: var(--background-modifier-selected);
-	color: var(--text-primary);
+	background-color: color-mix(in srgb, var(--surface-interactive-selected-bg) 35%, transparent);
+	color: var(--surface-interactive-selected-color);
 }
 
 .clickableItemInner {
@@ -335,21 +330,20 @@
 
 .clickableItemText {
 	font-weight: 500;
-	font-size: 1rem;
 }
 
 .dmSectionSeparator {
 	height: 0.0625rem;
-	margin: var(--spacing-2) 0 var(--spacing-1);
-	background-color: var(--background-modifier-accent);
+	margin: var(--spacing-2) calc(-1 * var(--spacing-2));
+	background-color: var(--user-area-divider-color);
 }
 
 .dmSectionHeader {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	margin-top: 1rem;
-	margin-bottom: 0.25rem;
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
 	padding-left: 0.5rem;
 	padding-right: 0.5rem;
 }
@@ -358,16 +352,13 @@
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
-	color: var(--text-tertiary);
+	color: var(--text-primary-muted);
 }
 
-/* Delight: Discord's "Direct Messages" label, sentence case like the channel categories. */
 .dmSectionHeaderLabel {
 	font-size: 0.8125rem;
 	line-height: 1rem;
 	font-weight: 500;
-	letter-spacing: 0;
-	text-transform: none;
 }
 
 .dmCreateButton {
@@ -460,15 +451,12 @@
 	border-radius: var(--radius-md);
 	border: none;
 	padding-left: 0.5rem;
-	padding-right: 0.375rem;
+	padding-right: 0.5rem;
 	text-align: left;
 	height: 2.625rem;
 	background-color: transparent;
-	color: var(--text-tertiary);
+	color: var(--text-primary-muted);
 	box-shadow: none;
-	transition:
-		background-color 120ms ease-out,
-		color 120ms ease-out;
 }
 
 .dmItemUnread {
@@ -506,9 +494,9 @@
 
 .dmItemUnreadIndicator {
 	position: absolute;
-	margin-left: -0.5rem;
-	width: 0.1875rem;
-	border-radius: 0 0.125rem 0.125rem 0;
+	margin-left: -0.75rem;
+	width: 0.5rem;
+	border-radius: 0 var(--radius-full) var(--radius-full) 0;
 	background-color: var(--text-primary);
 }
 
@@ -517,7 +505,7 @@
 	display: flex;
 	width: 100%;
 	align-items: center;
-	gap: 0.625rem;
+	gap: 0.75rem;
 }
 
 .dmItemAvatarWrapper {
@@ -569,11 +557,11 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	color: var(--text-tertiary);
+	color: color-mix(in srgb, var(--text-primary-muted) 85%, transparent);
 	font-size: 0.6875rem;
-	line-height: 0.875rem;
-	font-weight: 400;
-	margin-top: 0;
+	line-height: 1rem;
+	font-weight: 500;
+	margin-top: -0.0625rem;
 }
 
 .dmItemSubtext img,
@@ -630,8 +618,8 @@
 
 .dmItemSelected {
 	composes: dmItem;
-	background-color: var(--background-modifier-selected);
-	color: var(--text-primary);
+	background-color: color-mix(in srgb, var(--surface-interactive-selected-bg) 35%, transparent);
+	color: var(--surface-interactive-selected-color);
 }
 
 .dmItemSelected .dmItemSubtext,
@@ -756,7 +744,7 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: var(--radius-full);
-	background-color: var(--background-tertiary);
+	background-color: var(--guild-list-foreground);
 	color: var(--text-primary);
 }
 
@@ -769,8 +757,8 @@
 }
 
 .mobileSpecialButtonSelected .mobileSpecialButtonIcon {
-	background-color: var(--background-header-primary);
-	color: var(--text-primary);
+	background-color: var(--brand-primary);
+	color: white;
 }
 
 .mobileSpecialButtonText {
@@ -794,9 +782,4 @@
 .iconSize4 {
 	height: 1rem;
 	width: 1rem;
-}
-
-.dmListContainer > * {
-	--layout-user-area-overlay-height: 0px;
-	--layout-user-area-reserved-height: 0px;
 }

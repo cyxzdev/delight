@@ -11,9 +11,9 @@
 }
 
 .icon {
-	width: 2.25rem;
-	height: 2.25rem;
-	color: var(--text-tertiary);
+	width: 3.5rem;
+	height: 3.5rem;
+	color: var(--text-primary-muted);
 }
 
 .text {
@@ -26,7 +26,7 @@
 
 .heading {
 	margin: 0;
-	font-size: 0.9375rem;
+	font-size: 1.125rem;
 	font-weight: 600;
 	line-height: 1.4;
 	color: var(--text-primary);
@@ -34,7 +34,7 @@
 
 .description {
 	margin: 0;
-	font-size: 0.8125rem;
-	line-height: 1.45;
+	font-size: 0.875rem;
+	line-height: 1.5;
 	color: var(--text-tertiary);
 }

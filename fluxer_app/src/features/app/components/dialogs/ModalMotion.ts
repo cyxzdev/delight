@@ -16,13 +16,13 @@ export interface ModalBackdropMotionInput {
 
 const SETTLED_SURFACE = {opacity: 1, scale: 1} as const;
 
-const BACKDROP_RESTING_OPACITY = 0.72;
+const BACKDROP_RESTING_OPACITY = 0.85;
 
 const BACKDROP_DISMISS_SPRING = {type: 'spring', stiffness: 1000, damping: 48, mass: 1} as const;
 
 const QUICK_TRANSITION = {duration: 0.12, ease: 'easeOut'} as const;
 
-const QUICK_SURFACE_OFFSET = 1;
+const QUICK_SURFACE_OFFSET = 0.98;
 
 export function resolveModalMotionSpec({
 	transitionPreset,
@@ -69,12 +69,11 @@ export function resolveModalMotionSpec({
 			transition: {duration: 0.14, ease: 'easeOut'},
 		};
 	}
-	// Delight: floating layers fade with a 4px lift, no springs.
 	return {
-		initial: {opacity: 0, y: 4, scale: 1},
-		animate: {opacity: 1, y: 0, scale: 1},
-		exit: {opacity: 0, y: 4, scale: 1},
-		transition: {duration: 0.14, ease: 'easeOut'},
+		initial: {opacity: 0, scale: 0.95},
+		animate: {opacity: 1, scale: 1},
+		exit: {opacity: 0, scale: 0.95},
+		transition: {type: 'spring', stiffness: 400, damping: 30, mass: 0.8},
 	};
 }
 

@@ -3,12 +3,12 @@
 .contentSection {
 	display: flex;
 	flex-direction: column;
-	gap: 0.625rem;
+	gap: 0.5rem;
 	padding-top: 0.5rem;
-	padding-left: 0.875rem;
-	padding-right: 0.875rem;
+	padding-left: 1rem;
+	padding-right: 1rem;
 }
 
 .contentSectionWebhook {
-	padding-bottom: 0.75rem;
+	padding-bottom: 1rem;
 }

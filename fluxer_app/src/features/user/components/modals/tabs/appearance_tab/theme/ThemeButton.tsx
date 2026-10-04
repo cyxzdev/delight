@@ -25,6 +25,17 @@ export const ThemeButton = observer(
 	React.forwardRef<HTMLButtonElement, ThemeButtonProps>(
 		({themeType, currentTheme, label, backgroundColor, isLight, disabled = false, onKeyDown, onClick, icon}, ref) => {
 			const isSelected = currentTheme === themeType;
+			const getButtonClassName = () => {
+				const classes = [styles.themeButton];
+				if (isSelected) {
+					classes.push(styles.themeButtonSelected);
+				} else if (isLight) {
+					classes.push(styles.themeButtonLight);
+				} else {
+					classes.push(styles.themeButtonDark);
+				}
+				return clsx(classes);
+			};
 			return (
 				<FocusRing offset={-2} data-flx="user.appearance-tab.theme.theme-button.focus-ring">
 					<button
@@ -32,7 +43,8 @@ export const ThemeButton = observer(
 						type="button"
 						onClick={() => onClick(themeType)}
 						onKeyDown={(e) => onKeyDown(e, themeType)}
-						className={clsx(styles.themeButton, isSelected && styles.themeButtonSelected)}
+						className={getButtonClassName()}
+						style={{backgroundColor}}
 						disabled={disabled}
 						role="radio"
 						aria-checked={isSelected}
@@ -41,47 +53,33 @@ export const ThemeButton = observer(
 						tabIndex={disabled ? -1 : isSelected ? 0 : -1}
 						data-flx="user.appearance-tab.theme.theme-button.radio.click.button"
 					>
-						<span
-							className={clsx(styles.themeSwatch, isLight ? styles.themeSwatchLight : styles.themeSwatchDark)}
-							style={{backgroundColor}}
-							aria-hidden="true"
-							data-flx="user.appearance-tab.theme.theme-button.swatch"
-						>
-							<span className={styles.swatchNav} data-flx="user.appearance-tab.theme.theme-button.swatch-nav" />
-							<span className={styles.swatchBody} data-flx="user.appearance-tab.theme.theme-button.swatch-body">
-								<span className={styles.swatchLine} data-flx="user.appearance-tab.theme.theme-button.swatch-line" />
-								<span
-									className={clsx(styles.swatchLine, styles.swatchLineShort)}
-									data-flx="user.appearance-tab.theme.theme-button.swatch-line--2"
+						{icon && (
+							<div
+								className={styles.themeButtonIcon}
+								aria-hidden="true"
+								data-flx="user.appearance-tab.theme.theme-button.theme-button-icon"
+							>
+								{React.cloneElement(icon, {
+									size: 24,
+									weight: 'bold',
+									style: {color: isLight ? '#000000' : '#ffffff'},
+								})}
+							</div>
+						)}
+						{isSelected && (
+							<div
+								className={styles.themeButtonCheckmark}
+								aria-hidden="true"
+								data-flx="user.appearance-tab.theme.theme-button.theme-button-checkmark"
+							>
+								<CheckIcon
+									weight="bold"
+									className={styles.themeButtonCheckmarkIcon}
+									size={remFromPx(12)}
+									data-flx="user.appearance-tab.theme.theme-button.theme-button-checkmark-icon"
 								/>
-								<span className={styles.swatchComposer} data-flx="user.appearance-tab.theme.theme-button.swatch-composer" />
-							</span>
-							{icon && (
-								<span className={styles.themeButtonIcon} data-flx="user.appearance-tab.theme.theme-button.theme-button-icon">
-									{React.cloneElement(icon, {
-										size: 16,
-										weight: 'bold',
-										style: {color: isLight ? '#000000' : '#ffffff'},
-									})}
-								</span>
-							)}
-							{isSelected && (
-								<span
-									className={styles.themeButtonCheckmark}
-									data-flx="user.appearance-tab.theme.theme-button.theme-button-checkmark"
-								>
-									<CheckIcon
-										weight="bold"
-										className={styles.themeButtonCheckmarkIcon}
-										size={remFromPx(10)}
-										data-flx="user.appearance-tab.theme.theme-button.theme-button-checkmark-icon"
-									/>
-								</span>
-							)}
-						</span>
-						<span className={styles.themeLabel} data-flx="user.appearance-tab.theme.theme-button.label">
-							{label}
-						</span>
+							</div>
+						)}
 					</button>
 				</FocusRing>
 			);

@@ -24,18 +24,18 @@
 	margin-bottom: 0.25rem;
 	font-weight: 500;
 	color: var(--text-primary);
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 }
 
 .description {
 	color: var(--text-primary-muted);
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 }
 
 .warningText {
 	margin-top: 0.25rem;
 	color: var(--alert-warning-color);
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 }
 
 .divider {
@@ -73,7 +73,7 @@
 	margin-bottom: 0.25rem;
 	font-weight: 500;
 	color: var(--text-primary);
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 }
 
 .passkeyDetails {

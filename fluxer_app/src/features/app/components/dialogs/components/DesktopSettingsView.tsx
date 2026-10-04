@@ -472,7 +472,7 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 					data-flx="app.desktop-settings-view.user-profile.profile-tab-select"
 				>
 					<div className={userSettingsStyles.userProfileInfo} data-flx="app.desktop-settings-view.div--3">
-						<StatusAwareAvatar size={24} user={currentUser!} data-flx="app.desktop-settings-view.status-aware-avatar" />
+						<StatusAwareAvatar size={32} user={currentUser!} data-flx="app.desktop-settings-view.status-aware-avatar" />
 						<div className={userSettingsStyles.userProfileName} data-flx="app.desktop-settings-view.div--4">
 							{currentUser?.displayName}
 						</div>

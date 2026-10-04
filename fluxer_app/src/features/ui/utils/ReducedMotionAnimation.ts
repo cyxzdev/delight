@@ -24,14 +24,17 @@ export function getReducedMotionProps(animation: MotionAnimation, prefersReduced
 }
 
 export const TOOLTIP_MOTION: MotionAnimation = {
-	initial: {opacity: 0, scale: 1},
+	initial: {opacity: 0, scale: 0.98},
 	animate: {opacity: 1, scale: 1},
-	exit: {opacity: 0, scale: 1},
-	transition: {duration: 0.1, ease: 'easeOut'},
+	exit: {opacity: 0, scale: 0.98},
+	transition: {
+		opacity: {duration: 0.1},
+		scale: {type: 'spring', damping: 25, stiffness: 500},
+	},
 };
 export const FADE_MOTION: MotionAnimation = {
 	initial: {opacity: 0},
 	animate: {opacity: 1},
 	exit: {opacity: 0},
-	transition: {duration: 0.12},
+	transition: {duration: 0.2},
 };

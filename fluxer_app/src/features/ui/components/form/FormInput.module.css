@@ -4,9 +4,9 @@
 	width: 100%;
 	resize: none;
 	appearance: none;
-	border-radius: var(--radius-lg);
-	border: 1px solid var(--background-modifier-accent);
-	padding: 0.4375rem 0.75rem;
+	border-radius: 0.5rem;
+	border: 0.0625rem solid var(--background-modifier-accent);
+	padding: 0.625rem 1rem;
 	font-size: 0.875rem;
 	line-height: 1.25rem;
 	color: var(--text-primary);
@@ -20,11 +20,11 @@
 }
 
 .input.minHeight {
-	min-height: 2.25rem;
+	min-height: 2.75rem;
 }
 
 .input.hasRightElement {
-	padding-right: 2.75rem;
+	padding-right: 3rem;
 }
 
 .input.hasLeftIcon {
@@ -32,8 +32,7 @@
 }
 
 .input.focusable:focus-within {
-	border-color: var(--brand-primary);
-	box-shadow: 0 0 0 1px var(--brand-primary);
+	border-color: var(--background-modifier-accent-focus);
 }
 
 .input.error {
@@ -67,9 +66,9 @@
 	display: block;
 	padding: 0;
 	font-weight: 500;
-	font-size: 0.8125rem;
-	line-height: 1.125rem;
-	color: var(--text-secondary);
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+	color: var(--text-primary);
 }
 
 .inputGroup {
@@ -79,8 +78,8 @@
 }
 
 .errorText {
-	font-size: 0.8125rem;
-	line-height: 1.125rem;
+	font-size: 0.875rem;
+	line-height: 1.25rem;
 	color: var(--status-danger);
 }
 
@@ -131,10 +130,10 @@
 .passwordToggle {
 	position: absolute;
 	top: 50%;
-	right: 0.375rem;
+	right: 0.75rem;
 	transform: translateY(-50%);
-	border-radius: var(--radius-md);
-	padding: 0.3125rem;
+	border-radius: 0.25rem;
+	padding: 0.375rem;
 	color: var(--text-tertiary);
 	transition-property: color, background-color, border-color;
 	transition-duration: 150ms;
@@ -161,16 +160,15 @@
 	display: flex;
 	min-width: 0;
 	max-width: 100%;
-	border-radius: var(--radius-lg);
-	border: 1px solid var(--background-modifier-accent);
+	border-radius: 0.5rem;
+	border: 0.0625rem solid var(--background-modifier-accent);
 	transition-property: color, background-color, border-color;
 	transition-duration: 150ms;
 	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .textareaWrapper.focusable:focus-within {
-	border-color: var(--brand-primary);
-	box-shadow: 0 0 0 1px var(--brand-primary);
+	border-color: var(--background-modifier-accent-focus);
 }
 
 .textareaWrapper.error {
@@ -190,7 +188,7 @@
 	appearance: none;
 	border: 0;
 	background-color: transparent;
-	padding: 0.5rem 0.75rem;
+	padding: 0.625rem 1rem;
 	font-size: 0.875rem;
 	line-height: 1.25rem;
 	color: var(--text-primary);

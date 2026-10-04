@@ -306,7 +306,7 @@ export const BannerUploader = observer(
 						>
 							{showBannerUploadAction && (
 								<Button
-									variant="secondary"
+									variant="primary"
 									small={true}
 									onClick={handleBannerUpload}
 									disabled={disabled}
@@ -345,7 +345,7 @@ export const BannerUploader = observer(
 					<div className={styles.buttonGroup} data-flx="user.my-profile-tab.banner-uploader.button-group--2">
 						{showBannerUploadAction && (
 							<Button
-								variant="secondary"
+								variant="primary"
 								small={true}
 								onClick={handleBannerUpload}
 								disabled={disabled}

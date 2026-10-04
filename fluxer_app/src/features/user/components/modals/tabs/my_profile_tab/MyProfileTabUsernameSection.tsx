@@ -62,7 +62,7 @@ export const UsernameSection = observer(({isClaimed, isEmailVerified, user}: Use
 						data-flx="user.my-profile-tab.username-section.tooltip"
 					>
 						<div data-flx="user.my-profile-tab.username-section.div--2">
-							<Button variant="secondary" small disabled data-flx="user.my-profile-tab.username-section.button">
+							<Button variant="primary" small disabled data-flx="user.my-profile-tab.username-section.button">
 								<Trans>Change username</Trans>
 							</Button>
 						</div>
@@ -73,14 +73,14 @@ export const UsernameSection = observer(({isClaimed, isEmailVerified, user}: Use
 						data-flx="user.my-profile-tab.username-section.tooltip--2"
 					>
 						<div data-flx="user.my-profile-tab.username-section.div--3">
-							<Button variant="secondary" small disabled data-flx="user.my-profile-tab.username-section.button--2">
+							<Button variant="primary" small disabled data-flx="user.my-profile-tab.username-section.button--2">
 								<Trans>Change username</Trans>
 							</Button>
 						</div>
 					</Tooltip>
 				) : (
 					<Button
-						variant="secondary"
+						variant="primary"
 						small
 						onClick={() =>
 							ModalCommands.push(

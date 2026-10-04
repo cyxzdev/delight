@@ -164,7 +164,7 @@
 	height: 100%;
 	width: 100%;
 	padding: 1rem;
-	border-radius: var(--radius-lg);
+	border-radius: 0.5rem;
 	background-color: var(--brand-primary);
 }
 
@@ -204,7 +204,7 @@
 	padding: 0.125rem 0.5rem;
 	border-radius: 0.375rem;
 	background-color: rgba(0, 0, 0, 0.2);
-	font-weight: 600;
+	font-weight: 700;
 	font-size: 0.75rem;
 	color: white;
 }

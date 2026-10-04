@@ -16,19 +16,14 @@ import {GuildHeaderBottomSheet} from '@app/features/guild/components/bottomsheet
 import {GuildBadge} from '@app/features/guild/components/GuildBadge';
 import {GuildHeaderPopout} from '@app/features/guild/components/popouts/GuildHeaderPopout';
 import type {Guild} from '@app/features/guild/models/Guild';
-import {InviteModal} from '@app/features/invite/components/modals/InviteModal';
-import * as InviteUtils from '@app/features/invite/utils/InviteUtils';
 import {GuildContextMenu} from '@app/features/ui/action_menu/GuildContextMenu';
 import * as ContextMenuCommands from '@app/features/ui/commands/ContextMenuCommands';
-import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
-import {modal} from '@app/features/ui/commands/ModalCommands';
 import MobileLayout from '@app/features/ui/state/MobileLayout';
 import Popout from '@app/features/ui/state/Popout';
-import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
 import {GuildFeatures} from '@fluxer/constants/src/GuildConstants';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
-import {CaretDownIcon, DotsThreeIcon, UserPlusIcon} from '@phosphor-icons/react';
+import {CaretDownIcon, DotsThreeIcon} from '@phosphor-icons/react';
 import {clsx} from 'clsx';
 import {motion} from 'framer-motion';
 import {observer} from 'mobx-react-lite';
@@ -38,10 +33,6 @@ import {useCallback, useRef} from 'react';
 const OPEN_COMMUNITY_MENU_FOR_DESCRIPTOR = msg({
 	message: 'Open community menu for {guildName}',
 	comment: 'Short label in the app layout guild header. Preserve {guildName}; it is inserted by code.',
-});
-const INVITE_MEMBERS_DESCRIPTOR = msg({
-	message: 'Invite members',
-	comment: 'Button or menu action label in the guild header popout. Keep it concise.',
 });
 const GUILD_BADGE_FEATURES: ReadonlyArray<string> = [
 	GuildFeatures.VERIFIED,
@@ -83,18 +74,6 @@ export const GuildHeader = observer(({guild, banner}: {guild: Guild; banner: Gui
 		[guild],
 	);
 	const guildNameRef = useRef<HTMLSpanElement | null>(null);
-	// Delight: Discord-style invite shortcut at the right of the header; same flow as the dropdown's "Invite members".
-	const invitableChannelId = InviteUtils.getInvitableChannelId(guild.id);
-	const canInvite = !isMobile && InviteUtils.canInviteToChannel(invitableChannelId, guild.id);
-	const handleInviteClick = useCallback(
-		(event: React.MouseEvent) => {
-			event.stopPropagation();
-			ModalCommands.push(
-				modal(() => <InviteModal channelId={invitableChannelId ?? ''} data-flx="app.guild-header.invite-modal" />),
-			);
-		},
-		[invitableChannelId],
-	);
 	const badgeVisible = resolveGuildBadgeVisible(guild.features);
 	const bannerPlacement = resolveSkeletonBannerPlacement(banner.hasBanner, banner.isDetached);
 	useSkeletonLayoutReport(() => {
@@ -203,19 +182,6 @@ export const GuildHeader = observer(({guild, banner}: {guild: Guild; banner: Gui
 						</>
 					)}
 				</GuildHeaderShell>
-				{canInvite && (
-					<Tooltip text={i18n._(INVITE_MEMBERS_DESCRIPTOR)} position="bottom" data-flx="app.guild-header.invite-tooltip">
-						<button
-							type="button"
-							className={clsx(styles.inviteButton, onBanner && styles.inviteButtonWithBanner)}
-							onClick={handleInviteClick}
-							aria-label={i18n._(INVITE_MEMBERS_DESCRIPTOR)}
-							data-flx="app.guild-header.invite-button"
-						>
-							<UserPlusIcon weight="bold" className={styles.inviteIcon} data-flx="app.guild-header.invite-icon" />
-						</button>
-					</Tooltip>
-				)}
 			</NativeDragRegion>
 		</div>
 	);

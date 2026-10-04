@@ -5,9 +5,8 @@
 	padding-top: var(--member-list-item-padding-block);
 	padding-bottom: var(--member-list-item-padding-block);
 	cursor: pointer;
-	border-radius: var(--radius-md);
+	border-radius: 0.375rem;
 	color: var(--text-chat);
-	transition: background-color 120ms ease-out;
 	display: block;
 	width: 100%;
 	text-align: left;
@@ -30,7 +29,7 @@
 }
 
 .buttonOffline {
-	opacity: 0.4;
+	opacity: 0.3;
 }
 
 .buttonContextMenuOpen {
@@ -40,7 +39,7 @@
 }
 
 .memberFocusRing {
-	border-radius: var(--radius-md);
+	border-radius: 0.375rem;
 }
 
 .grid {
@@ -60,7 +59,6 @@
 	align-items: center;
 	gap: var(--member-list-item-content-gap);
 	font-weight: 500;
-	font-size: 1rem;
 }
 
 .avatarContainer {
@@ -91,8 +89,8 @@
 
 .memberCustomStatus {
 	max-width: 100%;
-	color: var(--text-tertiary);
-	font-size: 0.75rem;
+	color: color-mix(in srgb, var(--text-primary-muted) 85%, transparent);
+	font-size: 0.6875rem;
 	line-height: var(--member-list-item-status-line-height);
 	font-weight: 500;
 	overflow: hidden;

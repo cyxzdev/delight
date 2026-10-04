@@ -6,7 +6,7 @@
 	gap: 0.75rem;
 	padding: 1rem;
 	background-color: var(--background-primary);
-	border-radius: var(--radius-lg);
+	border-radius: 0.5rem;
 	box-shadow: var(--shadow-lg);
 	max-width: 21.25rem;
 }

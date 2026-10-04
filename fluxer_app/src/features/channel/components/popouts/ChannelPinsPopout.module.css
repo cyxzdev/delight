@@ -1,26 +1,24 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .container {
-	--pins-popout-header-height: 3rem;
+	--pins-popout-header-height: 4.25rem;
 	position: relative;
 	display: flex;
 	flex-direction: column;
 	box-sizing: border-box;
 	overflow: hidden;
-	border-radius: var(--radius-lg);
+	border-radius: 0.5rem;
 	border: 0.0625rem solid var(--background-modifier-accent);
-	background-color: var(--background-tertiary);
-	box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.4);
+	background-color: var(--form-surface-background);
 }
 
 .header {
 	position: relative;
 	display: flex;
 	align-items: center;
-	gap: 0.5rem;
-	padding: 0 0.875rem;
+	gap: 0.25rem;
+	padding: 1rem;
 	min-height: var(--pins-popout-header-height);
-	border-bottom: 0.0625rem solid var(--background-modifier-accent);
 }
 
 .body {
@@ -33,14 +31,14 @@
 
 .title {
 	font-weight: 600;
-	font-size: 0.9375rem;
+	font-size: 1rem;
 	color: var(--text-primary);
 	line-height: 1.25;
 }
 
 .iconLarge {
-	height: 1.125rem;
-	width: 1.125rem;
+	height: 1.5rem;
+	width: 1.5rem;
 	color: var(--text-primary-muted);
 }
 

@@ -29,7 +29,7 @@
 
 @media (min-width: 768px) {
 	.channelGrid {
-		grid-template-rows: var(--layout-header-height) minmax(0, 1fr);
+		grid-template-rows: 3.5rem minmax(0, 1fr);
 	}
 }
 
@@ -311,7 +311,7 @@
 	overflow: hidden;
 	color: rgb(248 250 255 / 0.92);
 	font-size: clamp(1.15rem, 5.2cqh, 1.75rem);
-	font-weight: 600;
+	font-weight: 700;
 	line-height: 1.18;
 	text-overflow: ellipsis;
 	white-space: nowrap;

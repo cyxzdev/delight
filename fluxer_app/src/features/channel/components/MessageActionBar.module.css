@@ -2,7 +2,7 @@
 
 .actionBarContainer {
 	position: absolute;
-	bottom: calc(100% - 1rem);
+	bottom: calc(100% - 0.25rem - 12px);
 	right: 0;
 	z-index: var(--z-index-elevated-1);
 	padding: 0 0.875rem 0.375rem 2rem;
@@ -41,17 +41,15 @@
 .actionBar {
 	composes: toolbar from '@app/features/ui/action_toolbar/ActionToolbar.module.css';
 	--action-toolbar-gap: 0;
-	--action-toolbar-padding: 0;
-	--action-toolbar-radius: var(--radius-md);
-	--action-toolbar-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 0.3);
-	--message-action-bar-surface: var(--background-tertiary);
-	--message-action-bar-border: var(--background-modifier-accent);
-	--message-action-bar-hover-background: var(--background-modifier-selected);
+	--action-toolbar-padding: 0.125rem;
+	--message-action-bar-surface: var(--settings-surface-background, var(--form-surface-background));
+	--message-action-bar-border: var(--settings-border-color, var(--background-modifier-accent));
+	--message-action-bar-hover-background: var(--settings-hover-background, var(--surface-interactive-hover-bg));
 	--message-action-bar-hover-border: var(
 		--settings-hover-border-color,
 		color-mix(in srgb, var(--background-modifier-accent) 72%, var(--text-tertiary))
 	);
-	--message-action-bar-selected-background: var(--background-modifier-selected);
+	--message-action-bar-selected-background: var(--settings-selected-background, var(--surface-interactive-selected-bg));
 	--message-action-bar-selected-border: var(
 		--settings-selected-border-color,
 		color-mix(in srgb, var(--background-modifier-accent) 72%, var(--text-tertiary))
@@ -76,15 +74,10 @@
 .button {
 	composes: item from '@app/features/ui/action_toolbar/ActionToolbar.module.css';
 	--action-toolbar-item-border-width: 0;
-	--action-toolbar-item-size: 1.875rem;
-	--action-toolbar-item-radius: var(--radius-sm);
-	--action-toolbar-item-hover-scale: 1;
-	--action-toolbar-item-color: var(--text-tertiary);
 }
 
 .quickReactionGroupEnd {
-	margin-right: 0;
-	border-inline-end: 0.0625rem solid var(--background-modifier-accent);
+	margin-right: 0.5625rem;
 }
 
 .button[hidden] {
@@ -127,8 +120,8 @@
 }
 
 .actionBarIcon {
-	width: 1.125rem;
-	height: 1.125rem;
+	width: 1.25rem;
+	height: 1.25rem;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -136,8 +129,8 @@
 }
 
 .actionBarIcon > svg {
-	width: 1.125rem;
-	height: 1.125rem;
+	width: 1.25rem;
+	height: 1.25rem;
 	display: block;
 	flex: 0 0 auto;
 	object-fit: contain;
@@ -156,8 +149,8 @@
 }
 
 .emojiImage {
-	height: 1.125rem;
-	width: 1.125rem;
+	height: 1.25rem;
+	width: 1.25rem;
 }
 
 img.emojiImage {

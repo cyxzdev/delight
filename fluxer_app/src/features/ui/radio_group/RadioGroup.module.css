@@ -177,24 +177,3 @@
 .enable-forced-colors .radioGroupOption[data-disabled] .innerDotRadio {
 	fill: GrayText;
 }
-
-/* ---- Delight ---- */
-.group {
-	--radio-indicator-size: 1rem;
-	--radio-indicator-border: var(--text-tertiary);
-}
-
-.labelText {
-	font-size: 0.875rem;
-}
-
-.description {
-	font-size: 0.8125rem;
-	color: var(--text-tertiary);
-}
-
-.outerRadioBase {
-	fill: transparent;
-	stroke-width: 1.5;
-	filter: none;
-}

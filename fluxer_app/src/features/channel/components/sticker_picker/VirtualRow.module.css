@@ -41,12 +41,12 @@
 	border: none;
 	background: transparent;
 	padding: 0;
-	border-radius: var(--radius-lg);
+	border-radius: 0.5rem;
 }
 
 .stickerButton:hover,
 .stickerButton.selected {
-	border-radius: var(--radius-2xl);
+	border-radius: 1rem;
 	background-color: var(--background-header-secondary);
 	box-shadow: 0 0 0 0.0625rem var(--background-modifier-hover);
 }
@@ -95,7 +95,7 @@
 
 .categoryTitle {
 	font-size: 0.875rem;
-	font-weight: 600;
+	font-weight: bold;
 	color: var(--text-primary-muted);
 	line-height: 1.2;
 	max-height: 1.05rem;

@@ -39,9 +39,9 @@
 	box-sizing: border-box;
 	width: 100%;
 	align-items: center;
-	background-color: var(--background-primary);
-	border: 1px solid var(--background-modifier-accent);
-	border-radius: var(--radius-lg);
+	background-color: var(--form-surface-background);
+	border: 0.0625rem solid var(--background-modifier-accent);
+	border-radius: 0.5rem;
 	color: var(--text-primary);
 	transition:
 		color 0.15s ease,
@@ -50,7 +50,7 @@
 }
 
 .inputGroupOpen {
-	border-color: var(--brand-primary);
+	border-color: var(--background-modifier-accent-focus);
 }
 
 .inputGroupDisabled {
@@ -64,8 +64,8 @@
 }
 
 .inputGroupDefault {
-	min-height: 2.25rem;
-	padding-left: 0.75rem;
+	min-height: 2.75rem;
+	padding-left: 1rem;
 }
 
 .inputGroupCompact {
@@ -119,7 +119,7 @@
 .inputDefault {
 	font-size: 0.875rem;
 	line-height: 1.25rem;
-	padding: 0.4375rem 0;
+	padding: 0.6875rem 0;
 }
 
 .inputCompact {
@@ -216,7 +216,7 @@
 }
 
 .valueOverlayDefault.valueOverlayWrap {
-	padding: 0.4375rem 0;
+	padding: 0.6875rem 0;
 }
 
 .valueOverlayCompact.valueOverlayWrap {
@@ -301,10 +301,10 @@
 	min-height: 0;
 	width: max-content;
 	max-width: var(--available-width);
-	background-color: var(--background-tertiary);
-	border: 1px solid var(--background-modifier-accent);
-	border-radius: var(--radius-lg);
-	box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.45);
+	background-color: var(--form-surface-background);
+	border: 0.0625rem solid var(--background-modifier-accent);
+	border-radius: 0.5rem;
+	box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 0.24);
 	overflow: hidden;
 	color: var(--text-primary);
 }

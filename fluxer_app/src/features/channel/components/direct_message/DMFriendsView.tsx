@@ -293,7 +293,6 @@ export const DMFriendsView: React.FC = observer(() => {
 					{showSearchBar && (
 						<div className={styles.searchWrapper} data-flx="channel.direct-message.dm-friends-view.search-wrapper">
 							<Input
-								className={styles.searchInput}
 								value={searchQuery}
 								onChange={(event) => setSearchQuery(event.currentTarget.value)}
 								placeholder={searchPlaceholder}

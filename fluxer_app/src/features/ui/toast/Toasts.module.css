@@ -14,11 +14,14 @@
 	justify-content: center;
 }
 
-/* Delight: desktop toasts sit at the bottom centre, above the composer. */
 .containerDesktop {
 	transform: translateX(-50%);
-	bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+	top: calc(1.5rem + env(safe-area-inset-top, 0px));
 	left: 50%;
+}
+
+:global(html.platform-native #toast-portal-root) .containerDesktop {
+	top: calc(1.5rem + env(safe-area-inset-top, 0px) + var(--native-titlebar-height, 0px));
 }
 
 :global(html.platform-native #toast-portal-root) .containerMobile {

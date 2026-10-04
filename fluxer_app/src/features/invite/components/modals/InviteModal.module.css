@@ -106,7 +106,7 @@
 }
 
 .editLink {
-	color: color-mix(in srgb, var(--brand-primary) 55%, var(--text-primary));
+	color: var(--text-link);
 	background: none;
 	border: none;
 	padding: 0;

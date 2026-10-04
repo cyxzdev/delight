@@ -76,7 +76,6 @@ export const AccountTabContent: React.FC<AccountTabProps> = observer(
 					</div>
 					{RuntimeConfig.emailsEnabled && (
 						<Button
-							variant="secondary"
 							small={true}
 							onClick={() =>
 								ModalCommands.push(
@@ -158,7 +157,6 @@ export const AccountTabContent: React.FC<AccountTabProps> = observer(
 								</div>
 							</div>
 							<Button
-								variant="secondary"
 								small={true}
 								onClick={() =>
 									ModalCommands.push(

@@ -42,16 +42,10 @@
 	padding-left: var(--input-container-padding);
 	padding-right: var(--input-container-padding);
 	min-height: var(--message-search-bar-height);
-	box-sizing: border-box;
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-xl);
 	border: 0.0625rem solid var(--search-input-border-color);
 	background-color: var(--search-input-background);
 	transition: border-color 0.1s ease;
-}
-
-/* Delight: the editor fills the bar's inner height instead of forcing 36px. */
-.inputContainer flx-lexical-search-input {
-	min-height: calc(var(--message-search-bar-height) - 0.125rem);
 }
 
 .inputContainer:focus-within {

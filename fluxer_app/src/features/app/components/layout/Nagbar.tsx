@@ -32,8 +32,9 @@ export const Nagbar = observer(
 				)}
 				style={
 					{
-						'--nagbar-tone-color': backgroundColor,
-						'--nagbar-tone-text-color': textColor,
+						backgroundColor,
+						color: textColor,
+						'--nagbar-background-color': backgroundColor,
 					} as React.CSSProperties
 				}
 				data-flx="app.nagbar.nagbar"
@@ -44,6 +45,7 @@ export const Nagbar = observer(
 						<button
 							type="button"
 							className={styles.dismissButton}
+							style={{color: textColor}}
 							aria-label={i18n._(CLOSE_DESCRIPTOR)}
 							onClick={onDismiss}
 							data-flx="app.nagbar.dismiss-button"

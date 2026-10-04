@@ -264,8 +264,8 @@ const UserAreaInner = observer(
 						{...openProps}
 						render={() => <UserAreaPopout data-flx="app.user-area.user-area-inner.user-area-popout" />}
 						containerClass={styles.popoutContainer}
-						position="top-start"
-						offsetMainAxis={10}
+						position="top"
+						offsetMainAxis={12}
 					>
 						<FocusRingWrapper focusRingOffset={-2} data-flx="app.user-area.user-area-inner.focus-ring-wrapper">
 							<div

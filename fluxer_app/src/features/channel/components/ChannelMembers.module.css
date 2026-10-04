@@ -5,14 +5,11 @@
 	flex-direction: column;
 }
 
-/* Delight: Discord's role headers, "Admin — 4" in sentence case. */
 .groupHeader,
 .virtualGroupRow {
-	color: var(--text-tertiary);
-	font-weight: 500;
-	font-size: 0.8125rem;
-	letter-spacing: 0;
-	text-transform: none;
+	color: var(--text-primary-muted);
+	font-weight: 600;
+	font-size: 0.875rem;
 	line-height: 1rem;
 }
 
@@ -20,8 +17,8 @@
 	display: flex;
 	min-width: 0;
 	align-items: flex-start;
-	padding-top: 1.5rem;
-	padding-bottom: 0.5rem;
+	padding-top: 0.75rem;
+	padding-bottom: 0.25rem;
 	padding-left: 0.5rem;
 	padding-right: 0.5rem;
 }
@@ -35,7 +32,6 @@
 
 .groupHeaderSeparator {
 	flex-shrink: 0;
-	margin: 0 0.25rem;
 }
 
 .groupHeaderCount {
@@ -78,11 +74,11 @@
 	display: flex;
 	height: var(--member-list-group-header-height);
 	min-height: var(--member-list-group-header-height);
-	align-items: flex-end;
+	align-items: flex-start;
 	padding-left: 0.5rem;
 	padding-right: 0.5rem;
-	padding-top: 0;
-	padding-bottom: 0.5rem;
+	padding-top: 0.75rem;
+	padding-bottom: 0.25rem;
 	box-sizing: border-box;
 }
 

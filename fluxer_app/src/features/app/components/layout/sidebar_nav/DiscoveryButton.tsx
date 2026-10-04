@@ -24,7 +24,7 @@ const EXPLORE_COMMUNITIES_DESCRIPTOR = msg({
 });
 export const DiscoveryButton = observer(() => {
 	const {i18n} = useLingui();
-	const [hoverRef] = useHover();
+	const [hoverRef, isHovering] = useHover();
 	const buttonRef = useRef<HTMLButtonElement | null>(null);
 	const iconRef = useRef<HTMLDivElement | null>(null);
 	const mergedRef = useMergeRefs([hoverRef, buttonRef]);
@@ -63,10 +63,10 @@ export const DiscoveryButton = observer(() => {
 						<motion.div
 							ref={iconRef}
 							className={guildStyles.createGuildButtonIcon}
-							animate={{borderRadius: '0.375rem'}}
-							initial={{borderRadius: '0.375rem'}}
+							animate={{borderRadius: isHovering || isSelected ? '30%' : '50%'}}
+							initial={{borderRadius: isHovering || isSelected ? '30%' : '50%'}}
 							transition={{duration: Accessibility.useReducedMotion ? 0 : 0.07, ease: 'easeOut'}}
-							style={isSelected ? {backgroundColor: 'var(--background-modifier-selected)', color: 'var(--text-primary)'} : undefined}
+							style={isSelected ? {backgroundColor: 'var(--brand-primary)', color: 'white'} : undefined}
 							data-flx="app.sidebar-nav.discovery-button.div--2"
 						>
 							<CompassIcon

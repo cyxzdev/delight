@@ -13,12 +13,12 @@
 .header {
 	margin-bottom: 0.5rem;
 	font-weight: 600;
-	font-size: 1rem;
+	font-size: 1.25rem;
 	line-height: 1.75rem;
 }
 
 .description {
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 	line-height: 1.25rem;
 	color: var(--text-primary-muted);
 }
@@ -60,12 +60,12 @@
 
 .sectionTitle {
 	font-weight: 600;
-	font-size: 0.875rem;
+	font-size: 1rem;
 	line-height: 1.5rem;
 }
 
 .sectionDescription {
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 	line-height: 1.25rem;
 	color: var(--text-primary-muted);
 }

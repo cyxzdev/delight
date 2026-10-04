@@ -86,7 +86,7 @@
 }
 
 .bold {
-	font-weight: 600;
+	font-weight: 700;
 }
 
 .italic {
@@ -131,7 +131,7 @@
 }
 
 .command {
-	font-weight: 600;
+	font-weight: 700;
 	color: var(--text-chat);
 }
 

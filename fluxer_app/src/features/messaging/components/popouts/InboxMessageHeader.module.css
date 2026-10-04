@@ -54,8 +54,8 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 0.875rem;
-	font-weight: 600;
+	font-size: 0.95rem;
+	font-weight: 700;
 	color: var(--text-primary);
 }
 

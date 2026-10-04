@@ -8,18 +8,18 @@
 
 .sectionHeader {
 	margin-bottom: 0.5rem;
-	font-size: 1rem;
+	font-size: 1.25rem;
 	font-weight: 600;
 }
 
 .sectionDescription {
 	margin-bottom: 1rem;
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 	color: var(--text-primary-muted);
 }
 
 .sectionDescriptionNoMargin {
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 	color: var(--text-primary-muted);
 }
 
@@ -80,7 +80,7 @@
 
 .emptyDescription {
 	margin-bottom: 1rem;
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 }
 
 .giftsList {
@@ -148,7 +148,7 @@
 }
 
 .giftTitle {
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 	font-weight: 600;
 	color: var(--text-primary);
 }
@@ -195,7 +195,7 @@
 
 .redeemedMessageText {
 	text-align: center;
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 	color: var(--text-primary-muted);
 }
 

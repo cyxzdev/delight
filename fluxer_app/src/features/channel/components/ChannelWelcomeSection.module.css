@@ -1,21 +1,19 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .channelIcon {
-	grid-row: 1 / span 2;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	height: 3rem;
-	width: 3rem;
+	height: 5rem;
+	width: 5rem;
 	flex-shrink: 0;
-	border-radius: var(--radius-2xl);
-	border: 0.0625rem solid var(--background-modifier-accent);
-	background-color: var(--channel-welcome-icon-bg, var(--background-tertiary));
+	border-radius: var(--radius-full);
+	background-color: var(--channel-welcome-icon-bg, var(--guild-list-foreground));
 	background-size: cover;
 	background-position: center;
 	font-weight: 600;
-	font-size: 1rem;
-	color: var(--text-secondary);
+	font-size: 1.25rem;
+	color: var(--text-primary);
 	container-type: size;
 }
 
@@ -32,44 +30,34 @@
 }
 
 .container {
-	display: grid;
-	grid-template-columns: 3rem minmax(0, 1fr);
-	column-gap: 0.875rem;
-	row-gap: 0.125rem;
-	align-items: center;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
 	margin: 1rem;
 	margin-top: auto;
-	margin-bottom: 1.25rem;
+	margin-bottom: 2rem;
 	min-width: 0;
-	padding-top: 4rem;
-	padding-bottom: 1.25rem;
-	border-bottom: 0.0625rem solid var(--background-modifier-accent);
+	padding-top: 7.5rem;
 	color: var(--text-primary);
 }
 
 .heading {
-	align-self: end;
-	margin: 0;
-	font-size: 1.25rem;
-	line-height: 1.5rem;
+	margin-top: 0.75rem;
+	font-size: 1.875rem;
 	font-weight: 600;
-	letter-spacing: -0.01em;
 	word-break: break-word;
 	overflow-wrap: break-word;
 	overflow: hidden;
 }
 
 .description {
-	align-self: start;
 	min-width: 0;
-	margin: 0;
-	font-size: 0.875rem;
-	line-height: 1.25rem;
-	color: var(--text-tertiary);
+	font-size: 1.125rem;
+	color: var(--text-primary-muted);
 	overflow: hidden;
 }
 
 .iconSize {
-	height: 1.5rem;
-	width: 1.5rem;
+	height: 3rem;
+	width: 3rem;
 }

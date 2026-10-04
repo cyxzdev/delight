@@ -8,50 +8,50 @@
 
 .bannerTintViolet {
 	composes: bannerTint;
-	background-color: color-mix(in srgb, #a99adf 30%, var(--background-tertiary));
+	background-color: #a99adf;
 }
 
 .bannerTintBlue {
 	composes: bannerTint;
-	background-color: color-mix(in srgb, #93b7e0 30%, var(--background-tertiary));
+	background-color: #93b7e0;
 }
 
 .bannerTintTeal {
 	composes: bannerTint;
-	background-color: color-mix(in srgb, #8fc9c6 30%, var(--background-tertiary));
+	background-color: #8fc9c6;
 }
 
 .bannerTintGreen {
 	composes: bannerTint;
-	background-color: color-mix(in srgb, #9ac9a4 30%, var(--background-tertiary));
+	background-color: #9ac9a4;
 }
 
 .bannerTintLime {
 	composes: bannerTint;
-	background-color: color-mix(in srgb, #bfcb92 30%, var(--background-tertiary));
+	background-color: #bfcb92;
 }
 
 .bannerTintAmber {
 	composes: bannerTint;
-	background-color: color-mix(in srgb, #dfc194 30%, var(--background-tertiary));
+	background-color: #dfc194;
 }
 
 .bannerTintCoral {
 	composes: bannerTint;
-	background-color: color-mix(in srgb, #e0a894 30%, var(--background-tertiary));
+	background-color: #e0a894;
 }
 
 .bannerTintRose {
 	composes: bannerTint;
-	background-color: color-mix(in srgb, #dd9caa 30%, var(--background-tertiary));
+	background-color: #dd9caa;
 }
 
 .bannerTintMagenta {
 	composes: bannerTint;
-	background-color: color-mix(in srgb, #cd9ac9 30%, var(--background-tertiary));
+	background-color: #cd9ac9;
 }
 
 .bannerTintIndigo {
 	composes: bannerTint;
-	background-color: color-mix(in srgb, #9ba4dd 30%, var(--background-tertiary));
+	background-color: #9ba4dd;
 }

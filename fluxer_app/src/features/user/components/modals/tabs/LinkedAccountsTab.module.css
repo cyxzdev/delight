@@ -96,7 +96,7 @@
 
 .cardName {
 	color: var(--text-primary);
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 	font-weight: 600;
 	overflow: hidden;
 	text-overflow: ellipsis;

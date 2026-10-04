@@ -29,7 +29,7 @@ const DOWNLOAD_DESCRIPTOR = msg({
 });
 export const DownloadButton = observer(() => {
 	const {i18n} = useLingui();
-	const [hoverRef] = useHover();
+	const [hoverRef, isHovering] = useHover();
 	const buttonRef = useRef<HTMLButtonElement | null>(null);
 	const iconRef = useRef<HTMLDivElement | null>(null);
 	const itemRef = useRef<HTMLElement | null>(null);
@@ -64,6 +64,7 @@ export const DownloadButton = observer(() => {
 			</MenuGroup>
 		));
 	};
+	const shouldShowHoverState = isHovering || contextMenuOpen;
 	return (
 		<div
 			className={clsx(guildStyles.createGuildButton, contextMenuOpen && guildStyles.contextMenuHover)}
@@ -94,8 +95,8 @@ export const DownloadButton = observer(() => {
 						<motion.div
 							ref={iconRef}
 							className={guildStyles.createGuildButtonIcon}
-							animate={{borderRadius: '0.375rem'}}
-							initial={{borderRadius: '0.375rem'}}
+							animate={{borderRadius: shouldShowHoverState ? '30%' : '50%'}}
+							initial={{borderRadius: shouldShowHoverState ? '30%' : '50%'}}
 							transition={{duration: Accessibility.useReducedMotion ? 0 : 0.07, ease: 'easeOut'}}
 							data-flx="app.sidebar-nav.download-button.div--2"
 						>

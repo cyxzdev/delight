@@ -1,4 +1,4 @@
-/* Delight look, layered over the base theme: Inter, soft rounded corners, flat surfaces.
+/* Delight look, layered over the base theme: Inter. Sizes, spacing and corners are the base theme's.
    Palette lives in scripts/GenerateColorSystem.ts (neutral greys from #141414, text #CFCFCF, accent #7F49B4). */
 
 @font-face {
@@ -27,28 +27,6 @@
 		'Inter', 'Fluxer Sans Arabic', 'Fluxer Sans Hebrew', 'Fluxer Sans Devanagari', 'Fluxer Sans Thai Looped',
 		'Fluxer Sans SC', 'Fluxer Sans TC', 'Fluxer Sans JP', 'Fluxer Sans KR', system-ui, -apple-system, BlinkMacSystemFont,
 		'Segoe UI', 'Roboto', sans-serif;
-
-	/* Soft, consistent corners: a little rounder than Fluxer's. */
-	--radius-sm: 0.375rem;
-	--radius-md: 0.5rem;
-	--radius-lg: 0.625rem;
-	--radius-xl: 0.75rem;
-	--radius-2xl: 1rem;
-	--media-border-radius: 0.5rem;
-	--footer-box-radius: var(--radius-lg);
-
-	/* One header height for every top bar (server, channel, home, settings). */
-	--layout-header-height: 3rem;
-
-	/* Discord proportions: 240px member list with 42px rows, 40px message avatars, 16px chat padding. */
-	--layout-member-list-width: 15rem;
-	--member-list-item-content-height: 2.125rem;
-	--member-list-item-content-gap: 0.75rem;
-	--message-search-bar-width: 15rem;
-	--message-search-bar-height: 2rem;
-	--message-avatar-size: 2.5rem;
-	--message-gutter: 1rem;
-	--message-avatar-align-offset: 0.125rem;
 }
 
 body {

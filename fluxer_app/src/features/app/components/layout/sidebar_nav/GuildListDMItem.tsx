@@ -385,7 +385,7 @@ const ResolvedDMListItem = observer(function ResolvedDMListItem({
 								<motion.div
 									ref={iconRef}
 									className={guildStyles.dmIcon}
-									animate={{borderRadius: '0.75rem'}}
+									animate={{borderRadius: isSelected || showControls ? '30%' : '50%'}}
 									initial={false}
 									transition={{duration: Accessibility.useReducedMotion ? 0 : 0.07, ease: 'easeOut'}}
 									data-flx="app.sidebar-nav.guild-list-dm-item.dm-list-item.div--2"

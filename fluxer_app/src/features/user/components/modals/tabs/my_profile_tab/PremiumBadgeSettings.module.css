@@ -7,11 +7,11 @@
 .title {
 	margin-bottom: 0.5rem;
 	font-weight: 600;
-	font-size: 1rem;
+	font-size: 1.25rem;
 }
 
 .description {
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 	color: var(--text-primary-muted);
 }
 

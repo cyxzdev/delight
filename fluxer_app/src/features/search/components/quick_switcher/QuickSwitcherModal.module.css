@@ -71,7 +71,7 @@
 
 .optionHighlight .optionTitle {
 	color: var(--qs-title-highlight-colour, var(--text-primary));
-	font-weight: 600;
+	font-weight: 700;
 }
 
 .optionDescription {
@@ -217,7 +217,7 @@
 	width: 100%;
 	max-width: 36rem;
 	overflow: hidden;
-	border-radius: var(--radius-xl);
+	border-radius: 0.75rem;
 	border: 0.0625rem solid var(--background-header-secondary);
 	background-color: var(--background-secondary);
 	box-shadow: var(--shadow-xl);

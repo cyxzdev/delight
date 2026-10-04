@@ -14,6 +14,7 @@ import type {Guild} from '@app/features/guild/models/Guild';
 import MobileLayout from '@app/features/ui/state/MobileLayout';
 import {SIDEBAR_WIDTH_DEFAULT} from '@app/features/ui/state/SidebarWidth';
 import * as AvatarUtils from '@app/features/user/utils/AvatarUtils';
+import {GuildFeatures} from '@fluxer/constants/src/GuildConstants';
 import {type MotionValue, useMotionValue, useMotionValueEvent, useTransform} from 'framer-motion';
 import type React from 'react';
 import {useCallback, useLayoutEffect, useMemo, useRef, useState} from 'react';
@@ -54,8 +55,7 @@ export function useGuildBannerPresentation({
 	scrollY: MotionValue<number>;
 }): GuildBannerPresentation {
 	const isMobile = MobileLayout.isMobileLayout();
-	// Delight: the header is always a plain bar; banners render below it (GuildDetachedBanner), never under the name.
-	const isDetached = true;
+	const isDetached = guild.features.has(GuildFeatures.DETACHED_BANNER);
 	const [headerRowNode, setHeaderRowNode] = useState<HTMLElement | null>(null);
 	const headerRowRef = useCallback((node: HTMLElement | null) => {
 		setHeaderRowNode(node);

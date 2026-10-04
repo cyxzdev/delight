@@ -10,7 +10,7 @@
 
 .description {
 	margin-top: 0.5rem;
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 	color: var(--text-primary-muted);
 }
 
@@ -50,11 +50,11 @@
 	justify-content: center;
 	color: white;
 	font-weight: 700;
-	font-size: 0.78125rem;
+	font-size: 0.85rem;
 	border: 0.0625rem solid var(--background-modifier-accent);
 }
 
 .guildOptionLabel {
-	font-size: 0.8125rem;
+	font-size: 0.9rem;
 	color: var(--text-primary);
 }

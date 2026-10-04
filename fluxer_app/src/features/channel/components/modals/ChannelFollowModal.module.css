@@ -82,7 +82,7 @@
 .title {
 	margin: 0;
 	font-size: 1.25rem;
-	font-weight: 600;
+	font-weight: 700;
 	line-height: 1.5rem;
 	color: var(--text-primary);
 }
@@ -137,7 +137,7 @@
 	justify-content: center;
 	background-color: var(--background-modifier-accent);
 	color: var(--text-primary);
-	font-weight: 600;
+	font-weight: 700;
 	font-size: 0.75rem;
 }
 

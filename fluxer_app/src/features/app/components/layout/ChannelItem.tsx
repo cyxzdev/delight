@@ -745,6 +745,7 @@ export const ChannelItem = observer(
 						)}
 					</>
 				)}
+				{categoryCaretNode}
 			</>
 		);
 		const channelItem = (
@@ -779,7 +780,7 @@ export const ChannelItem = observer(
 				data-flx="app.channel-item.generic-channel-item.select"
 			>
 				<ChannelItemContent
-					icon={channelIsCategory ? categoryCaretNode : channelIconNode}
+					icon={channelIconNode}
 					name={channel.name ?? ''}
 					actions={channelActionsNode}
 					isCategory={channelIsCategory}

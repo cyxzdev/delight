@@ -343,7 +343,6 @@ export const SecurityTabContent: React.FC<SecurityTabProps> = observer(
 							</Button>
 						) : (
 							<Button
-								variant="secondary"
 								small={true}
 								disabled={!canAddSecurityCredential}
 								onClick={() =>
@@ -432,7 +431,6 @@ export const SecurityTabContent: React.FC<SecurityTabProps> = observer(
 							)}
 						</div>
 						<Button
-							variant="secondary"
 							small={true}
 							disabled={!canAddPasskey}
 							onClick={handleAddPasskey}
@@ -555,7 +553,6 @@ export const SecurityTabContent: React.FC<SecurityTabProps> = observer(
 									</div>
 								</div>
 								<Button
-									variant="secondary"
 									small={true}
 									submitting={authorizedAppsSubmitting}
 									onClick={onManageAuthorizedApps}
@@ -592,7 +589,6 @@ export const SecurityTabContent: React.FC<SecurityTabProps> = observer(
 										</div>
 									</div>
 									<Button
-										variant="secondary"
 										small={true}
 										onClick={onManageLinkedDevices}
 										data-flx="user.account-security-tab.security-tab.security-tab-content.account-access.button.manage-linked-devices"

@@ -4,14 +4,8 @@
 	--channel-header-text-primary: var(--text-primary);
 	--channel-header-text-muted: var(--text-primary-muted);
 	--channel-header-text-tertiary: var(--text-tertiary);
-	--channel-header-divider-color: var(--background-modifier-accent);
-	--channel-header-hover-background: var(--background-modifier-hover);
-	--channel-header-icon-size: 1.5rem;
-	--channel-header-action-icon-size: 1.375rem;
-	--channel-header-action-size: 1.5rem;
-	--channel-header-actions-gap: 1rem;
-	--channel-header-name-gap: 0.5rem;
-	--channel-header-padding-inline: 1rem 0.5rem;
+	--channel-header-divider-color: var(--background-modifier-hover);
+	--channel-header-hover-background: color-mix(in srgb, #fff 6%, transparent);
 	--channel-header-update-icon-color: #22c55e;
 	--voice-call-header-text: var(--text-primary);
 	z-index: 3;
@@ -21,10 +15,9 @@
 	gap: var(--channel-header-gap);
 	height: var(--layout-header-height);
 	min-height: var(--layout-header-height);
-	border-bottom: 0.0625rem solid var(--background-modifier-accent);
+	border-bottom: 0.0625rem solid var(--user-area-divider-color);
 	background-color: var(--background-secondary-lighter);
-	padding-block: 0;
-	padding-inline: var(--channel-header-padding-inline);
+	padding: 0 var(--channel-header-padding-inline);
 	color: var(--channel-header-text-primary);
 }
 
@@ -344,9 +337,7 @@
 	margin-left: var(--channel-header-name-gap);
 	min-width: 0;
 	flex-shrink: 1;
-	font-weight: 600;
-	font-size: 1rem;
-	letter-spacing: -0.01em;
+	font-weight: 500;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -375,7 +366,7 @@
 	height: var(--channel-header-icon-size);
 	width: var(--channel-header-icon-size);
 	flex-shrink: 0;
-	color: var(--channel-header-text-tertiary);
+	color: var(--channel-header-text-muted);
 }
 
 .caretRight {
@@ -400,16 +391,10 @@
 	flex-shrink: 0;
 }
 
-/* Delight: a thin vertical rule between the name and the topic (the bullet glyph is hidden). */
 .topicDivider {
-	margin: 0 0.75rem;
+	margin: 0 var(--channel-header-topic-divider-gap);
 	flex-shrink: 0;
-	width: 0.0625rem;
-	height: 1.25rem;
-	overflow: hidden;
-	font-size: 0;
-	color: transparent;
-	background-color: var(--channel-header-divider-color);
+	color: var(--channel-header-divider-color);
 }
 
 .topicContainer {
@@ -433,9 +418,9 @@
 	border: none;
 	background: transparent;
 	text-align: left;
-	font-size: 0.875rem !important;
-	line-height: 1.25rem !important;
-	max-height: 1.25rem;
+	font-size: 0.8125rem !important;
+	line-height: 1.125rem !important;
+	max-height: 1.125rem;
 	color: var(--channel-header-text-tertiary) !important;
 	white-space: nowrap !important;
 	word-break: normal !important;
@@ -503,20 +488,17 @@
 }
 
 .messageSearchFocusWrapper {
-	--message-search-bar-width: 100%;
-	--message-search-bar-height: 2rem;
 	display: flex;
-	flex: 0 0 auto;
-	width: 15rem;
-	min-width: 15rem;
-	max-width: 15rem;
-	margin-left: 0;
+	flex: 0 0 15.25rem;
+	width: 15.25rem;
+	min-width: 15.25rem;
+	max-width: 15.25rem;
 }
 
 .messageSearchFocusWrapper > :first-child {
-	width: 100%;
-	min-width: 0;
-	max-width: 100%;
+	width: 15.25rem;
+	min-width: 15.25rem;
+	max-width: 15.25rem;
 }
 
 .iconButton {
@@ -527,30 +509,24 @@
 	width: var(--channel-header-action-size);
 	flex-shrink: 0;
 	cursor: pointer;
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-full);
 	border: none;
 	background-color: transparent;
-	transition:
-		color 120ms ease-out,
-		background-color 120ms ease-out;
+	transition: color var(--transition-fast);
 }
 
 .iconButtonDefault {
 	composes: iconButton;
 	color: var(--channel-header-text-muted);
 	cursor: pointer;
-	transition:
-		color 120ms ease-out,
-		background-color 120ms ease-out;
+	transition: color var(--transition-fast);
 }
 
 :global(:where(html.window-focused, html.unfocused-fully-interactive):not(.window-focus-activation-guard))
 	.iconButtonDefault:hover {
 	color: var(--channel-header-text-primary);
-	background-color: transparent;
 }
 
-/* Delight: like Discord, header actions are bare 24px icons; the active one just turns bright. */
 .iconButtonSelected {
 	composes: iconButton;
 	color: var(--channel-header-text-primary);

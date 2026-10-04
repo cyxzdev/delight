@@ -7,7 +7,7 @@
 	min-height: 26.25rem;
 	height: 27.5rem;
 	max-height: min(30rem, calc(100svh - 6rem));
-	border-radius: var(--radius-2xl);
+	border-radius: 1rem;
 	padding: 0;
 	overflow: hidden;
 	background: var(--background-primary);

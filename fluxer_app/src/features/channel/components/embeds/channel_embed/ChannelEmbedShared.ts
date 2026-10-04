@@ -322,7 +322,7 @@ export const collectGalleryImages = ({
 };
 export const getBorderColor = (color: number | undefined) => {
 	if (color === undefined || color === 0) {
-		return 'var(--background-modifier-accent-focus)';
+		return 'var(--brand-primary)';
 	}
 	return ColorUtils.int2rgb(color);
 };

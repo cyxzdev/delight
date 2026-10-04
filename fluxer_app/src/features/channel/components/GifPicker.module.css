@@ -6,7 +6,7 @@
 	height: 100%;
 	grid-template-rows: 1fr;
 	overflow: hidden;
-	background-color: var(--background-tertiary);
+	background-color: var(--background-primary);
 	--gif-picker-category-overlay-bg: rgb(0 0 0 / 0.68);
 	--gif-picker-category-overlay-hover-bg: rgb(0 0 0 / 0.5);
 	--gif-picker-gif-overlay-bg: rgb(0 0 0 / 0.18);
@@ -17,7 +17,7 @@
 	position: relative;
 	min-height: 0;
 	overflow: hidden;
-	background-color: var(--background-tertiary);
+	background-color: var(--background-primary);
 }
 
 .autoSizerWrapper {
@@ -48,7 +48,7 @@
 
 .virtualList {
 	overflow-anchor: none;
-	background-color: var(--background-tertiary);
+	background-color: var(--background-primary);
 }
 
 .scrollContent {
@@ -314,7 +314,7 @@
 	display: flex;
 	align-items: center;
 	padding: 1rem;
-	background-color: var(--background-tertiary);
+	background-color: var(--background-primary);
 }
 
 .backButton {
@@ -387,7 +387,7 @@
 .suggestionTag {
 	padding: 0.5rem 1rem;
 	border: none;
-	border-radius: var(--radius-2xl);
+	border-radius: 1rem;
 	background-color: var(--background-tertiary);
 	color: var(--text-primary);
 	font-size: 0.875rem;

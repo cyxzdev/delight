@@ -1,8 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
 .friendsListContainer {
-	padding: 0.75rem 0.5rem 1rem;
-	max-width: 48rem;
+	padding: 1rem;
 }
 
 .scroller {
