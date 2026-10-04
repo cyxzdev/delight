@@ -18,3 +18,10 @@ services:
       - ../../delight/web/android-chrome-512x512.png:/srv/fluxer-static/web/android-chrome-512x512.png:ro
       - ../../delight/web/mstile-150x150.png:/srv/fluxer-static/web/mstile-150x150.png:ro
       - ../../delight/web/favicon.ico:/srv/fluxer-static/web/favicon.ico:ro
+  api:
+    environment:
+      # New accounts join the Delight community automatically.
+      FLUXER_AUTO_JOIN_INVITE_CODE: delight
+  worker:
+    environment:
+      FLUXER_AUTO_JOIN_INVITE_CODE: delight
