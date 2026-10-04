@@ -45,6 +45,7 @@ import {modal} from '@app/features/ui/commands/ModalCommands';
 import * as TextCopyCommands from '@app/features/ui/commands/TextCopyCommands';
 import ContextMenu from '@app/features/ui/state/ContextMenu';
 import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
+import {ManageBadgesModal} from '@app/features/user/components/modals/ManageBadgesModal';
 import userProfileModalStyles from '@app/features/user/components/modals/UserProfileModal.module.css';
 import {UserSettingsModal} from '@app/features/user/components/modals/UserSettingsModal';
 import {ProfileModalContent} from '@app/features/user/components/modals/user_profile_modal/ProfileModalContent';
@@ -57,6 +58,7 @@ import {getProfileEffect} from '@app/features/user/utils/ProfileEffects';
 import {useUserProfileSurfaceState} from '@app/features/user/hooks/useUserProfileSurfaceState';
 import type {Profile} from '@app/features/user/models/Profile';
 import {User} from '@app/features/user/models/User';
+import DelightBadgeStore from '@app/features/user/state/DelightBadgeStore';
 import UserNote from '@app/features/user/state/UserNote';
 import Users from '@app/features/user/state/Users';
 import * as NicknameUtils from '@app/features/user/utils/NicknameUtils';
@@ -84,6 +86,7 @@ import {
 	PencilIcon,
 	PhoneIcon,
 	ProhibitIcon,
+	SealCheckIcon,
 	UserMinusIcon,
 	UserPlusIcon,
 	VideoCameraIcon,
@@ -93,6 +96,10 @@ import {observer} from 'mobx-react-lite';
 import type React from 'react';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
+const MANAGE_BADGES_DESCRIPTOR = msg({
+	message: 'Manage badges',
+	comment: 'Staff-only menu item in the full profile "more" menu: opens a checklist of profile badges for this user.',
+});
 const USER_PROFILE_DESCRIPTOR = msg({
 	message: 'User profile',
 	comment: 'Short label in the user profile modal. Keep it concise.',
@@ -192,6 +199,10 @@ export const UserProfileModal: UserProfileModalComponent = observer(
 			isUserBot && (displayUser.flags & PublicUserFlags.FRIENDLY_BOT) === PublicUserFlags.FRIENDLY_BOT;
 		const noteRef = useRef<HTMLTextAreaElement | null>(null);
 		const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
+		const canManageBadges = DelightBadgeStore.canManage === true && !isPreview && !isUserBot;
+		useEffect(() => {
+			DelightBadgeStore.checkCanManage();
+		}, []);
 		useEffect(() => {
 			if (!guildId || !userId || isPreview) {
 				return;
@@ -468,6 +479,24 @@ export const UserProfileModal: UserProfileModalComponent = observer(
 							{i18n._(COPY_USER_ID_DESCRIPTOR)}
 						</MenuItem>
 					</MenuGroup>
+					{canManageBadges && user && (
+						<MenuGroup data-flx="user.user-profile-modal.open-more-options-menu.menu-group--badges">
+							<MenuItem
+								icon={<SealCheckIcon data-flx="user.user-profile-modal.open-more-options-menu.seal-check-icon" />}
+								onClick={() => {
+									props.onClose();
+									ModalCommands.push(
+										modal(() => (
+											<ManageBadgesModal user={user} data-flx="user.user-profile-modal.manage-badges-modal" />
+										)),
+									);
+								}}
+								data-flx="user.user-profile-modal.open-more-options-menu.menu-item.manage-badges"
+							>
+								{i18n._(MANAGE_BADGES_DESCRIPTOR)}
+							</MenuItem>
+						</MenuGroup>
+					)}
 					{!isCurrentUser && relationshipType === RelationshipTypes.FRIEND && !RuntimeConfig.directMessagesDisabled && (
 						<MenuGroup data-flx="user.user-profile-modal.open-more-options-menu.menu-group--4">
 							<MenuItem

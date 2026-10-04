@@ -1,0 +1,123 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* Motion for "Gilded Banner" (GildedBanner.tsx). Transform + opacity only; timing from --dur/--delay/--dx/--dy.
+   `[data-pfx-static]` shows the finished, composed banner. */
+
+.dropIn,
+.trimDown,
+.riseIn,
+.shine,
+.flash {
+	transform-box: fill-box;
+	transform-origin: 50% 0%;
+}
+
+/* The crest drops in from above and settles with a small overshoot. */
+.dropIn {
+	animation: drop-in var(--dur, 760ms) cubic-bezier(0.2, 0, 0, 1) var(--delay, 0ms) both;
+}
+
+@keyframes drop-in {
+	0% {
+		transform: translateY(var(--dy, -48px));
+		opacity: 0;
+	}
+	35% {
+		opacity: 1;
+	}
+	70% {
+		transform: translateY(2px);
+	}
+	100% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+/* The side trims unroll downwards. */
+.trimDown {
+	animation: trim-down var(--dur, 800ms) cubic-bezier(0.3, 0, 0, 1) var(--delay, 0ms) both;
+}
+
+@keyframes trim-down {
+	from {
+		transform: scaleY(0);
+	}
+	to {
+		transform: scaleY(1);
+	}
+}
+
+/* The pennant hem lifts into place. */
+.riseIn {
+	animation: rise-in var(--dur, 600ms) cubic-bezier(0.2, 0, 0, 1) var(--delay, 0ms) both;
+}
+
+@keyframes rise-in {
+	from {
+		transform: translateY(var(--dy, 14px));
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+/* A soft band of light sweeping along the gold, then resting. */
+.shine {
+	opacity: 0;
+	animation: shine var(--dur, 7s) cubic-bezier(0.45, 0, 0.55, 1) var(--delay, 0ms) infinite both;
+}
+
+@keyframes shine {
+	0% {
+		transform: translate(0, 0);
+		opacity: 0;
+	}
+	4% {
+		opacity: 1;
+	}
+	36% {
+		opacity: 1;
+	}
+	40%,
+	100% {
+		transform: translate(var(--dx, 0px), var(--dy, 0px));
+		opacity: 0;
+	}
+}
+
+/* The gem's facet catches the light (pairs with the glint sparkle). */
+.flash {
+	opacity: 0;
+	animation: flash var(--dur, 4.2s) ease-out var(--delay, 0ms) infinite both;
+}
+
+@keyframes flash {
+	0%,
+	100% {
+		opacity: 0;
+	}
+	5% {
+		opacity: 0.95;
+	}
+	18% {
+		opacity: 0;
+	}
+}
+
+[data-pfx-static] :is(.dropIn, .trimDown, .riseIn) {
+	animation: none;
+	opacity: 1;
+	transform: none;
+}
+
+[data-pfx-static] :is(.shine, .glintWrap) {
+	display: none;
+}
+
+[data-pfx-static] .flash {
+	animation: none;
+	opacity: 0;
+}

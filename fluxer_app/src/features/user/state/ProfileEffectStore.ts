@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import Authentication from '@app/features/auth/state/Authentication';
 import {Logger} from '@app/features/platform/utils/AppLogger';
+import {delightServiceBaseUrl} from '@app/features/user/utils/DelightService';
 import {
 	isProfileEffectId,
 	type ProfileEffectChoice,
@@ -20,12 +20,7 @@ const REFRESH_AFTER_MS = 2 * 60_000;
 /** After a failed lookup, wait this long before trying the same ids again. */
 const RETRY_AFTER_MS = 30_000;
 
-/** Base URL of the Delight sidecar: the API endpoint with `/api` swapped for `/delight` (same origin by default). */
-function serviceBaseUrl(): string {
-	const api = RuntimeConfig.apiEndpoint?.trim();
-	if (!api) return '/delight';
-	return `${api.replace(/\/+$/, '').replace(/\/api$/, '')}/delight`;
-}
+const serviceBaseUrl = delightServiceBaseUrl;
 
 /**
  * Each user's stored profile effect choice, fetched from the Delight sidecar (`GET /delight/effects?ids=…`) in small

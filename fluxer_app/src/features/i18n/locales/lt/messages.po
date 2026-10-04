@@ -12983,7 +12983,7 @@ msgstr "Atsisiųsti „{productName}“"
 
 #: src/features/connection/components/modals/AddConnectionModal.tsx:330
 msgid "Download <0>fluxer-verification</0> and place it in your <1>.well-known</1> folder so we can validate the domain."
-msgstr "Atsisiųskite <0>fluxer-verification</0> ir įdėkite į savo <1>.well-known</1> aplanką, kad galėtume patvirtinti domeną."
+msgstr "Atsisiųskite patvirtinimo failą ir įdėkite jį į savo <1>.well-known</1> aplanką, kad galėtume patvirtinti domeną."
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/AppearanceIndex.ts:98
@@ -13037,7 +13037,7 @@ msgstr "Atsisiųsti failą"
 
 #: src/features/connection/components/modals/AddConnectionModal.tsx:352
 msgid "Download fluxer-verification"
-msgstr "Atsisiųsti fluxer-verification"
+msgstr "Atsisiųsti patvirtinimo failą"
 
 #. Media context menu action that downloads a GIF attachment.
 #: src/features/ui/action_menu/items/MediaMenuData.tsx:114

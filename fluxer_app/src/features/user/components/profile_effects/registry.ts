@@ -4,6 +4,7 @@ import {Bubbles} from '@app/features/user/components/profile_effects/Bubbles';
 import {Confetti} from '@app/features/user/components/profile_effects/Confetti';
 import type {ProfileEffectLayer} from '@app/features/user/components/profile_effects/effectKit';
 import {Ember} from '@app/features/user/components/profile_effects/Ember';
+import {GildedBanner} from '@app/features/user/components/profile_effects/GildedBanner';
 import {Glitch} from '@app/features/user/components/profile_effects/Glitch';
 import {Heartbeat} from '@app/features/user/components/profile_effects/Heartbeat';
 import {RainyDay} from '@app/features/user/components/profile_effects/RainyDay';
@@ -119,6 +120,14 @@ const DEFINITIONS: Record<ProfileEffectId, Omit<ProfileEffectDefinition, 'id'>> 
 			comment: 'Short description of the Synthwave profile effect.',
 		}),
 		Layer: Synthwave,
+	},
+	gilded_banner: {
+		name: msg({message: 'Gilded Banner', comment: 'Name of a profile effect: a regal gold-trimmed hanging banner.'}),
+		description: msg({
+			message: 'A regal banner with a gold crest, amber gem and gilded trim.',
+			comment: 'Short description of the Gilded Banner profile effect.',
+		}),
+		Layer: GildedBanner,
 	},
 };
 

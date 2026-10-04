@@ -19,3 +19,8 @@ function getBootstrapPremiumProductName(): string {
 export const PRODUCT_NAME = getBootstrapProductName();
 export const PREMIUM_PRODUCT_NAME = getBootstrapPremiumProductName();
 export const PREMIUM_PRODUCT_FULL_NAME = `${PRODUCT_NAME} ${PREMIUM_PRODUCT_NAME}`;
+
+// The API hard-codes the instance admin panel's built-in OAuth app as 'Fluxer Admin'; show it under the product name.
+export function displayApplicationName(name: string): string {
+	return name.trim() === 'Fluxer Admin' ? `${PRODUCT_NAME} Admin` : name;
+}

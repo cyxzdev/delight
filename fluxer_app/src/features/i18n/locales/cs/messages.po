@@ -12983,7 +12983,7 @@ msgstr "Stáhnout {productName}"
 
 #: src/features/connection/components/modals/AddConnectionModal.tsx:330
 msgid "Download <0>fluxer-verification</0> and place it in your <1>.well-known</1> folder so we can validate the domain."
-msgstr "Stáhněte si <0>fluxer-verification</0> a umístěte jej do složky <1>.well-known</1>, abychom mohli ověřit doménu."
+msgstr "Stáhněte si ověřovací soubor a umístěte jej do složky <1>.well-known</1>, abychom mohli ověřit doménu."
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/AppearanceIndex.ts:98
@@ -13037,7 +13037,7 @@ msgstr "Stáhnout soubor"
 
 #: src/features/connection/components/modals/AddConnectionModal.tsx:352
 msgid "Download fluxer-verification"
-msgstr "Stáhnout fluxer-verification"
+msgstr "Stáhnout ověřovací soubor"
 
 #. Media context menu action that downloads a GIF attachment.
 #: src/features/ui/action_menu/items/MediaMenuData.tsx:114
@@ -33747,7 +33747,7 @@ msgstr "Nový hlasový kanál znovu použije oprávnění, limit uživatelů a d
 #. Setup wizard push relay consent step body.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:273
 msgid "The official Fluxer mobile apps receive notifications through Fluxer's push relay, which hands them to Apple and Google. Self-hosted UnifiedPush and ntfy endpoints never reach the relay and need no agreement."
-msgstr "Oficiální mobilní aplikace Fluxeru přijímají oznámení prostřednictvím služby push relay Fluxeru, která je předává Applu a Googlu. Vlastní koncové body UnifiedPush a ntfy se k této službě nikdy nedostanou a nevyžadují žádnou dohodu."
+msgstr "Oficiální mobilní aplikace Delightu přijímají oznámení prostřednictvím služby push relay Delightu, která je předává Applu a Googlu. Vlastní koncové body UnifiedPush a ntfy se k této službě nikdy nedostanou a nevyžadují žádnou dohodu."
 
 #. Activity log detail row under a removed channel permission override, listing the permissions it explicitly allowed before it was removed. It describes the removed override. It does not mean these permissions are allowed now. A permission override is a channel-level exception to the permissions of a role or member. It allows or denies chosen permissions in one channel or category only. Use the same word for override as the channel permissions settings, such as Add override. {permissions} is a list of permission names joined into one phrase, for example "View channel and Send messages". A long list ends with a count, for example "View channel, Send messages, and 3 more permissions".
 #: src/features/guild/utils/guild_tabs/audit_log/AuditLogChannelMessages.ts:418

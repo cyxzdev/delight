@@ -40,11 +40,11 @@
 
 	handle {$FLUXER_ADMIN_BASE_PATH:/admin} {
 		rewrite * /
-		reverse_proxy admin:8080
+		reverse_proxy delight-admin:3001
 	}
 
 	handle_path {$FLUXER_ADMIN_BASE_PATH:/admin}/* {
-		reverse_proxy admin:8080
+		reverse_proxy delight-admin:3001
 	}
 
 	@staticAssets path /web/* /emoji/* /libs/* /avatars/* /badges/* /desktop/*

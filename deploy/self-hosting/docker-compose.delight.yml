@@ -39,8 +39,12 @@ services:
       FLUXER_API_URL: http://api:8080
       # Fluxer's API checks Origin on browser-style requests; send the public origin.
       FLUXER_ORIGIN: ${DELIGHT_FLUXER_ORIGIN:-${FLUXER_PUBLIC_ORIGIN:-http://localhost:3131}}
+      # Profile badges: artwork served at /delight/badge-assets/; extra badge staff besides instance admins.
+      DELIGHT_BADGE_ASSET_DIR: /badges
+      DELIGHT_ADMIN_USER_IDS: ${DELIGHT_ADMIN_USER_IDS:-}
     volumes:
       - ../../delight/service:/app:ro
+      - ../../delight/badges:/badges:ro
       - delight-data:/data
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/health"]
@@ -48,6 +52,21 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+
+  # Shows "Delight" instead of the upstream name in the prebuilt admin panel (see delight/service/admin-proxy.ts).
+  delight-admin:
+    image: oven/bun:1-alpine
+    restart: ${FLUXER_RESTART_POLICY:-unless-stopped}
+    networks: [fluxer]
+    working_dir: /app
+    command: ["bun", "run", "/app/admin-proxy.ts"]
+    environment:
+      PORT: "3001"
+      DELIGHT_ADMIN_UPSTREAM: http://admin:8080
+    volumes:
+      - ../../delight/service:/app:ro
+    depends_on:
+      admin: {condition: service_started}
 
 volumes:
   delight-data:

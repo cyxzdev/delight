@@ -13,6 +13,8 @@ import {handleExternalLinkClick} from '@app/features/ui/utils/NativeUtils';
 import styles from '@app/features/user/components/popouts/UserProfileBadges.module.css';
 import type {Profile} from '@app/features/user/models/Profile';
 import type {User} from '@app/features/user/models/User';
+import DelightBadgeStore from '@app/features/user/state/DelightBadgeStore';
+import {delightBadgeImageUrl, getDelightBadge} from '@app/features/user/utils/DelightBadges';
 import * as DateUtils from '@app/features/user/utils/DateFormatting';
 import {PublicUserFlags, UserPremiumTypes} from '@fluxer/constants/src/UserConstants';
 import {msg} from '@lingui/core/macro';
@@ -72,6 +74,8 @@ interface BaseBadge {
 interface IconBadge extends BaseBadge {
 	type: 'icon';
 	iconUrl: string;
+	/** Delight badges: bigger sticker art, and a two-line tooltip. */
+	delight?: {name: string; description: string; srcSet: string};
 }
 
 interface TextBadge extends BaseBadge {
@@ -95,9 +99,24 @@ export const UserProfileBadges: React.FC<UserProfileBadgesProps> = observer(
 		const showPremium = shouldShowPremiumFeatures();
 		const premiumInfoUrl = RuntimeConfig.premiumInfoUrl;
 		const plutoniumPageEnabled = PlutoniumPageRollout.enabled;
+		const delightBadgeIds = DelightBadgeStore.getBadges(user.id);
 		const badges = useMemo(() => {
 			const result: Array<Badge> = [];
-			if (user.flags & PublicUserFlags.STAFF) {
+			// Delight's own badges come first.
+			for (const id of delightBadgeIds) {
+				const badge = getDelightBadge(id);
+				if (!badge) continue;
+				const name = i18n._(badge.name);
+				const description = i18n._(badge.description);
+				result.push({
+					type: 'icon',
+					key: `delight:${id}`,
+					iconUrl: delightBadgeImageUrl(id, 64),
+					tooltip: `${name}: ${description}`,
+					delight: {name, description, srcSet: `${delightBadgeImageUrl(id, 64)} 2x, ${delightBadgeImageUrl(id, 128)} 3x`},
+				});
+			}
+			if (user.flags & PublicUserFlags.STAFF && !delightBadgeIds.includes('staff')) {
 				result.push({
 					type: 'icon',
 					key: 'staff',
@@ -169,6 +188,7 @@ export const UserProfileBadges: React.FC<UserProfileBadgesProps> = observer(
 			}
 			return result;
 		}, [
+			delightBadgeIds,
 			selfHosted,
 			showPremium,
 			premiumInfoUrl,
@@ -186,6 +206,7 @@ export const UserProfileBadges: React.FC<UserProfileBadgesProps> = observer(
 			? clsx(styles.containerModal, isMobile ? styles.containerModalMobile : styles.containerModalDesktop)
 			: styles.containerPopout;
 		const badgeClassName = isModal && isMobile ? styles.badgeMobile : styles.badgeDesktop;
+		const delightBadgeClassName = isModal ? styles.delightBadgeModal : styles.delightBadgePopout;
 		const isDesktopInteractions = !isMobile;
 		const renderInteractiveWrapper = (
 			url: string | undefined,
@@ -228,6 +249,42 @@ export const UserProfileBadges: React.FC<UserProfileBadgesProps> = observer(
 			<div className={containerClassName} data-flx="user.user-profile-badges.div">
 				{badges.map((badge) => {
 					const sequenceClassName = isModal && isMobile ? styles.sequenceBadgeMobile : styles.sequenceBadgeDesktop;
+					const delight = badge.type === 'icon' ? badge.delight : undefined;
+					if (delight) {
+						return (
+							<Tooltip
+								key={badge.key}
+								text={() => (
+									<div className={styles.delightTooltip} data-flx="user.user-profile-badges.delight-tooltip">
+										<div className={styles.delightTooltipName}>{delight.name}</div>
+										<div className={styles.delightTooltipDescription}>{delight.description}</div>
+									</div>
+								)}
+								maxWidth="xl"
+								data-flx="user.user-profile-badges.delight-badge-tooltip"
+							>
+								<FocusRing offset={-2} data-flx="user.user-profile-badges.delight-focus-ring">
+									<div
+										className={styles.link}
+										role="img"
+										aria-label={badge.tooltip}
+										tabIndex={isDesktopInteractions ? 0 : undefined}
+										data-flx="user.user-profile-badges.delight-badge"
+									>
+										<img
+											src={(badge as IconBadge).iconUrl}
+											srcSet={delight.srcSet}
+											alt=""
+											draggable={false}
+											className={delightBadgeClassName}
+											data-badge-id={badge.key.slice('delight:'.length)}
+											data-flx="user.user-profile-badges.delight-img"
+										/>
+									</div>
+								</FocusRing>
+							</Tooltip>
+						);
+					}
 					const badgeContent =
 						badge.type === 'icon' ? (
 							<img

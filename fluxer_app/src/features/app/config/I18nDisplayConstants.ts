@@ -59,7 +59,7 @@ export const THE_OTHER_PLATFORM_TEMPLATE_EXAMPLE_URL = `https://${THE_OTHER_PLAT
 export const DESKTOP_DOWNLOAD_URL =
 	typeof window === 'undefined' ? '/' : `${window.location.origin}/`;
 export const FLUXER_DOCS_DOMAIN = typeof window === 'undefined' ? 'localhost' : window.location.host;
-export const FLUXER_DOCS_URL = `https://${FLUXER_DOCS_DOMAIN}`;
+export const FLUXER_DOCS_URL = typeof window === 'undefined' ? '/developers' : `${window.location.origin}/developers`;
 export const FLUXER_BLUESKY_HANDLE = '';
 export const SPLASH_IRC_SERVER = 'irc.example.com:6667';
 export const YOUTUBE_PROVIDER_NAME = 'YouTube';

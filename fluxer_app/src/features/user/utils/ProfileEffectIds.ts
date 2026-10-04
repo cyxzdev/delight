@@ -17,6 +17,7 @@ export const PROFILE_EFFECT_IDS = [
 	'confetti',
 	'glitch',
 	'synthwave',
+	'gilded_banner',
 ] as const;
 
 export type ProfileEffectId = (typeof PROFILE_EFFECT_IDS)[number];

@@ -12983,7 +12983,7 @@ msgstr "{productName}をダウンロード"
 
 #: src/features/connection/components/modals/AddConnectionModal.tsx:330
 msgid "Download <0>fluxer-verification</0> and place it in your <1>.well-known</1> folder so we can validate the domain."
-msgstr "<0>fluxer-verification</0> をダウンロードして <1>.well-known</1> フォルダーに配置してください。ドメインの検証に使用します。"
+msgstr "認証ファイルをダウンロードして <1>.well-known</1> フォルダーに配置してください。ドメインの検証に使用します。"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/AppearanceIndex.ts:98
@@ -13037,7 +13037,7 @@ msgstr "ファイルをダウンロード"
 
 #: src/features/connection/components/modals/AddConnectionModal.tsx:352
 msgid "Download fluxer-verification"
-msgstr "fluxer-verificationをダウンロード"
+msgstr "認証ファイルをダウンロード"
 
 #. Media context menu action that downloads a GIF attachment.
 #: src/features/ui/action_menu/items/MediaMenuData.tsx:114
@@ -24581,7 +24581,7 @@ msgstr "OTP"
 #. IAR modal: body copy on the success step shown after a platform report is submitted. Reassures the user about follow-up.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:96
 msgid "Our safety team is reviewing it. We'll send you a DM and email once we've reached a verdict."
-msgstr "Fluxerの安全チームが内容を確認しています。結果が出ましたら、DMとメールでお知らせします。"
+msgstr "Delightの安全チームが内容を確認しています。結果が出ましたら、DMとメールでお知らせします。"
 
 #. Field label in the voice connection status popout. Shows WebRTC estimated available outgoing bandwidth.
 #: src/features/voice/components/voice_connection_status/shared.ts:120
@@ -24929,7 +24929,7 @@ msgstr "通知を一時停止"
 #. Voice screen share menu preference that pauses the local stream preview while the app is unfocused.
 #: src/features/ui/action_menu/items/voice_participant_menu_data/shared.ts:28
 msgid "Pause preview when Fluxer isn’t focused"
-msgstr "Fluxerがフォーカスされていないときはプレビューを一時停止"
+msgstr "Delightがフォーカスされていないときはプレビューを一時停止"
 
 #. Description shown for the emoji toggle while reduced motion is active.
 #: src/features/user/components/modals/tabs/accessibility_tab/AnimationTab.tsx:81
@@ -33747,7 +33747,7 @@ msgstr "新しいボイスチャンネルには、<0>{channelLabel}</0>の権限
 #. Setup wizard push relay consent step body.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:273
 msgid "The official Fluxer mobile apps receive notifications through Fluxer's push relay, which hands them to Apple and Google. Self-hosted UnifiedPush and ntfy endpoints never reach the relay and need no agreement."
-msgstr "Fluxer公式モバイルアプリは、Fluxerのプッシュリレーを通じて通知を受け取ります。これはAppleおよびGoogleに通知を渡します。セルフホスト型のUnifiedPushおよびntfyエンドポイントは、リレーに到達せず、同意も不要です。"
+msgstr "Delight公式モバイルアプリは、Delightのプッシュリレーを通じて通知を受け取ります。これはAppleおよびGoogleに通知を渡します。セルフホスト型のUnifiedPushおよびntfyエンドポイントは、リレーに到達せず、同意も不要です。"
 
 #. Activity log detail row under a removed channel permission override, listing the permissions it explicitly allowed before it was removed. It describes the removed override. It does not mean these permissions are allowed now. A permission override is a channel-level exception to the permissions of a role or member. It allows or denies chosen permissions in one channel or category only. Use the same word for override as the channel permissions settings, such as Add override. {permissions} is a list of permission names joined into one phrase, for example "View channel and Send messages". A long list ends with a count, for example "View channel, Send messages, and 3 more permissions".
 #: src/features/guild/utils/guild_tabs/audit_log/AuditLogChannelMessages.ts:418

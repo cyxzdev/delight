@@ -5,11 +5,19 @@
 //
 //   GET  /effects?ids=1,2,3   → {"1": "snowfall", "3": "none"}   (only ids with a stored choice)
 //   PUT  /effects/@me          body {"effect": "<id>" | "none" | null}   (null clears → client falls back to default rule)
+//   GET  /badges?ids=1,2,3    → {"1": ["og","staff"]}           (only ids with badges; public)
+//   GET  /badges/@me/manage   → {"can_manage": bool}             (is the caller badge staff?)
+//   PUT  /badges/:userId       body {"badges": ["og", ...]}      (staff only; replaces the set)
+//   POST /badges/:userId/:id   DELETE /badges/:userId/:id         (staff only; grant / revoke one)
+//   GET  /badge-assets/<id>.png, <id>@64.png                      (badge artwork, from ./badges)
 //   GET  /health               → "ok"
 //
-// PUT is authenticated by forwarding the caller's Authorization header to Fluxer's API (GET /v1/users/@me).
+// Writes are authenticated by forwarding the caller's Authorization header to Fluxer's API (GET /v1/users/@me).
+// Badge staff = Fluxer instance admins (`acls` contains "*" or "user:update:flags", or `is_staff`), plus any id in
+// DELIGHT_ADMIN_USER_IDS. badges-cli.ts edits the same database without HTTP.
 
 import {Database} from 'bun:sqlite';
+import {BADGE_IDS, openBadgeDb} from './badges-db';
 
 const PORT = Number(process.env.PORT ?? 3000);
 const DATA_DIR = process.env.DATA_DIR ?? '/data';
@@ -20,7 +28,7 @@ const FLUXER_ORIGIN = process.env.FLUXER_ORIGIN ?? 'http://localhost:3131';
 const EFFECT_IDS = new Set(
 	(
 		process.env.DELIGHT_EFFECT_IDS ??
-		'spark_surge,sakura_drift,snowfall,ember,starlight,heartbeat,rainy_day,bubbles,confetti,glitch,synthwave'
+		'spark_surge,sakura_drift,snowfall,ember,starlight,heartbeat,rainy_day,bubbles,confetti,glitch,synthwave,gilded_banner'
 	)
 		.split(',')
 		.map((id) => id.trim())
@@ -34,6 +42,15 @@ db.exec('PRAGMA journal_mode = WAL;');
 db.exec(
 	'CREATE TABLE IF NOT EXISTS profile_effects (user_id TEXT PRIMARY KEY, effect TEXT NOT NULL, updated_at INTEGER NOT NULL)',
 );
+const badgeDb = openBadgeDb(db);
+const BADGE_ASSET_DIR = process.env.DELIGHT_BADGE_ASSET_DIR ?? `${import.meta.dir}/../badges`;
+const ADMIN_USER_IDS = new Set(
+	(process.env.DELIGHT_ADMIN_USER_IDS ?? '')
+		.split(',')
+		.map((id) => id.trim())
+		.filter((id) => SNOWFLAKE.test(id)),
+);
+const ADMIN_ACLS = new Set(['*', 'user:update:flags']);
 const upsertEffect = db.prepare(
 	'INSERT INTO profile_effects (user_id, effect, updated_at) VALUES (?1, ?2, ?3) ON CONFLICT(user_id) DO UPDATE SET effect = ?2, updated_at = ?3',
 );
@@ -41,12 +58,21 @@ const deleteEffect = db.prepare('DELETE FROM profile_effects WHERE user_id = ?1'
 
 // --- auth: Authorization header → user id (cached briefly so a burst of saves costs one API call) ---
 
-const authCache = new Map<string, {userId: string; expires: number}>();
+interface Caller {
+	userId: string;
+	isAdmin: boolean;
+}
+
+const authCache = new Map<string, Caller & {expires: number}>();
 
 async function resolveUserId(authorization: string | null, forwardedFor: string | null): Promise<string | null> {
+	return (await resolveCaller(authorization, forwardedFor))?.userId ?? null;
+}
+
+async function resolveCaller(authorization: string | null, forwardedFor: string | null): Promise<Caller | null> {
 	if (!authorization || authorization.length > 512) return null;
 	const cached = authCache.get(authorization);
-	if (cached && cached.expires > Date.now()) return cached.userId;
+	if (cached && cached.expires > Date.now()) return cached;
 	try {
 		const response = await fetch(`${FLUXER_API_URL}/v1/users/@me`, {
 			// Fluxer's API rejects requests without a client IP header (it trusts the edge's X-Forwarded-For); pass the
@@ -60,13 +86,17 @@ async function resolveUserId(authorization: string | null, forwardedFor: string 
 			signal: AbortSignal.timeout(5000),
 		});
 		if (!response.ok) return null;
-		const body = (await response.json()) as {id?: unknown};
+		const body = (await response.json()) as {id?: unknown; username?: unknown; is_staff?: unknown; acls?: unknown};
 		const userId = typeof body.id === 'string' && SNOWFLAKE.test(body.id) ? body.id : null;
-		if (userId) {
-			if (authCache.size > 5000) authCache.clear();
-			authCache.set(authorization, {userId, expires: Date.now() + 60_000});
-		}
-		return userId;
+		if (!userId) return null;
+		const acls = Array.isArray(body.acls) ? body.acls : [];
+		const isAdmin =
+			body.is_staff === true || ADMIN_USER_IDS.has(userId) || acls.some((acl) => ADMIN_ACLS.has(String(acl)));
+		if (typeof body.username === 'string') badgeDb.rememberName(userId, body.username);
+		const caller = {userId, isAdmin};
+		if (authCache.size > 5000) authCache.clear();
+		authCache.set(authorization, {...caller, expires: Date.now() + 60_000});
+		return caller;
 	} catch (error) {
 		console.error('auth lookup failed', error);
 		return null;
@@ -138,6 +168,71 @@ async function putOwnEffect(request: Request): Promise<Response> {
 	return json({user_id: userId, effect});
 }
 
+function parseIds(url: URL): Array<string> | Response {
+	const ids = [
+		...new Set(
+			(url.searchParams.get('ids') ?? '')
+				.split(',')
+				.map((id) => id.trim())
+				.filter((id) => SNOWFLAKE.test(id)),
+		),
+	];
+	if (ids.length > MAX_IDS) return json({error: `at most ${MAX_IDS} ids`}, 400);
+	return ids;
+}
+
+function getBadges(url: URL): Response {
+	const ids = parseIds(url);
+	if (ids instanceof Response) return ids;
+	return json(badgeDb.lookup(ids));
+}
+
+async function requireAdmin(request: Request): Promise<Caller | Response> {
+	const caller = await resolveCaller(request.headers.get('authorization'), request.headers.get('x-forwarded-for'));
+	if (!caller) return json({error: 'unauthorized'}, 401);
+	if (!caller.isAdmin) return json({error: 'forbidden'}, 403);
+	if (!allowWrite(caller.userId)) return json({error: 'slow down'}, 429);
+	return caller;
+}
+
+async function handleBadgeWrite(request: Request, userId: string, badgeId: string | null): Promise<Response> {
+	if (!SNOWFLAKE.test(userId)) return json({error: 'bad user id'}, 400);
+	const caller = await requireAdmin(request);
+	if (caller instanceof Response) return caller;
+	if (badgeId == null) {
+		let body: {badges?: unknown};
+		try {
+			body = (await request.json()) as {badges?: unknown};
+		} catch {
+			return json({error: 'invalid json'}, 400);
+		}
+		if (!Array.isArray(body?.badges) || body.badges.some((id) => typeof id !== 'string' || !BADGE_IDS.has(id))) {
+			return json({error: 'unknown badge'}, 400);
+		}
+		badgeDb.set(userId, body.badges as Array<string>);
+	} else {
+		if (!BADGE_IDS.has(badgeId)) return json({error: 'unknown badge'}, 400);
+		if (request.method === 'POST') badgeDb.grant(userId, badgeId);
+		else badgeDb.revoke(userId, badgeId);
+	}
+	console.log(`badges: ${caller.userId} ${request.method} ${userId} ${badgeId ?? '(set)'}`);
+	return json({user_id: userId, badges: badgeDb.lookup([userId])[userId] ?? []});
+}
+
+const BADGE_ASSET = /^\/badge-assets\/([a-z_]+)(@64)?\.png$/;
+
+async function getBadgeAsset(pathname: string): Promise<Response> {
+	const match = BADGE_ASSET.exec(pathname);
+	if (!match || !BADGE_IDS.has(match[1])) return json({error: 'not found'}, 404);
+	const file = Bun.file(`${BADGE_ASSET_DIR}/${match[1]}${match[2] ?? ''}.png`);
+	if (!(await file.exists())) return json({error: 'not found'}, 404);
+	return new Response(file, {
+		headers: {'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400'},
+	});
+}
+
+const BADGE_WRITE = /^\/badges\/(\d{1,20})(?:\/([a-z_]+))?$/;
+
 Bun.serve({
 	port: PORT,
 	async fetch(request) {
@@ -146,6 +241,25 @@ Bun.serve({
 			if (url.pathname === '/health') return new Response('ok');
 			if (url.pathname === '/effects' && request.method === 'GET') return getEffects(url);
 			if (url.pathname === '/effects/@me' && request.method === 'PUT') return await putOwnEffect(request);
+			if (url.pathname === '/badges' && request.method === 'GET') return getBadges(url);
+			if (url.pathname === '/badges/@me/manage' && request.method === 'GET') {
+				const caller = await resolveCaller(
+					request.headers.get('authorization'),
+					request.headers.get('x-forwarded-for'),
+				);
+				return json({can_manage: caller?.isAdmin ?? false});
+			}
+			if (url.pathname.startsWith('/badge-assets/') && request.method === 'GET') {
+				return await getBadgeAsset(url.pathname);
+			}
+			const badgeWrite = BADGE_WRITE.exec(url.pathname);
+			if (badgeWrite) {
+				const [, userId, badgeId] = badgeWrite;
+				if (!badgeId && request.method === 'PUT') return await handleBadgeWrite(request, userId, null);
+				if (badgeId && (request.method === 'POST' || request.method === 'DELETE')) {
+					return await handleBadgeWrite(request, userId, badgeId);
+				}
+			}
 			return json({error: 'not found'}, 404);
 		} catch (error) {
 			console.error(error);
@@ -154,4 +268,4 @@ Bun.serve({
 	},
 });
 
-console.log(`delight-svc listening on :${PORT} (${EFFECT_IDS.size} effects)`);
+console.log(`delight-svc listening on :${PORT} (${EFFECT_IDS.size} effects, ${BADGE_IDS.size} badges)`);

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {displayApplicationName} from '@app/features/app/config/ProductConstants';
 import {Endpoints} from '@app/features/app/constants/Endpoints';
 import {http} from '@app/features/platform/transport/RestTransport';
 import {Logger} from '@app/features/platform/utils/AppLogger';
@@ -20,7 +21,10 @@ export interface OAuth2Authorization {
 
 async function requestAuthorizations(): Promise<Array<OAuth2Authorization>> {
 	const response = await http.get<Array<OAuth2Authorization>>(Endpoints.OAUTH_AUTHORIZATIONS);
-	return response.body;
+	return response.body.map((authorization) => ({
+		...authorization,
+		application: {...authorization.application, name: displayApplicationName(authorization.application.name)},
+	}));
 }
 
 async function requestAuthorizationRemoval(applicationId: string): Promise<void> {

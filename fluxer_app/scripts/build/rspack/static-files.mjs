@@ -31,10 +31,9 @@ function resolveStaticCdnEndpoint(staticCdnEndpoint) {
 function generateManifest(staticCdnEndpoint) {
 	const cdn = resolveStaticCdnEndpoint(staticCdnEndpoint);
 	const manifest = {
-		name: 'Fluxer',
-		short_name: 'Fluxer',
-		description:
-			'Fluxer is a free and open source instant messaging and VoIP platform built for friends, groups, and communities.',
+		name: 'Delight',
+		short_name: 'Delight',
+		description: 'Delight is a chat app for friends, groups, and communities.',
 		id: '/',
 		start_url: '/app',
 		display: 'standalone',

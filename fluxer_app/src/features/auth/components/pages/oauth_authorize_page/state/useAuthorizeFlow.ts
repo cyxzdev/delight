@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {PRODUCT_NAME} from '@app/features/app/config/I18nDisplayConstants';
+import {displayApplicationName} from '@app/features/app/config/ProductConstants';
 import {Endpoints} from '@app/features/app/constants/Endpoints';
 import {useAuthorizeParams} from '@app/features/auth/components/pages/oauth_authorize_page/hooks/useAuthorizeParams';
 import {
@@ -312,7 +313,8 @@ export function useAuthorizeFlow(options: UseAuthorizeFlowOptions = {}): Authori
 		hasBotScope && selectedDestination?.kind !== 'group_dm' && permissionSelection.requestedKeys.length > 0;
 	const hasRequestedBotPermissions =
 		hasBotScope && selectedDestination?.kind !== 'group_dm' && permissionSelection.requestedBitfield > 0n;
-	const clientLabel = publicAppState.data?.name?.trim() || i18n._(THIS_APPLICATION_DESCRIPTOR);
+	const appName = publicAppState.data?.name?.trim();
+	const clientLabel = (appName && displayApplicationName(appName)) || i18n._(THIS_APPLICATION_DESCRIPTOR);
 	const reviewSteps = useMemo<ReadonlyArray<ReviewStep>>(() => {
 		const steps: Array<ReviewStep> = includeAccountStep ? ['account', 'scopes'] : ['scopes'];
 		if (hasBotScope) {

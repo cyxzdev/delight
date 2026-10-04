@@ -84,3 +84,36 @@
 	font: inherit;
 	color: inherit;
 }
+
+/* Delight sticker badges (art has its own outline and a little air around it, so they run slightly bigger). */
+.delightBadgePopout {
+	display: block;
+	height: 1.375rem;
+	width: 1.375rem;
+	object-fit: contain;
+}
+
+.delightBadgeModal {
+	display: block;
+	height: 1.5rem;
+	width: 1.5rem;
+	object-fit: contain;
+}
+
+.delightTooltip {
+	display: flex;
+	flex-direction: column;
+	gap: 0.125rem;
+	max-width: 15rem;
+	text-align: left;
+}
+
+.delightTooltipName {
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.delightTooltipDescription {
+	font-size: 0.75rem;
+	color: var(--text-secondary);
+}
