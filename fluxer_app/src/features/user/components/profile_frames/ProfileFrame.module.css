@@ -139,6 +139,14 @@
 
 :global([data-flx='ui.popover.popouts.popout-item.popout']):has(> * > .framePad, > .framePad, > * > * > .framePad) {
 	box-shadow: none;
+	/* The frame spills past the card on every side; don't let the floating layer (or its host) clip it. */
+	overflow: visible !important;
+	background: transparent !important;
+	border-color: transparent !important;
+}
+
+:global([data-flx='ui.popover.popouts.popout-item.popout']) :has(> .framePad) {
+	overflow: visible !important;
 }
 
 .framePad > :global([data-flx='user.profile.profile-card.profile-card-layout.profile-card']) {
