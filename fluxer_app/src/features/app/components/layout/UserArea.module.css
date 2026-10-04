@@ -4,10 +4,12 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0;
-	width: 100%;
-	background-color: var(--background-primary);
-	border-radius: 0;
-	border-top: 0.0625rem solid var(--background-modifier-accent);
+	width: calc(100% - 1rem);
+	margin: 0 0.5rem 0.5rem;
+	box-sizing: border-box;
+	background-color: var(--background-tertiary);
+	border-radius: var(--radius-lg);
+	border: 0.0625rem solid var(--background-modifier-accent);
 	box-shadow: none;
 	overflow: hidden;
 	position: relative;

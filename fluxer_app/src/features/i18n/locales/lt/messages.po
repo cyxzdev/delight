@@ -33748,7 +33748,7 @@ msgstr "Naujas balso kanalas pakartotinai naudos leidimus, naudotojų limitą ir
 #. Setup wizard push relay consent step body.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:273
 msgid "The official Fluxer mobile apps receive notifications through Fluxer's push relay, which hands them to Apple and Google. Self-hosted UnifiedPush and ntfy endpoints never reach the relay and need no agreement."
-msgstr "Oficialios „Fluxer“ mobiliosios programėlės gauna pranešimus per „Fluxer“ persiuntimo tarnybą, kuri perduoda juos „Apple“ ir „Google“. Savarankiškai prižiūrimi „UnifiedPush“ ir „ntfy“ galiniai taškai niekada nepasiekia persiuntimo tarnybos ir nereikalauja sutikimo."
+msgstr "Oficialios „Delight“ mobiliosios programėlės gauna pranešimus per „Delight“ persiuntimo tarnybą, kuri perduoda juos „Apple“ ir „Google“. Savarankiškai prižiūrimi „UnifiedPush“ ir „ntfy“ galiniai taškai niekada nepasiekia persiuntimo tarnybos ir nereikalauja sutikimo."
 
 #. Activity log detail row under a removed channel permission override, listing the permissions it explicitly allowed before it was removed. It describes the removed override. It does not mean these permissions are allowed now. A permission override is a channel-level exception to the permissions of a role or member. It allows or denies chosen permissions in one channel or category only. Use the same word for override as the channel permissions settings, such as Add override. {permissions} is a list of permission names joined into one phrase, for example "View channel and Send messages". A long list ends with a count, for example "View channel, Send messages, and 3 more permissions".
 #: src/features/guild/utils/guild_tabs/audit_log/AuditLogChannelMessages.ts:418

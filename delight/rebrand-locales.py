@@ -2,20 +2,33 @@
 """Show "Delight" instead of "Fluxer" in UI strings, in every locale.
 
 Rewrites msgstr (falling back to msgid for untranslated/source entries) in fluxer_app's lingui catalogs.
-Leaves placeholders like {exampleFluxerTagFull} alone, and skips strings that refer to Fluxer the company's own
-services (push relay, official apps, fluxer.app links), where swapping the name would be untrue. Safe to re-run.
+Leaves placeholders like {exampleFluxerTagFull} alone, and rewords the few
+that describe the upstream project's own push relay neutrally. Safe to re-run.
 """
 import glob, os, re
 
 ROOT = os.path.join(os.path.dirname(__file__), '..', 'fluxer_app', 'src', 'features', 'i18n', 'locales')
-SKIP = re.compile(r'push relay|official Fluxer|Fluxer Platform|fluxer\.app|Fluxer\'s push|Fluxer’s push', re.I)
+SKIP = re.compile(r'fluxer-verification', re.I)  # a real file name the server checks
 WORD = re.compile(r'(?<![\w{])Fluxer(?![\w}])')
+
+
+NEUTRAL = [
+    (re.compile(r"Fluxer(?:'|’)s push relay"), 'the hosted push relay'),
+    (re.compile(r'official Fluxer '), 'official '),
+]
 
 
 def swap(text):
     # don't touch inside {placeholders}
     parts = re.split(r'(\{[^}]*\})', text)
-    return ''.join(p if p.startswith('{') else WORD.sub('Delight', p) for p in parts)
+    out = []
+    for p in parts:
+        if not p.startswith('{'):
+            for rx, rep in NEUTRAL:
+                p = rx.sub(rep, p)
+            p = WORD.sub('Delight', p)
+        out.append(p)
+    return ''.join(out)
 
 
 
@@ -42,7 +55,9 @@ for path in sorted(glob.glob(os.path.join(ROOT, '*', 'messages.po'))):
         if any(l.startswith('msgid_plural') or l.startswith('msgctxt') for l in lines):
             continue
         msgid = unq(lines[i_id:i_str])
-        if 'Fluxer' not in msgid or SKIP.search(msgid):
+        if SKIP.search(msgid):
+            continue
+        if 'Fluxer' not in msgid and 'Fluxer' not in unq(lines[i_str:i_str + 1] + [l for l in lines[i_str + 1:] if l.startswith('"')]):
             continue
         end = i_str + 1
         while end < len(lines) and lines[end].startswith('"'):

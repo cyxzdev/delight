@@ -133,6 +133,8 @@ import type React from 'react';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useDrop} from 'react-dnd';
 
+const SHOW_UPSTREAM_LINKS = false;
+
 const NEW_DESCRIPTOR = msg({
 	message: 'New',
 	context: 'navigation-badge',
@@ -330,7 +332,8 @@ function createGuildNavigationRows({
 			focusTargetIdentity: 'add-guild',
 		});
 	}
-	if (visibility.downloadVisible) {
+	// Delight: no desktop-download or help buttons; both pointed at the upstream project's site.
+	if (visibility.downloadVisible && SHOW_UPSTREAM_LINKS) {
 		rows.push({
 			kind: 'download',
 			key: 'download',
@@ -338,7 +341,7 @@ function createGuildNavigationRows({
 			focusTargetIdentity: 'download',
 		});
 	}
-	if (visibility.helpVisible) {
+	if (visibility.helpVisible && SHOW_UPSTREAM_LINKS) {
 		rows.push({
 			kind: 'help',
 			key: 'help',

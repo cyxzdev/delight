@@ -446,7 +446,8 @@ export const useActiveNagbars = (conditions: NagbarConditions): Array<NagbarStat
 			{
 				type: NagbarType.DESKTOP_DOWNLOAD,
 				priority: 9,
-				visible: conditions.canShowDesktopDownload,
+				// Delight has no desktop app of its own yet.
+				visible: false && conditions.canShowDesktopDownload,
 				dismissible: true,
 			},
 			{

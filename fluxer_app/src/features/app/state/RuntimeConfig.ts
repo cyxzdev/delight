@@ -146,7 +146,7 @@ export const DEFAULT_APP_PUBLIC_CONFIG: InstanceAppPublic = {
 		theme_color: null,
 		status_page_url: null,
 		status_page_incident_history_url: null,
-		premium_product_name: 'Plutonium',
+		premium_product_name: 'Premium',
 		premium_info_url: null,
 	},
 	setup: {

@@ -2,8 +2,6 @@
 
 import styles from '@app/features/app/components/ErrorFallback.module.css';
 import {
-	BLUESKY_PROVIDER_NAME,
-	FLUXER_BLUESKY_HANDLE,
 	PRODUCT_NAME,
 } from '@app/features/app/config/I18nDisplayConstants';
 import {TRY_AGAIN_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
@@ -13,7 +11,6 @@ import AppStorage, {
 } from '@app/features/platform/state/PersistentStorage';
 import {Button} from '@app/features/ui/button/Button';
 import {APPLICATION_ICON_DESCRIPTOR, FluxerIconMark} from '@app/features/ui/components/icons/FluxerIconMark';
-import {ExternalUrls} from '@fluxer/constants/src/ExternalUrls';
 import {Trans, useLingui} from '@lingui/react/macro';
 import type React from 'react';
 import {useCallback} from 'react';
@@ -60,18 +57,8 @@ export const BootstrapErrorScreen: React.FC<BootstrapErrorScreenProps> = ({error
 					className={styles.errorFallbackDescription}
 					data-flx="app.bootstrap-error-screen.error-fallback-description--3"
 				>
-					<Trans>
-						Check our{' '}
-						<a
-							href={ExternalUrls.BLUESKY}
-							target="_blank"
-							rel="noopener noreferrer"
-							data-flx="app.bootstrap-error-screen.a"
-						>
-							{BLUESKY_PROVIDER_NAME} ({FLUXER_BLUESKY_HANDLE})
-						</a>{' '}
-						for status updates.
-					</Trans>
+					{/* Delight: no upstream social/status link here. */}
+					<Trans>Try again in a moment.</Trans>
 				</p>
 			</div>
 			<div className={styles.errorFallbackActions} data-flx="app.bootstrap-error-screen.error-fallback-actions">
