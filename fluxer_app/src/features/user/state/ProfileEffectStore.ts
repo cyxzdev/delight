@@ -135,7 +135,8 @@ class ProfileEffectStore {
 				headers: {'Content-Type': 'application/json', Authorization: token},
 				body: JSON.stringify({effect: choice}),
 			});
-			if (!response.ok) throw new Error(`HTTP ${response.status}`);
+			// 403 = a premium effect picked by someone who isn't premium; callers read `status`.
+			if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status}`), {status: response.status});
 			this.fetchedAt.set(me, Date.now());
 		} catch (error) {
 			logger.error('Saving profile effect failed', error);

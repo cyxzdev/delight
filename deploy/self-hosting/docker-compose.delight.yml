@@ -44,10 +44,13 @@ services:
       DELIGHT_ADMIN_USER_IDS: ${DELIGHT_ADMIN_USER_IDS:-}
       # Profile frames: artwork served at /delight/frame-assets/<frame>/<piece>.webp.
       DELIGHT_FRAME_ASSET_DIR: /frames
+      # Video profile effects (the premium Angelic collection): /delight/effect-assets/<effect>/loop.mp4|webm, poster.webp.
+      DELIGHT_EFFECT_ASSET_DIR: /effects
     volumes:
       - ../../delight/service:/app:ro
       - ../../delight/badges:/badges:ro
       - ../../delight/frames:/frames:ro
+      - ../../delight/effects:/effects:ro
       - delight-data:/data
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/health"]

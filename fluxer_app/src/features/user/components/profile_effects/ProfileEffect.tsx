@@ -103,9 +103,14 @@ export const ProfileEffect: React.FC<ProfileEffectProps> = observer(({effect, ra
 
 	if (!effect) return null;
 	const ready = geometry != null && geometry.width > 0 && geometry.height > 0;
-	const layerClass = clsx(styles.layer, reducedMotion && styles.reducedMotion, fadeOnHover && styles.fadeOnHover);
-	const {Layer} = getProfileEffectDefinition(effect);
+	const {Layer, blend} = getProfileEffectDefinition(effect);
 	const staticAttr = reducedMotion ? '' : undefined;
+	const layerClass = clsx(
+		styles.layer,
+		reducedMotion && styles.reducedMotion,
+		fadeOnHover && styles.fadeOnHover,
+		blend === 'screen' && styles.screen,
+	);
 	return (
 		<>
 			<div
@@ -116,7 +121,7 @@ export const ProfileEffect: React.FC<ProfileEffectProps> = observer(({effect, ra
 				data-pfx-static={staticAttr}
 				data-flx="user.profile-effect.back"
 			>
-				{ready && <Layer layer="back" geometry={geometry} radius={radius} idPrefix={idPrefix} />}
+				{ready && <Layer layer="back" geometry={geometry} radius={radius} idPrefix={idPrefix} still={reducedMotion} />}
 			</div>
 			<div
 				className={clsx(layerClass, styles.front)}
@@ -124,7 +129,7 @@ export const ProfileEffect: React.FC<ProfileEffectProps> = observer(({effect, ra
 				data-pfx-static={staticAttr}
 				data-flx="user.profile-effect.front"
 			>
-				{ready && <Layer layer="front" geometry={geometry} radius={radius} idPrefix={idPrefix} />}
+				{ready && <Layer layer="front" geometry={geometry} radius={radius} idPrefix={idPrefix} still={reducedMotion} />}
 			</div>
 		</>
 	);

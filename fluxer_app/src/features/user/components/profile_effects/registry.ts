@@ -13,7 +13,12 @@ import {Snowfall} from '@app/features/user/components/profile_effects/Snowfall';
 import {SparkSurgeLayer} from '@app/features/user/components/profile_effects/SparkSurge';
 import {Starlight} from '@app/features/user/components/profile_effects/Starlight';
 import {Synthwave} from '@app/features/user/components/profile_effects/Synthwave';
-import {PROFILE_EFFECT_IDS, type ProfileEffectId} from '@app/features/user/utils/ProfileEffectIds';
+import {videoEffectLayer} from '@app/features/user/components/profile_effects/VideoEffect';
+import {
+	isPremiumProfileEffect,
+	PROFILE_EFFECT_IDS,
+	type ProfileEffectId,
+} from '@app/features/user/utils/ProfileEffectIds';
 import type {MessageDescriptor} from '@lingui/core';
 import {msg} from '@lingui/core/macro';
 
@@ -24,13 +29,41 @@ import {msg} from '@lingui/core/macro';
  *  2. write a `ProfileEffectLayer` in this folder (see effectKit.tsx: it draws the 'back' or 'front' layer as an SVG in
  *     the card's pixel space; animate with transform/opacity only and make `[data-pfx-static]` show a still frame);
  *  3. register it below. The picker's tiles render it on a miniature card automatically (ProfileEffectThumbnail).
+ *
+ * Video effects (light on a pure black background, drawn with a screen blend) skip step 2: put loop.webm, loop.mp4 and
+ * poster.webp in delight/effects/<id>/ and use `videoEffectLayer` (VideoEffect.tsx) with `blend: 'screen'`.
+ *
+ * Premium effects: also add the id to PREMIUM_PROFILE_EFFECT_IDS (ProfileEffectIds.ts) and PREMIUM_EFFECT_IDS in
+ * delight/service/server.ts (which refuses them with 403 for users without a premium badge), and give it a
+ * `collection` so the picker lists it in that collection's section.
  */
+export type ProfileEffectCollection = 'angelic';
+
 export interface ProfileEffectDefinition {
 	id: ProfileEffectId;
 	name: MessageDescriptor;
 	description: MessageDescriptor;
 	Layer: ProfileEffectLayer;
+	/** 'screen': the layers blend with `mix-blend-mode: screen` (video effects on black). */
+	blend?: 'screen';
+	/** Premium collection the effect belongs to (premium effects only). */
+	collection?: ProfileEffectCollection;
 }
+
+export interface ProfileEffectCollectionDefinition {
+	id: ProfileEffectCollection;
+	name: MessageDescriptor;
+}
+
+export const PROFILE_EFFECT_COLLECTIONS: ReadonlyArray<ProfileEffectCollectionDefinition> = [
+	{
+		id: 'angelic',
+		name: msg({
+			message: 'Angelic',
+			comment: 'Name of a premium collection of profile effects: luminous wings, halos, feathers and starlight.',
+		}),
+	},
+];
 
 const DEFINITIONS: Record<ProfileEffectId, Omit<ProfileEffectDefinition, 'id'>> = {
 	spark_surge: {
@@ -129,12 +162,71 @@ const DEFINITIONS: Record<ProfileEffectId, Omit<ProfileEffectDefinition, 'id'>> 
 		}),
 		Layer: GildedBanner,
 	},
+	seraph: {
+		name: msg({message: 'Seraph', comment: 'Name of a premium profile effect: glowing angel wings and a halo.'}),
+		description: msg({
+			message: 'Luminous feathered wings unfold above your card beneath a soft halo.',
+			comment: 'Short description of the Seraph profile effect.',
+		}),
+		Layer: videoEffectLayer({id: 'seraph', position: '50% 20%'}),
+		blend: 'screen',
+		collection: 'angelic',
+	},
+	moonwing: {
+		name: msg({message: 'Moonwing', comment: 'Name of a premium profile effect: pale glowing butterflies.'}),
+		description: msg({
+			message: 'Pale silver butterflies flutter along the edges of your card.',
+			comment: 'Short description of the Moonwing profile effect.',
+		}),
+		Layer: videoEffectLayer({id: 'moonwing'}),
+		blend: 'screen',
+		collection: 'angelic',
+	},
+	halo_light: {
+		name: msg({message: 'Halo Light', comment: 'Name of a premium profile effect: a golden halo with rays of light.'}),
+		description: msg({
+			message: 'A golden halo pours soft rays of light down your card.',
+			comment: 'Short description of the Halo Light profile effect.',
+		}),
+		Layer: videoEffectLayer({id: 'halo_light', position: '50% 10%'}),
+		blend: 'screen',
+		collection: 'angelic',
+	},
+	feather_fall: {
+		name: msg({message: 'Feather Fall', comment: 'Name of a premium profile effect: white feathers drifting down.'}),
+		description: msg({
+			message: 'White feathers drift down your card, catching the light.',
+			comment: 'Short description of the Feather Fall profile effect.',
+		}),
+		Layer: videoEffectLayer({id: 'feather_fall'}),
+		blend: 'screen',
+		collection: 'angelic',
+	},
+	stardust_veil: {
+		name: msg({message: 'Stardust Veil', comment: 'Name of a premium profile effect: a veil of silver sparkles.'}),
+		description: msg({
+			message: 'A fine veil of silver stardust frames your card and twinkles.',
+			comment: 'Short description of the Stardust Veil profile effect.',
+		}),
+		Layer: videoEffectLayer({id: 'stardust_veil', position: '50% 40%'}),
+		blend: 'screen',
+		collection: 'angelic',
+	},
 };
 
 export const PROFILE_EFFECTS: ReadonlyArray<ProfileEffectDefinition> = PROFILE_EFFECT_IDS.map((id) => ({
 	id,
 	...DEFINITIONS[id],
 }));
+
+/** Effects anyone can pick, in display order. */
+export const FREE_PROFILE_EFFECTS: ReadonlyArray<ProfileEffectDefinition> = PROFILE_EFFECTS.filter(
+	(definition) => !isPremiumProfileEffect(definition.id),
+);
+
+export function getProfileEffectsInCollection(collection: ProfileEffectCollection): ReadonlyArray<ProfileEffectDefinition> {
+	return PROFILE_EFFECTS.filter((definition) => definition.collection === collection);
+}
 
 export function getProfileEffectDefinition(id: ProfileEffectId): ProfileEffectDefinition {
 	return {id, ...DEFINITIONS[id]};

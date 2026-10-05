@@ -1,0 +1,16 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* A video effect's art, covering the card. The layer around it blends with `screen` (see ProfileEffect.module.css). */
+.media {
+	position: absolute;
+	inset: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	pointer-events: none;
+	user-select: none;
+	-webkit-user-drag: none;
+	background: transparent;
+}

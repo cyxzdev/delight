@@ -9,13 +9,20 @@ import type {User} from '@app/features/user/models/User';
 import {ProfilePreview} from '@app/features/user/components/profile/ProfilePreview';
 import styles from '@app/features/user/components/profile_effects/ProfileEffectPicker.module.css';
 import {ProfileEffectThumbnail} from '@app/features/user/components/profile_effects/ProfileEffectThumbnail';
-import {getProfileEffectDefinition, PROFILE_EFFECTS} from '@app/features/user/components/profile_effects/registry';
+import {
+	FREE_PROFILE_EFFECTS,
+	getProfileEffectDefinition,
+	getProfileEffectsInCollection,
+	PROFILE_EFFECT_COLLECTIONS,
+} from '@app/features/user/components/profile_effects/registry';
+import DelightBadgeStore from '@app/features/user/state/DelightBadgeStore';
 import ProfileEffectStore from '@app/features/user/state/ProfileEffectStore';
 import * as AvatarUtils from '@app/features/user/utils/AvatarUtils';
+import {hasPremiumBadge, isPremiumProfileEffect} from '@app/features/user/utils/ProfileEffectIds';
 import {getOwnProfileEffectChoice, type ProfileEffectChoice} from '@app/features/user/utils/ProfileEffects';
 import {msg} from '@lingui/core/macro';
 import {Trans, useLingui} from '@lingui/react/macro';
-import {ProhibitIcon} from '@phosphor-icons/react';
+import {LockSimpleIcon, ProhibitIcon} from '@phosphor-icons/react';
 import {clsx} from 'clsx';
 import {observer} from 'mobx-react-lite';
 import type React from 'react';
@@ -37,6 +44,14 @@ const COULDNT_SAVE_DESCRIPTOR = msg({
 	message: "Couldn't save your profile effect. Try again.",
 	comment: 'Error toast when saving the profile effect fails.',
 });
+const SUBSCRIBER_EXCLUSIVE_DESCRIPTOR = msg({
+	message: 'Subscriber exclusive',
+	comment: 'Shown on premium profile effects for users who are not subscribers.',
+});
+const SUBSCRIBER_EXCLUSIVE_HINT_DESCRIPTOR = msg({
+	message: 'Subscriber exclusive. Subscribe to wear it on your profile.',
+	comment: 'Shown under the preview when a non-subscriber selects a premium profile effect.',
+});
 const PROFILE_EFFECT_UPDATED_DESCRIPTOR = msg({
 	message: 'Profile effect updated',
 	comment: 'Success toast after saving the profile effect.',
@@ -54,23 +69,32 @@ export const ProfileEffectPickerModal: React.FC<ProfileEffectPickerModalProps> =
 	const saving = ProfileEffectStore.saving;
 	const avatarUrl = AvatarUtils.getUserAvatarURL({id: user.id, avatar: user.avatar}, false, 80);
 	const selectedDefinition = selected === 'none' ? null : getProfileEffectDefinition(selected);
+	const isPremiumUser = hasPremiumBadge(DelightBadgeStore.getBadges(user.id));
+	const isLocked = (choice: ProfileEffectChoice) => choice !== 'none' && isPremiumProfileEffect(choice) && !isPremiumUser;
+	const selectedLocked = isLocked(selected);
 
 	const handleApply = async () => {
 		if (selected === current) {
 			ModalCommands.pop();
 			return;
 		}
+		if (selectedLocked) return;
 		try {
 			await ProfileEffectStore.saveOwnChoice(selected);
 			ToastCommands.createToast({type: 'success', children: i18n._(PROFILE_EFFECT_UPDATED_DESCRIPTOR)});
 			ModalCommands.pop();
-		} catch {
-			ToastCommands.createToast({type: 'error', children: i18n._(COULDNT_SAVE_DESCRIPTOR)});
+		} catch (error) {
+			const premiumRequired = (error as {status?: number} | null)?.status === 403;
+			ToastCommands.createToast({
+				type: 'error',
+				children: i18n._(premiumRequired ? SUBSCRIBER_EXCLUSIVE_DESCRIPTOR : COULDNT_SAVE_DESCRIPTOR),
+			});
 		}
 	};
 
 	const renderTile = (choice: ProfileEffectChoice, name: string) => {
 		const isSelected = selected === choice;
+		const locked = isLocked(choice);
 		return (
 			<FocusRing key={choice} offset={-2} data-flx="user.profile-effect-picker.tile.focus-ring">
 				<button
@@ -82,7 +106,7 @@ export const ProfileEffectPickerModal: React.FC<ProfileEffectPickerModalProps> =
 					onFocus={() => setHovered(choice)}
 					onBlur={() => setHovered((value) => (value === choice ? null : value))}
 					aria-pressed={isSelected}
-					aria-label={name}
+					aria-label={locked ? `${name}, ${i18n._(SUBSCRIBER_EXCLUSIVE_DESCRIPTOR)}` : name}
 					data-flx={`user.profile-effect-picker.tile.${choice}`}
 				>
 					<div className={styles.tileFrame}>
@@ -94,6 +118,11 @@ export const ProfileEffectPickerModal: React.FC<ProfileEffectPickerModalProps> =
 							</ProfileEffectThumbnail>
 						) : (
 							<ProfileEffectThumbnail effect={choice} animate={hovered === choice || isSelected} avatarUrl={avatarUrl} />
+						)}
+						{locked && (
+							<span className={styles.tileLock} aria-hidden="true">
+								<LockSimpleIcon size={12} weight="bold" />
+							</span>
 						)}
 					</div>
 					<span className={styles.tileName}>{name}</span>
@@ -114,12 +143,30 @@ export const ProfileEffectPickerModal: React.FC<ProfileEffectPickerModalProps> =
 				<div className={styles.body}>
 					<div className={styles.gridColumn}>
 						<div className={styles.columnLabel}>
-							<Trans>Effects</Trans>
+							<Trans>Free</Trans>
 						</div>
 						<div className={styles.grid} role="group" data-flx="user.profile-effect-picker.grid">
 							{renderTile('none', i18n._(NONE_DESCRIPTOR))}
-							{PROFILE_EFFECTS.map((definition) => renderTile(definition.id, i18n._(definition.name)))}
+							{FREE_PROFILE_EFFECTS.map((definition) => renderTile(definition.id, i18n._(definition.name)))}
 						</div>
+						{PROFILE_EFFECT_COLLECTIONS.map((collection) => {
+							const effects = getProfileEffectsInCollection(collection.id);
+							if (effects.length === 0) return null;
+							const collectionName = i18n._(collection.name);
+							return (
+								<div key={collection.id} className={styles.section} data-flx={`user.profile-effect-picker.collection.${collection.id}`}>
+									<div className={styles.columnLabel}>
+										<span>{collectionName}</span>
+										<span className={styles.premiumLabel}>
+											<Trans>Premium</Trans>
+										</span>
+									</div>
+									<div className={styles.grid} role="group" aria-label={collectionName}>
+										{effects.map((definition) => renderTile(definition.id, i18n._(definition.name)))}
+									</div>
+								</div>
+							);
+						})}
 					</div>
 					<div className={styles.previewColumn} data-flx="user.profile-effect-picker.preview">
 						<div className={styles.columnLabel} style={{alignSelf: 'stretch'}}>
@@ -140,6 +187,12 @@ export const ProfileEffectPickerModal: React.FC<ProfileEffectPickerModalProps> =
 							<span className={styles.previewDescription}>
 								{selectedDefinition ? i18n._(selectedDefinition.description) : i18n._(NO_EFFECT_DESCRIPTION_DESCRIPTOR)}
 							</span>
+							{selectedLocked && (
+								<span className={styles.previewLocked} data-flx="user.profile-effect-picker.locked-note">
+									<LockSimpleIcon size={12} weight="bold" aria-hidden="true" />
+									{i18n._(SUBSCRIBER_EXCLUSIVE_HINT_DESCRIPTOR)}
+								</span>
+							)}
 						</div>
 					</div>
 				</div>
@@ -158,6 +211,7 @@ export const ProfileEffectPickerModal: React.FC<ProfileEffectPickerModalProps> =
 					small
 					onClick={handleApply}
 					submitting={saving}
+					disabled={selectedLocked}
 					data-flx="user.profile-effect-picker.button.apply"
 				>
 					<Trans>Apply</Trans>

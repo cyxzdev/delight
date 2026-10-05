@@ -29,6 +29,8 @@ export interface ProfileEffectLayerProps {
 	radius: number;
 	/** Unique prefix for ids (clip paths, gradients) so several cards can be on screen at once. */
 	idPrefix: string;
+	/** Static (reduced motion or a still thumbnail); SVG effects get this from `[data-pfx-static]` instead. */
+	still?: boolean;
 }
 
 export type ProfileEffectLayer = React.FC<ProfileEffectLayerProps>;

@@ -18,11 +18,40 @@ export const PROFILE_EFFECT_IDS = [
 	'glitch',
 	'synthwave',
 	'gilded_banner',
+	// The Angelic collection (premium, video effects).
+	'seraph',
+	'moonwing',
+	'halo_light',
+	'feather_fall',
+	'stardust_veil',
 ] as const;
 
 export type ProfileEffectId = (typeof PROFILE_EFFECT_IDS)[number];
 /** What can be stored for a user: an effect, or 'none' for an explicit "no effect". */
 export type ProfileEffectChoice = ProfileEffectId | 'none';
+
+/**
+ * Effects only premium users (see PREMIUM_BADGE_IDS) may pick. The sidecar enforces this too: keep in sync with
+ * PREMIUM_EFFECT_IDS / PREMIUM_BADGES in delight/service/server.ts.
+ */
+export const PREMIUM_PROFILE_EFFECT_IDS: ReadonlySet<ProfileEffectId> = new Set<ProfileEffectId>([
+	'seraph',
+	'moonwing',
+	'halo_light',
+	'feather_fall',
+	'stardust_veil',
+]);
+
+/** Holding any of these Delight badges makes a user premium. */
+export const PREMIUM_BADGE_IDS: ReadonlySet<string> = new Set(['subscriber', 'staff']);
+
+export function isPremiumProfileEffect(id: ProfileEffectId): boolean {
+	return PREMIUM_PROFILE_EFFECT_IDS.has(id);
+}
+
+export function hasPremiumBadge(badgeIds: ReadonlyArray<string>): boolean {
+	return badgeIds.some((id) => PREMIUM_BADGE_IDS.has(id));
+}
 
 export function isProfileEffectId(value: unknown): value is ProfileEffectId {
 	return typeof value === 'string' && (PROFILE_EFFECT_IDS as ReadonlyArray<string>).includes(value);

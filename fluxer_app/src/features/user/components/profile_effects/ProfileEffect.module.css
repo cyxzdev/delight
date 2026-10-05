@@ -35,6 +35,12 @@
 	z-index: 5;
 }
 
+/* Video effects: light on black. Blending the layer (not the video, whose own group would be isolated) makes black
+   vanish against the card. */
+.screen {
+	mix-blend-mode: screen;
+}
+
 .svg {
 	position: absolute;
 	inset: 0;

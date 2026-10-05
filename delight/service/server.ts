@@ -13,6 +13,10 @@
 //   GET  /frames?ids=1,2,3    → {"1": "starlit_sparkles"}       (only ids with a stored choice)
 //   PUT  /frames/@me           body {"frame": "<id>" | "none" | null}   (null clears; default is no frame)
 //   GET  /frame-assets/<frameId>/<name>.webp                      (profile frame artwork, from ./frames)
+//   GET  /effect-assets/<effectId>/<name>.(mp4|webm|webp)          (video profile effects, from ./effects; Range-aware)
+//
+// Premium effects (PREMIUM_EFFECT_IDS) can only be saved by users holding a premium badge (PREMIUM_BADGES: subscriber or
+// staff); others get 403 {"error": "premium required"}. A stored premium pick is only served while its owner is premium.
 //   GET  /health               → "ok"
 //
 // Writes are authenticated by forwarding the caller's Authorization header to Fluxer's API (GET /v1/users/@me).
@@ -31,12 +35,31 @@ const FLUXER_ORIGIN = process.env.FLUXER_ORIGIN ?? 'http://localhost:3131';
 const EFFECT_IDS = new Set(
 	(
 		process.env.DELIGHT_EFFECT_IDS ??
-		'spark_surge,sakura_drift,snowfall,ember,starlight,heartbeat,rainy_day,bubbles,confetti,glitch,synthwave,gilded_banner'
+		'spark_surge,sakura_drift,snowfall,ember,starlight,heartbeat,rainy_day,bubbles,confetti,glitch,synthwave,gilded_banner,' +
+			'seraph,moonwing,halo_light,feather_fall,stardust_veil'
 	)
 		.split(',')
 		.map((id) => id.trim())
 		.filter(Boolean),
 );
+/**
+ * Effects only premium users may pick (the "Angelic" collection). Keep in sync with PREMIUM_PROFILE_EFFECT_IDS in
+ * fluxer_app/src/features/user/utils/ProfileEffectIds.ts.
+ */
+const PREMIUM_EFFECT_IDS = new Set(
+	(process.env.DELIGHT_PREMIUM_EFFECT_IDS ?? 'seraph,moonwing,halo_light,feather_fall,stardust_veil')
+		.split(',')
+		.map((id) => id.trim())
+		.filter(Boolean),
+);
+/** Badges that make a user premium. Keep in sync with PREMIUM_BADGE_IDS in ProfileEffectIds.ts. */
+const PREMIUM_BADGES = new Set(
+	(process.env.DELIGHT_PREMIUM_BADGES ?? 'subscriber,staff')
+		.split(',')
+		.map((id) => id.trim())
+		.filter(Boolean),
+);
+const EFFECT_ASSET_DIR = process.env.DELIGHT_EFFECT_ASSET_DIR ?? `${import.meta.dir}/../effects`;
 /** Keep in sync with PROFILE_FRAME_IDS in fluxer_app/src/features/user/utils/ProfileFrameIds.ts. */
 const FRAME_IDS = new Set(
 	(process.env.DELIGHT_FRAME_IDS ?? 'starlit_sparkles,candle_drip,eclipse,rose_filigree,kitty_ears')
@@ -160,8 +183,18 @@ function getEffects(url: URL): Response {
 		.query(`SELECT user_id, effect FROM profile_effects WHERE user_id IN (${ids.map(() => '?').join(',')})`)
 		.all(...ids) as Array<{user_id: string; effect: string}>;
 	const result: Record<string, string> = {};
-	for (const row of rows) result[row.user_id] = row.effect;
+	const premiumRows = rows.filter((row) => PREMIUM_EFFECT_IDS.has(row.effect));
+	const badges = premiumRows.length > 0 ? badgeDb.lookup(premiumRows.map((row) => row.user_id)) : {};
+	for (const row of rows) {
+		// A premium pick only shows while its owner is premium (otherwise they fall back to the default rule).
+		if (PREMIUM_EFFECT_IDS.has(row.effect) && !isPremium(badges[row.user_id])) continue;
+		result[row.user_id] = row.effect;
+	}
 	return json(result);
+}
+
+function isPremium(badges: ReadonlyArray<string> | undefined): boolean {
+	return (badges ?? []).some((id) => PREMIUM_BADGES.has(id));
 }
 
 async function putOwnEffect(request: Request): Promise<Response> {
@@ -179,6 +212,9 @@ async function putOwnEffect(request: Request): Promise<Response> {
 	const effect = body?.effect;
 	if (effect !== null && effect !== 'none' && !(typeof effect === 'string' && EFFECT_IDS.has(effect))) {
 		return json({error: 'unknown effect'}, 400);
+	}
+	if (typeof effect === 'string' && PREMIUM_EFFECT_IDS.has(effect) && !isPremium(badgeDb.lookup([userId])[userId])) {
+		return json({error: 'premium required'}, 403);
 	}
 	if (!allowWrite(userId)) return json({error: 'slow down'}, 429);
 	if (effect === null) deleteEffect.run(userId);
@@ -227,6 +263,38 @@ async function getFrameAsset(pathname: string): Promise<Response> {
 	return new Response(file, {
 		headers: {'Content-Type': `image/${match[3]}`, 'Cache-Control': 'public, max-age=86400'},
 	});
+}
+
+const EFFECT_ASSET = /^\/effect-assets\/([a-z_]+)\/([a-z0-9_-]+)\.(mp4|webm|webp)$/;
+const EFFECT_ASSET_TYPES: Record<string, string> = {mp4: 'video/mp4', webm: 'video/webm', webp: 'image/webp'};
+
+/** Video effect artwork. Honours single byte ranges, which Safari needs before it will play a video. */
+async function getEffectAsset(request: Request, pathname: string): Promise<Response> {
+	const match = EFFECT_ASSET.exec(pathname);
+	if (!match || !EFFECT_IDS.has(match[1])) return json({error: 'not found'}, 404);
+	const file = Bun.file(`${EFFECT_ASSET_DIR}/${match[1]}/${match[2]}.${match[3]}`);
+	if (!(await file.exists())) return json({error: 'not found'}, 404);
+	const headers: Record<string, string> = {
+		'Content-Type': EFFECT_ASSET_TYPES[match[3]],
+		'Cache-Control': 'public, max-age=86400',
+		'Accept-Ranges': 'bytes',
+	};
+	const size = file.size;
+	const range = /^bytes=(\d*)-(\d*)$/.exec(request.headers.get('range') ?? '');
+	if (range && (range[1] || range[2])) {
+		let start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
+		let end = range[1] && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+		if (start >= size || start > end) {
+			return new Response(null, {status: 416, headers: {...headers, 'Content-Range': `bytes */${size}`}});
+		}
+		start = Math.max(0, start);
+		end = Math.max(start, end);
+		return new Response(file.slice(start, end + 1), {
+			status: 206,
+			headers: {...headers, 'Content-Range': `bytes ${start}-${end}/${size}`, 'Content-Length': String(end - start + 1)},
+		});
+	}
+	return new Response(file, {headers});
 }
 
 function parseIds(url: URL): Array<string> | Response {
@@ -307,6 +375,9 @@ Bun.serve({
 			if (url.pathname.startsWith('/frame-assets/') && request.method === 'GET') {
 				return await getFrameAsset(url.pathname);
 			}
+			if (url.pathname.startsWith('/effect-assets/') && (request.method === 'GET' || request.method === 'HEAD')) {
+				return await getEffectAsset(request, url.pathname);
+			}
 			if (url.pathname === '/badges' && request.method === 'GET') return getBadges(url);
 			if (url.pathname === '/badges/@me/manage' && request.method === 'GET') {
 				const caller = await resolveCaller(
@@ -334,4 +405,4 @@ Bun.serve({
 	},
 });
 
-console.log(`delight-svc listening on :${PORT} (${EFFECT_IDS.size} effects, ${FRAME_IDS.size} frames, ${BADGE_IDS.size} badges)`);
+console.log(`delight-svc listening on :${PORT} (${EFFECT_IDS.size} effects, ${PREMIUM_EFFECT_IDS.size} premium, ${FRAME_IDS.size} frames, ${BADGE_IDS.size} badges)`);

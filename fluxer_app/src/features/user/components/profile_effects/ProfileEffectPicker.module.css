@@ -152,9 +152,59 @@
 }
 
 .columnLabel {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
 	font-size: 0.75rem;
 	font-weight: 600;
 	color: var(--text-primary-muted);
+}
+
+/* A premium collection's block under the free effects. */
+.section {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-top: 0.75rem;
+}
+
+.premiumLabel {
+	padding: 0 0.3125rem;
+	border: 1px solid var(--background-modifier-accent);
+	border-radius: var(--radius-sm, 3px);
+	font-size: 0.625rem;
+	font-weight: 600;
+	line-height: 0.9375rem;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-secondary);
+}
+
+/* Lock badge on premium tiles for users who can't wear them (they still preview on hover/select). */
+.tileLock {
+	position: absolute;
+	top: 0.3125rem;
+	right: 0.3125rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.25rem;
+	height: 1.25rem;
+	border-radius: 50%;
+	background-color: color-mix(in srgb, var(--background-primary) 78%, transparent);
+	color: var(--text-primary);
+	pointer-events: none;
+}
+
+.previewLocked {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+	margin-top: 0.25rem;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--text-secondary);
 }
 
 .previewColumn {
