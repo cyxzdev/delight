@@ -1,7 +1,9 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 
-/* A video effect's art, covering the card. The layer around it blends with `screen` (see ProfileEffect.module.css). */
-.media {
+/* A video effect's art, covering the card. The layer around it blends with `screen` (see ProfileEffect.module.css).
+   Doubled class: the global `img, video:not([data-embed-media]) { height: auto }` rule would otherwise win and let the
+   video grow to its natural height, stretching the profile card. */
+.media.media {
 	position: absolute;
 	inset: 0;
 	display: block;
