@@ -15,6 +15,7 @@ import {Starlight} from '@app/features/user/components/profile_effects/Starlight
 import {Synthwave} from '@app/features/user/components/profile_effects/Synthwave';
 import {videoEffectLayer} from '@app/features/user/components/profile_effects/VideoEffect';
 import {
+	DISABLED_PROFILE_EFFECT_IDS,
 	isPremiumProfileEffect,
 	PROFILE_EFFECT_IDS,
 	type ProfileEffectId,
@@ -225,7 +226,9 @@ export const FREE_PROFILE_EFFECTS: ReadonlyArray<ProfileEffectDefinition> = PROF
 );
 
 export function getProfileEffectsInCollection(collection: ProfileEffectCollection): ReadonlyArray<ProfileEffectDefinition> {
-	return PROFILE_EFFECTS.filter((definition) => definition.collection === collection);
+	return PROFILE_EFFECTS.filter(
+		(definition) => definition.collection === collection && !DISABLED_PROFILE_EFFECT_IDS.has(definition.id),
+	);
 }
 
 export function getProfileEffectDefinition(id: ProfileEffectId): ProfileEffectDefinition {

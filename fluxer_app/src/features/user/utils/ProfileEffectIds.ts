@@ -27,6 +27,16 @@ export const PROFILE_EFFECT_IDS = [
 ] as const;
 
 export type ProfileEffectId = (typeof PROFILE_EFFECT_IDS)[number];
+
+/** Effects switched off for now: hidden from the picker and never shown. Keep in sync with DISABLED_EFFECT_IDS in
+ * delight/service/server.ts. */
+export const DISABLED_PROFILE_EFFECT_IDS: ReadonlySet<string> = new Set([
+	'seraph',
+	'moonwing',
+	'halo_light',
+	'feather_fall',
+	'stardust_veil',
+]);
 /** What can be stored for a user: an effect, or 'none' for an explicit "no effect". */
 export type ProfileEffectChoice = ProfileEffectId | 'none';
 

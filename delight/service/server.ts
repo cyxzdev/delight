@@ -52,6 +52,13 @@ const PREMIUM_EFFECT_IDS = new Set(
 		.map((id) => id.trim())
 		.filter(Boolean),
 );
+/** Effects switched off for now (stay in the code and assets, but nobody can pick or show them). */
+const DISABLED_EFFECT_IDS = new Set(
+	(process.env.DELIGHT_DISABLED_EFFECT_IDS ?? 'seraph,moonwing,halo_light,feather_fall,stardust_veil')
+		.split(',')
+		.map((id) => id.trim())
+		.filter(Boolean),
+);
 /** Badges that make a user premium. Keep in sync with PREMIUM_BADGE_IDS in ProfileEffectIds.ts. */
 const PREMIUM_BADGES = new Set(
 	(process.env.DELIGHT_PREMIUM_BADGES ?? 'subscriber,staff')
@@ -186,6 +193,7 @@ function getEffects(url: URL): Response {
 	const premiumRows = rows.filter((row) => PREMIUM_EFFECT_IDS.has(row.effect));
 	const badges = premiumRows.length > 0 ? badgeDb.lookup(premiumRows.map((row) => row.user_id)) : {};
 	for (const row of rows) {
+		if (DISABLED_EFFECT_IDS.has(row.effect)) continue;
 		// A premium pick only shows while its owner is premium (otherwise they fall back to the default rule).
 		if (PREMIUM_EFFECT_IDS.has(row.effect) && !isPremium(badges[row.user_id])) continue;
 		result[row.user_id] = row.effect;
@@ -213,6 +221,7 @@ async function putOwnEffect(request: Request): Promise<Response> {
 	if (effect !== null && effect !== 'none' && !(typeof effect === 'string' && EFFECT_IDS.has(effect))) {
 		return json({error: 'unknown effect'}, 400);
 	}
+	if (typeof effect === 'string' && DISABLED_EFFECT_IDS.has(effect)) return json({error: 'effect unavailable'}, 400);
 	if (typeof effect === 'string' && PREMIUM_EFFECT_IDS.has(effect) && !isPremium(badgeDb.lookup([userId])[userId])) {
 		return json({error: 'premium required'}, 403);
 	}

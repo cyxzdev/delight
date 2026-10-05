@@ -2,7 +2,7 @@
 
 import type {User} from '@app/features/user/models/User';
 import ProfileEffectStore from '@app/features/user/state/ProfileEffectStore';
-import type {ProfileEffectChoice, ProfileEffectId} from '@app/features/user/utils/ProfileEffectIds';
+import {DISABLED_PROFILE_EFFECT_IDS, type ProfileEffectChoice, type ProfileEffectId} from '@app/features/user/utils/ProfileEffectIds';
 
 /**
  * Delight profile effects: animated SVG layers drawn in front of and behind a profile card
@@ -42,7 +42,7 @@ export function getProfileEffect(user: EffectUser | null | undefined): ProfileEf
 	const stored = ProfileEffectStore.getChoice(user.id);
 	if (stored === undefined) return null;
 	if (stored === 'none') return null;
-	if (stored != null) return stored;
+	if (stored != null && !DISABLED_PROFILE_EFFECT_IDS.has(stored)) return stored;
 	return getDefaultProfileEffect(user);
 }
 
@@ -50,6 +50,6 @@ export function getProfileEffect(user: EffectUser | null | undefined): ProfileEf
 export function getOwnProfileEffectChoice(user: EffectUser): ProfileEffectChoice | null | undefined {
 	const stored = ProfileEffectStore.getChoice(user.id);
 	if (stored === undefined) return undefined;
-	if (stored != null) return stored;
+	if (stored != null && !DISABLED_PROFILE_EFFECT_IDS.has(stored)) return stored;
 	return getDefaultProfileEffect(user) ?? 'none';
 }
