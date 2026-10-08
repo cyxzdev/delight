@@ -34,11 +34,14 @@ import {CROWN_AVIF, CROWN_WEBP} from '@app/features/premium/components/plutonium
 import {
 	BACK_DESCRIPTOR,
 	CLOSING_BODY_DESCRIPTOR,
+	CLOSING_GIFT_BODY_DESCRIPTOR,
+	CLOSING_GIFT_TITLE_DESCRIPTOR,
 	CLOSING_MEMBER_BODY_DESCRIPTOR,
 	CLOSING_MEMBER_TITLE_DESCRIPTOR,
 	CLOSING_TITLE_DESCRIPTOR,
 	DONATE_INSTEAD_DESCRIPTOR,
 	DONATION_HINT_DESCRIPTOR,
+	GIFT_GRACE_DESCRIPTOR,
 	GIFT_PLUTONIUM_DESCRIPTOR,
 	GIFTED_THANKS_DESCRIPTOR,
 	GRACE_DESCRIPTOR,
@@ -89,6 +92,7 @@ type CheckoutPlan = 'monthly' | 'yearly' | 'gift_1_month' | 'gift_1_year';
 const FOOTNOTE_ID = 'plutonium-page-tag-footnote';
 const MANAGE_ID = 'plutonium-page-manage';
 const COMPARE_ID = 'plutonium-page-compare';
+const SUBSCRIBE_ID = 'plutonium-page-subscribe';
 const PLACEHOLDER_PRICE = '...';
 
 function splitTemplate(text: string, token: string): [string, string] {
@@ -175,12 +179,9 @@ export const PlutoniumPage = observer(function PlutoniumPage() {
 		handleCancelPendingSubscriptionChange,
 	} = useSubscriptionActions(countryCode);
 	const {loadingRejoinCommunity, handleCommunityButtonClick} = useCommunityActions(visionaryGuild);
-	const {loadingCheckout, handleSelectPlan} = useCheckoutActions(
-		priceIds,
-		countryCode,
-		subscriptionStatus.isGiftSubscription,
-		isMobile,
-	);
+	const {loadingCheckout, handleSelectPlan} = useCheckoutActions(priceIds, countryCode, isMobile, {
+		hasGiftTime: subscriptionStatus.isGiftSubscription,
+	});
 	useEffect(() => {
 		if (!currentUser?.id) return;
 		void PremiumCommands.refreshPremiumState(countryCode ?? undefined);
@@ -199,7 +200,7 @@ export const PlutoniumPage = observer(function PlutoniumPage() {
 		!shouldShowPremiumFeatures() ||
 		(!arePremiumPurchasesAvailable() && !(hasBillingRelationship && canServiceStripeSubscriptions()));
 	const isMember = subscriptionStatus.shouldShowPremiumCard;
-	const canSubscribe = !isMember && purchasesAvailable;
+	const canSubscribe = purchasesAvailable && subscriptionStatus.canStartSubscription;
 	const savingsPercent = yearlySavingsPercent(priceIds?.monthly_amount_minor, priceIds?.yearly_amount_minor);
 	const savingsBadge = savingsPercent != null ? i18n._(SAVE_PERCENT_DESCRIPTOR, {percent: savingsPercent}) : null;
 	const uploadSizes = resolveUploadSizes(i18n.locale);
@@ -321,6 +322,9 @@ export const PlutoniumPage = observer(function PlutoniumPage() {
 		if (subscriptionStatus.gracePeriodInfo.showExpiredState) {
 			return i18n._(LAPSED_DESCRIPTOR, {premiumProductName: PREMIUM_PRODUCT_NAME});
 		}
+		if (subscriptionStatus.isGiftGrace) {
+			return i18n._(GIFT_GRACE_DESCRIPTOR, {premiumProductName: PREMIUM_PRODUCT_NAME});
+		}
 		if (subscriptionStatus.gracePeriodInfo.isInGracePeriod) return i18n._(GRACE_DESCRIPTOR);
 		if (subscriptionStatus.isGiftSubscription && subscriptionStatus.actualPremiumUntil) {
 			return i18n._(GIFTED_THANKS_DESCRIPTOR, {
@@ -330,6 +334,16 @@ export const PlutoniumPage = observer(function PlutoniumPage() {
 		}
 		return i18n._(MEMBER_THANKS_DESCRIPTOR, {premiumProductName: PREMIUM_PRODUCT_NAME});
 	})();
+	const closingTitle = !canSubscribe
+		? i18n._(CLOSING_MEMBER_TITLE_DESCRIPTOR)
+		: subscriptionStatus.isGiftSubscription
+			? i18n._(CLOSING_GIFT_TITLE_DESCRIPTOR)
+			: i18n._(CLOSING_TITLE_DESCRIPTOR);
+	const closingBody = !canSubscribe
+		? i18n._(CLOSING_MEMBER_BODY_DESCRIPTOR, {premiumProductName: PREMIUM_PRODUCT_NAME})
+		: subscriptionStatus.isGiftSubscription
+			? i18n._(CLOSING_GIFT_BODY_DESCRIPTOR)
+			: i18n._(CLOSING_BODY_DESCRIPTOR);
 	const showDonationHint = !RuntimeConfig.isSelfHosted();
 	const donationTemplate = i18n._(DONATION_HINT_DESCRIPTOR, {productName: PRODUCT_NAME, donateLink: '\u0000'});
 	const [donationBefore, donationAfter] = splitTemplate(donationTemplate, '\u0000');
@@ -363,7 +377,33 @@ export const PlutoniumPage = observer(function PlutoniumPage() {
 			</FocusRing>
 		</div>
 	);
+	const renderPurchaseHero = (lead: string | null) => (
+		<>
+			{lead && (
+				<p className={styles.heroLead} data-flx="premium.plutonium-page.hero.lead">
+					{lead}
+				</p>
+			)}
+			{pricesLoaded && (
+				<p className={styles.priceLine} data-flx="premium.plutonium-page.hero.price-line">
+					<span className={styles.price}>{monthlyLabel}</span>
+					<span className={styles.priceOr}>{i18n._(PRICE_OR_DESCRIPTOR)}</span>
+					<span className={styles.price}>{yearlyLabel}</span>
+				</p>
+			)}
+			<div className={clsx(styles.actions, styles.heroActions)} data-flx="premium.plutonium-page.hero.actions">
+				{subscribeButtons('hero')}
+			</div>
+			{purchaseBlockedNote && (
+				<p className={styles.notice} role="note" data-flx="premium.plutonium-page.hero.purchase-blocked">
+					{purchaseBlockedNote}
+				</p>
+			)}
+			{secondaryLinks}
+		</>
+	);
 	const renderHeroBody = () => {
+		if (isMember && canSubscribe) return renderPurchaseHero(memberLead);
 		if (isMember) {
 			return (
 				<>
@@ -403,26 +443,7 @@ export const PlutoniumPage = observer(function PlutoniumPage() {
 				</>
 			);
 		}
-		return (
-			<>
-				{pricesLoaded && (
-					<p className={styles.priceLine} data-flx="premium.plutonium-page.hero.price-line">
-						<span className={styles.price}>{monthlyLabel}</span>
-						<span className={styles.priceOr}>{i18n._(PRICE_OR_DESCRIPTOR)}</span>
-						<span className={styles.price}>{yearlyLabel}</span>
-					</p>
-				)}
-				<div className={clsx(styles.actions, styles.heroActions)} data-flx="premium.plutonium-page.hero.actions">
-					{subscribeButtons('hero')}
-				</div>
-				{purchaseBlockedNote && (
-					<p className={styles.notice} role="note" data-flx="premium.plutonium-page.hero.purchase-blocked">
-						{purchaseBlockedNote}
-					</p>
-				)}
-				{secondaryLinks}
-			</>
-		);
+		return renderPurchaseHero(null);
 	};
 	return (
 		<div
@@ -508,6 +529,8 @@ export const PlutoniumPage = observer(function PlutoniumPage() {
 									isVisionary={subscriptionStatus.isVisionary}
 									perksDisabled={subscriptionStatus.perksDisabled}
 									isGiftSubscription={subscriptionStatus.isGiftSubscription}
+									isGiftGrace={subscriptionStatus.isGiftGrace}
+									canSubscribe={canSubscribe}
 									storeSubscription={subscriptionStatus.storeSubscription}
 									premiumUntil={subscriptionStatus.actualPremiumUntil}
 									billingCycle={subscriptionStatus.billingCycle}
@@ -537,6 +560,7 @@ export const PlutoniumPage = observer(function PlutoniumPage() {
 									loadingRejoinCommunity={loadingRejoinCommunity}
 									scrollToPerks={() => scrollToId(COMPARE_ID)}
 									navigateToRedeemGift={PlutoniumPageCommands.openGiftInventorySettings}
+									handleStartSubscription={() => scrollToId(SUBSCRIBE_ID, 'center')}
 									handleOpenCustomerPortal={handleOpenCustomerPortal}
 									handleReactivateSubscription={handleReactivateSubscription}
 									handleCancelSubscription={handleCancelSubscriptionConfirmed}
@@ -589,17 +613,16 @@ export const PlutoniumPage = observer(function PlutoniumPage() {
 					</div>
 					{(canSubscribe || (isMember && giftPurchasesAvailable)) && (
 						<section
+							id={SUBSCRIBE_ID}
 							className={clsx(styles.glassPanel, styles.glassPanelBrand, styles.closing)}
 							data-flx="premium.plutonium-page.closing"
 						>
 							<div className={styles.closingInner}>
 								<h2 className={styles.displayHeading} data-flx="premium.plutonium-page.closing.title">
-									{canSubscribe ? i18n._(CLOSING_TITLE_DESCRIPTOR) : i18n._(CLOSING_MEMBER_TITLE_DESCRIPTOR)}
+									{closingTitle}
 								</h2>
 								<p className={styles.closingBody} data-flx="premium.plutonium-page.closing.body">
-									{canSubscribe
-										? i18n._(CLOSING_BODY_DESCRIPTOR)
-										: i18n._(CLOSING_MEMBER_BODY_DESCRIPTOR, {premiumProductName: PREMIUM_PRODUCT_NAME})}
+									{closingBody}
 								</p>
 								<div
 									className={clsx(styles.actions, styles.closingActions)}
