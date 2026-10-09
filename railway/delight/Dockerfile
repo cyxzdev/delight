@@ -6,4 +6,4 @@ COPY delight/badges/ /badges/
 COPY delight/frames/ /frames/
 COPY delight/effects/ /effects/
 ENV DATA_DIR=/data DELIGHT_BADGE_ASSET_DIR=/badges DELIGHT_FRAME_ASSET_DIR=/frames DELIGHT_EFFECT_ASSET_DIR=/effects HOST=::
-CMD ["sh", "-c", "PORT=3001 bun run /app/admin-proxy.ts & PORT=3000 exec bun run /app/server.ts"]
+CMD ["sh", "-c", "if [ -f /data/.restore.tgz ]; then tar xzf /data/.restore.tgz -C /data && rm /data/.restore.tgz; fi; PORT=3001 bun run /app/admin-proxy.ts & PORT=3000 exec bun run /app/server.ts"]

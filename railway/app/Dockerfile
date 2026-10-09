@@ -30,7 +30,7 @@ COPY tools/ci/ ./tools/ci/
 COPY fluxer_app/ ./fluxer_app/
 RUN cd fluxer_app && NODE_OPTIONS=--max-old-space-size=8192 pnpm build && find dist -name '*.map' -delete
 
-FROM ghcr.io/fluxerapp/fluxer-app-proxy-self-hosted:v1
+FROM ghcr.io/fluxerapp/fluxer-app-proxy-self-hosted@sha256:440d1bb9100c11698ca85f6a300cf6df54ecdd795a8b18728a8630d67e424071
 USER root
 RUN rm -rf /srv/app/static
 COPY --from=app-build /usr/src/app/fluxer_app/dist /srv/app/static

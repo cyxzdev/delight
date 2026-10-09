@@ -1,4 +1,6 @@
 #!/bin/sh
+# A data archive dropped at /data/.restore.tgz (e.g. over railway ssh) is unpacked once before start.
+if [ -f /data/.restore.tgz ]; then find /data -mindepth 1 -maxdepth 1 ! -name .restore.tgz -exec rm -rf {} + && tar xzf /data/.restore.tgz -C /data && rm /data/.restore.tgz; fi
 init() {
 	buckets="fluxer fluxer-uploads fluxer-reports fluxer-harvests"
 	for attempt in $(seq 1 120); do
