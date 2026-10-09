@@ -25,10 +25,30 @@ COPY fluxer_app/pkgs/livekit-client/package.json ./fluxer_app/pkgs/livekit-clien
 RUN pnpm install --frozen-lockfile --filter fluxer_app...
 
 COPY tsconfigs ./tsconfigs
-COPY packages/ ./packages/
+COPY packages/constants/ ./packages/constants/
+COPY packages/date_utils/ ./packages/date_utils/
+COPY packages/geo_utils/ ./packages/geo_utils/
+COPY packages/instance_bootstrap/ ./packages/instance_bootstrap/
+COPY packages/limits/ ./packages/limits/
+COPY packages/schema/ ./packages/schema/
+COPY packages/snowflake/ ./packages/snowflake/
+COPY packages/voice_engine_v2/ ./packages/voice_engine_v2/
+COPY packages/fonts/css/ ./packages/fonts/css/
+COPY packages/fonts/files/ ./packages/fonts/files/
+COPY packages/fonts/NOTICE.md packages/fonts/LICENSE-IBM-PLEX.txt ./packages/fonts/
+COPY packages/markdown_parser/rust/Cargo.toml ./packages/markdown_parser/rust/
+COPY packages/markdown_parser/rust/.cargo/ ./packages/markdown_parser/rust/.cargo/
+COPY packages/markdown_parser/rust/benches/parser.rs ./packages/markdown_parser/rust/benches/
+COPY packages/markdown_parser/rust/src/ ./packages/markdown_parser/rust/src/
 COPY tools/ci/ ./tools/ci/
-COPY fluxer_app/ ./fluxer_app/
-RUN cd fluxer_app && npm_config_verify_deps_before_run=false NODE_OPTIONS=--max-old-space-size=8192 pnpm build && find dist -name '*.map' -delete
+COPY fluxer_app/index.html fluxer_app/lingui.config.js fluxer_app/package.json fluxer_app/postcss.config.js fluxer_app/rspack.config.mjs fluxer_app/tsconfig.base.json fluxer_app/tsconfig.json ./fluxer_app/
+COPY fluxer_app/pkgs/list_utils/ ./fluxer_app/pkgs/list_utils/
+COPY fluxer_app/pkgs/number_utils/ ./fluxer_app/pkgs/number_utils/
+COPY fluxer_app/pkgs/livekit-client/ ./fluxer_app/pkgs/livekit-client/
+COPY fluxer_app/rust/ ./fluxer_app/rust/
+COPY fluxer_app/scripts/ ./fluxer_app/scripts/
+COPY fluxer_app/src/ ./fluxer_app/src/
+RUN cd fluxer_app && NODE_OPTIONS=--max-old-space-size=8192 pnpm build && find dist -name '*.map' -delete
 
 FROM ghcr.io/fluxerapp/fluxer-app-proxy-self-hosted@sha256:440d1bb9100c11698ca85f6a300cf6df54ecdd795a8b18728a8630d67e424071
 USER root
