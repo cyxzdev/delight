@@ -372,6 +372,7 @@ async function getBadgeAsset(pathname: string): Promise<Response> {
 const BADGE_WRITE = /^\/badges\/(\d{1,20})(?:\/([a-z_]+))?$/;
 
 Bun.serve({
+	hostname: process.env.HOST || "0.0.0.0",
 	port: PORT,
 	async fetch(request) {
 		const url = new URL(request.url);

@@ -5,6 +5,7 @@ const PRODUCT = process.env.DELIGHT_PRODUCT_NAME || 'Delight';
 const WORD = /\bFluxer\b/g;
 
 Bun.serve({
+	hostname: process.env.HOST || "0.0.0.0",
 	port: Number(process.env.PORT || 3001),
 	async fetch(request) {
 		const url = new URL(request.url);
