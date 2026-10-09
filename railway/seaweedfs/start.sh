@@ -21,4 +21,4 @@ init() {
 	echo "seaweedfs init failed" >&2
 }
 init &
-exec weed server -s3 -dir=/data -master.telemetry=false -ip.bind=:: -ip=seaweedfs.railway.internal
+exec weed server -s3 -dir=/data -master.telemetry=false -ip.bind=0.0.0.0 -ip=seaweedfs

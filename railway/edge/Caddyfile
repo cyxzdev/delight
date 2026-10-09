@@ -16,37 +16,37 @@
 	}
 
 	handle_path /api/* {
-		reverse_proxy {$API_HOST}:8080
+		reverse_proxy api:8080
 	}
 
 	handle /gateway {
 		rewrite * /
-		reverse_proxy {$GATEWAY_HOST}:8080
+		reverse_proxy gateway:8080
 	}
 
 	handle_path /gateway/* {
-		reverse_proxy {$GATEWAY_HOST}:8080
+		reverse_proxy gateway:8080
 	}
 
 	handle_path /media/* {
-		reverse_proxy {$MEDIA_PROXY_HOST}:8080
+		reverse_proxy media-proxy:8080
 	}
 
 	handle_path /livekit/* {
-		reverse_proxy {$LIVEKIT_HOST}:7880
+		reverse_proxy livekit:7880
 	}
 
 	handle_path /delight/* {
-		reverse_proxy {$DELIGHT_HOST}:3000
+		reverse_proxy delight:3000
 	}
 
 	handle /admin {
 		rewrite * /
-		reverse_proxy {$DELIGHT_HOST}:3001
+		reverse_proxy delight:3001
 	}
 
 	handle_path /admin/* {
-		reverse_proxy {$DELIGHT_HOST}:3001
+		reverse_proxy delight:3001
 	}
 
 	@staticAssets path /web/* /emoji/* /libs/* /avatars/* /badges/* /desktop/*
@@ -61,17 +61,17 @@
 	}
 
 	handle /.well-known/fluxer {
-		reverse_proxy {$API_HOST}:8080
+		reverse_proxy api:8080
 	}
 
 	handle {
-		reverse_proxy {$APP_HOST}:8080
+		reverse_proxy app-proxy:8080
 	}
 }
 
 # Internal: app-proxy reads instance discovery from here.
 :8088 {
 	handle /.well-known/fluxer {
-		reverse_proxy {$API_HOST}:8080
+		reverse_proxy api:8080
 	}
 }

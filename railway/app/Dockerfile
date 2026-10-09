@@ -35,4 +35,4 @@ USER root
 RUN rm -rf /srv/app/static
 COPY --from=app-build /usr/src/app/fluxer_app/dist /srv/app/static
 USER 65532:65532
-ENV FLUXER_APP_PROXY_HOST="::"
+ENV FLUXER_APP_PROXY_HOST="0.0.0.0"
