@@ -48,6 +48,7 @@ COPY fluxer_app/pkgs/livekit-client/ ./fluxer_app/pkgs/livekit-client/
 COPY fluxer_app/rust/ ./fluxer_app/rust/
 COPY fluxer_app/scripts/ ./fluxer_app/scripts/
 COPY fluxer_app/src/ ./fluxer_app/src/
+ENV pnpm_config_verify_deps_before_run=false npm_config_verify_deps_before_run=false
 RUN cd fluxer_app && NODE_OPTIONS=--max-old-space-size=8192 pnpm build && find dist -name '*.map' -delete
 
 FROM ghcr.io/fluxerapp/fluxer-app-proxy-self-hosted@sha256:440d1bb9100c11698ca85f6a300cf6df54ecdd795a8b18728a8630d67e424071
