@@ -42,7 +42,6 @@ import type {
 	InstanceAgePolicy,
 	InstanceAppPublic,
 	InstanceCommunity,
-	InstanceDiscoveryResponse,
 	InstanceFeatures,
 	InstanceRegistration,
 	InstanceServices,
@@ -58,19 +57,7 @@ export {
 	runtimeConfigSnapshotsAreSameInstance,
 	runtimeInstanceKey,
 } from '@app/features/app/state/InstanceSnapshotStore';
-export type {
-	GifProvider,
-	GifProviderInfo,
-	InstanceCommunity,
-	InstanceDiscoveryResponse,
-	InstanceFeatures,
-	InstanceRegistration,
-	InstanceServices,
-	InstanceSnapshotResolution,
-	InstanceSnapshotResolveRequest,
-	InstanceSsoConfig,
-	RuntimeConfigSnapshot,
-};
+export type {InstanceSsoConfig, RuntimeConfigSnapshot};
 
 export interface ApplyRuntimeConfigSnapshotRequest {
 	snapshot: RuntimeConfigSnapshot;
@@ -815,6 +802,10 @@ class RuntimeConfig {
 		return this.appPublic.branding.product_name;
 	}
 
+	get premiumProductFullName(): string {
+		return `${this.productName} ${this.premiumProductName}`;
+	}
+
 	get iconUrl(): string | null {
 		return this.appPublic.branding.icon_url;
 	}
@@ -845,6 +836,10 @@ class RuntimeConfig {
 
 	get privacyUrl(): string | null {
 		return this.appPublic.legal.privacy_url;
+	}
+
+	get guidelinesUrl(): string | null {
+		return this.appPublic.legal.guidelines_url;
 	}
 
 	get collectDateOfBirthOnRegistration(): boolean {

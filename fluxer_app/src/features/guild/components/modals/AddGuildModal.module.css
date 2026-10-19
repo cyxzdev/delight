@@ -206,11 +206,6 @@
 	}
 }
 
-.iconHint {
-	color: var(--text-tertiary);
-	font-size: 0.75rem;
-}
-
 .iconError {
 	margin-top: 0.5rem;
 	color: var(--status-danger);

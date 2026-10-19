@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {readdirSync, readFileSync, statSync} from 'node:fs';
+import {readdirSync, readFileSync} from 'node:fs';
 import {join, relative} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {parse} from '@babel/parser';
@@ -28,18 +28,21 @@ interface HookOrderFinding {
 
 const SRC_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx']);
+const HOOK_CALL_PATTERN = /\buse(?:[A-Z0-9]|\b)/;
 
 function listSourceFiles(directory: string): Array<string> {
-	return readdirSync(directory).flatMap((entry) => {
-		const filePath = join(directory, entry);
-		const stats = statSync(filePath);
-		if (stats.isDirectory()) {
+	return readdirSync(directory, {withFileTypes: true}).flatMap((entry) => {
+		const filePath = join(directory, entry.name);
+		if (entry.isDirectory()) {
+			if (entry.name === '__fixtures__' || entry.name === '__tests__') {
+				return [];
+			}
 			return listSourceFiles(filePath);
 		}
-		if (!stats.isFile()) {
+		if (!entry.isFile() || /\.(?:test|spec)\.tsx?$/.test(entry.name)) {
 			return [];
 		}
-		const extension = filePath.endsWith('.tsx') ? '.tsx' : filePath.endsWith('.ts') ? '.ts' : '';
+		const extension = entry.name.endsWith('.tsx') ? '.tsx' : entry.name.endsWith('.ts') ? '.ts' : '';
 		if (!SOURCE_EXTENSIONS.has(extension)) {
 			return [];
 		}
@@ -179,6 +182,9 @@ function findHookOrderHazards(): Array<HookOrderFinding> {
 	const findings: Array<HookOrderFinding> = [];
 	for (const file of listSourceFiles(SRC_ROOT)) {
 		const source = readFileSync(file, 'utf8');
+		if (!HOOK_CALL_PATTERN.test(source)) {
+			continue;
+		}
 		const ast = parse(source, {
 			sourceType: 'module',
 			plugins: file.endsWith('.tsx') ? ['typescript', 'jsx'] : ['typescript'],

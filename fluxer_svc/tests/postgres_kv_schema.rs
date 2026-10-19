@@ -2,7 +2,6 @@
 
 use deadpool_postgres::Pool;
 use fluxer_svc::postgres::{PostgresConfig, connect, ensure_kv_schema};
-use std::net::TcpListener;
 use std::process::{Command, Stdio};
 use std::time::Duration;
 
@@ -35,15 +34,18 @@ fn docker(args: &[&str]) -> anyhow::Result<()> {
     )
 }
 
-fn free_port() -> anyhow::Result<u16> {
-    let listener = TcpListener::bind("127.0.0.1:0")?;
-    Ok(listener.local_addr()?.port())
+fn postgres_host() -> String {
+    std::env::var("FLUXER_TEST_POSTGRES_HOST").unwrap_or_else(|_| "127.0.0.1".to_owned())
+}
+
+fn postgres_bind_address() -> String {
+    std::env::var("FLUXER_TEST_POSTGRES_BIND_ADDRESS").unwrap_or_else(|_| "127.0.0.1".to_owned())
 }
 
 fn postgres_config(port: u16, kv_table: &str, max_connections: usize) -> PostgresConfig {
     PostgresConfig {
         url: None,
-        host: "127.0.0.1".to_owned(),
+        host: postgres_host(),
         port,
         database: "fluxer".to_owned(),
         username: "fluxer".to_owned(),
@@ -56,7 +58,8 @@ fn postgres_config(port: u16, kv_table: &str, max_connections: usize) -> Postgre
     }
 }
 
-fn start_postgres(container: &str, port: u16) -> anyhow::Result<()> {
+fn start_postgres(container: &str) -> anyhow::Result<u16> {
+    let port_binding = format!("{}::5432", postgres_bind_address());
     docker(&[
         "run",
         "-d",
@@ -69,13 +72,29 @@ fn start_postgres(container: &str, port: u16) -> anyhow::Result<()> {
         "-e",
         "POSTGRES_DB=fluxer",
         "-p",
-        &format!("127.0.0.1:{port}:5432"),
+        &port_binding,
         "postgres:16-alpine",
         "-c",
         "fsync=off",
         "-c",
         "synchronous_commit=off",
-    ])
+    ])?;
+
+    let output = Command::new("docker")
+        .args(["port", container, "5432/tcp"])
+        .output()?;
+    if !output.status.success() {
+        anyhow::bail!(
+            "docker port {container} 5432/tcp failed: {}",
+            String::from_utf8_lossy(&output.stderr).trim()
+        );
+    }
+    String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .next()
+        .and_then(|binding| binding.rsplit(':').next())
+        .and_then(|port| port.trim().parse().ok())
+        .ok_or_else(|| anyhow::anyhow!("docker did not publish a usable PostgreSQL port"))
 }
 
 async fn wait_for_postgres(container: &str, port: u16) -> anyhow::Result<()> {
@@ -171,9 +190,8 @@ async fn concurrent_boots_all_ensure_the_kv_schema() -> anyhow::Result<()> {
         eprintln!("skipping: docker is not available");
         return Ok(());
     }
-    let port = free_port()?;
-    let container = format!("fluxer-kvschema-boot-{}-{port}", std::process::id());
-    start_postgres(&container, port)?;
+    let container = format!("fluxer-kvschema-boot-{}", std::process::id());
+    let port = start_postgres(&container)?;
     let result = async {
         wait_for_postgres(&container, port).await?;
         let mut handles = Vec::new();
@@ -207,9 +225,8 @@ async fn boot_survives_a_peer_that_creates_the_table_without_the_schema_lock() -
         eprintln!("skipping: docker is not available");
         return Ok(());
     }
-    let port = free_port()?;
-    let container = format!("fluxer-kvschema-race-{}-{port}", std::process::id());
-    start_postgres(&container, port)?;
+    let container = format!("fluxer-kvschema-race-{}", std::process::id());
+    let port = start_postgres(&container)?;
     let result = async {
         wait_for_postgres(&container, port).await?;
         let helper = connect(&postgres_config(port, KV_TABLE_HELPER, 4)).await?;
@@ -246,9 +263,8 @@ async fn backfills_message_partition_keys_once_and_never_scans_again() -> anyhow
         eprintln!("skipping: docker is not available");
         return Ok(());
     }
-    let port = free_port()?;
-    let container = format!("fluxer-kvschema-backfill-{}-{port}", std::process::id());
-    start_postgres(&container, port)?;
+    let container = format!("fluxer-kvschema-backfill-{}", std::process::id());
+    let port = start_postgres(&container)?;
     let result = async {
         wait_for_postgres(&container, port).await?;
         let helper = connect(&postgres_config(port, KV_TABLE_HELPER, 4)).await?;

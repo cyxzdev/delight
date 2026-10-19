@@ -546,6 +546,7 @@ const AppPublicConfigResponse = z.object({
 	legal: z.object({
 		terms_url: z.string().nullable(),
 		privacy_url: z.string().nullable(),
+		guidelines_url: z.string().nullable(),
 	}),
 	registration: z.object({
 		collect_date_of_birth: z.boolean(),
@@ -587,7 +588,9 @@ const AppPublicConfigUpdateRequest = z.object({
 		.object({
 			terms_url: z.string().trim().max(2048).nullish(),
 			privacy_url: z.string().trim().max(2048).nullish(),
+			guidelines_url: z.string().trim().max(2048).refine(isAbsoluteHttpUrl).nullish(),
 		})
+		.register(schemaMetadata, {preserveNullFields: true})
 		.nullish(),
 	registration: z
 		.object({
@@ -1266,9 +1269,6 @@ const AdminGuildResponseSchema = z.object({
 	banner: createStringType(1, 256).nullable(),
 	member_count: Int32Type,
 	nsfw_level: NSFWLevelSchema.optional(),
-	nsfw: z.boolean().optional(),
-	content_warning_level: ContentWarningLevelSchema.optional(),
-	content_warning_text: createStringType(0, CONTENT_WARNING_TEXT_MAX_LENGTH).nullable().optional(),
 });
 const AdminGuildChannelSummarySchema = z.object({
 	id: SnowflakeStringType,

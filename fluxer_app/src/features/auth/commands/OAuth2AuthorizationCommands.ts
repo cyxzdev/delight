@@ -27,10 +27,6 @@ async function requestAuthorizations(): Promise<Array<OAuth2Authorization>> {
 	}));
 }
 
-async function requestAuthorizationRemoval(applicationId: string): Promise<void> {
-	await http.delete(Endpoints.OAUTH_AUTHORIZATION(applicationId));
-}
-
 async function requestAuthorizationBulkRemoval(applicationIds: Array<string>): Promise<void> {
 	await http.post(Endpoints.OAUTH_AUTHORIZATIONS_REVOKE, {
 		body: {
@@ -49,14 +45,6 @@ export async function listAuthorizations(): Promise<Array<OAuth2Authorization>> 
 		return await requestAuthorizations();
 	} catch (error) {
 		rethrowAuthorizationFailure('Failed to list OAuth2 authorizations:', error);
-	}
-}
-
-export async function deauthorize(applicationId: string): Promise<void> {
-	try {
-		await requestAuthorizationRemoval(applicationId);
-	} catch (error) {
-		rethrowAuthorizationFailure('Failed to deauthorize application:', error);
 	}
 }
 

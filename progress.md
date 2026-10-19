@@ -110,6 +110,59 @@
 - API, app, and schema TypeScript checks passed. App CSS module declarations were regenerated to include the new report page class before its successful typecheck.
 - The local dev stack recovered after a long Rspack rebuild; API health and the app proxy both returned HTTP 200. No commit or push was performed.
 
-## Next
+## Historical next checkpoint (superseded 2026-10-19)
 
 Checkpoint 5 is staged for the user's review in D:\Haze\delight; later upstream work remains unstaged. Continue at upstream commit 111 (`f390e610b`), then inspect commits 112–113 and proceed through the remaining 200 post-base commits. Keep the original 11 staged paths preserved, finish the requested channel type icons and final audit/verification, and do not commit or push. Do not report the full task complete before those steps are finished.
+
+## Upstream checkpoint 8 — commit 113 (working tree, unstaged)
+
+- Current pushed base: `79b499382` (`origin/delight`); the checkout was clean before this checkpoint. Source tree evidence confirms commits 111 and 112 are already included: the CRLF-aware docs check is present and NCMEC implementation files are absent. The previous `Next` entries claiming commit 111 was next were stale.
+- Applied upstream commit `a5c1362f4` (“self-hosting: use instance contacts and live product name”) on the actual Delight checkout. The source patch applied cleanly except for `I18nDisplayConstants.ts`, `LanguageTab.tsx`, and all 34 locale PO catalogs, which required brand-aware merging.
+- Retained Delight-specific `I18nDisplayConstants` values used by existing features (product API/HQ names, canary label, support-email policy, and translation contact aliases). Added the upstream example report username constant without removing local exports. Updated language settings to use the active instance product name, and retained upstream runtime support for the community-guidelines URL and full premium display name.
+- Added the five new upstream message entries from each target locale catalog to all 34 existing catalogs, preserving their translations and the rest of each Delight catalog. Ran `lingui compile --strict`; it passed. No AI translation or external model service was invoked.
+- Added commented optional `DELIGHT_ADMIN_USER_IDS` and `DELIGHT_FLUXER_ORIGIN` entries to the self-hosting `.env.example`. This preserves the local sidecar and makes its variables discoverable to the existing deployment coverage test.
+- Verification passed: API focused group 12 files / 355 tests (16 optional Postgres cases skipped in the combined run), then the Postgres-enabled `InstanceConfigRepository` rerun passed 75/75 with container-host overrides. App instance snapshot and branding tests 2 files / 71; errors 76; email 407; schema full suite 38 files / 1,075; config full suite 8 files / 309; desktop `OpenExternal` 5; Rust admin crate; docs tests 33; API, app, and desktop TypeScript checks; Lingui compile; docs sidebar (99 pages), docs schema (4,131 field comparisons), and docs style (104 pages / 2,067 tables).
+- The first combined API run exposed that the ephemeral PostgreSQL container was bound to loopback and unreachable from the workspace container. Added the same `FLUXER_TEST_POSTGRES_HOST` and `FLUXER_TEST_POSTGRES_BIND_ADDRESS` overrides already used by the report repository test, with loopback defaults. The rerun using `host.docker.internal` / `0.0.0.0` passed all 75 tests.
+- The full `VerifyDocsCoverage.ts` still exits nonzero with 221 problems, improved from the prior 223. It reports two audit tables parsed as empty (153 actions consequently shown as undocumented) and self-hosting installer/config documentation environment mismatches. Registered-route/OpenAPI coverage, Gateway event and opcode checks, error registry, rate limits, bot capability, and security-field checks passed. Resolve the remaining docs coverage work during the final audit.
+- Runtime after changes: `http://127.0.0.1:8088/` 200; `/delight/health` 200; API `/_health` on 8080 returned 200; unauthenticated `PUT /delight/effects/@me` returned the expected 401 instead of 405. Prior browser testing already verified Rspack `hot`, `liveReload`, and `hash`/`ok` updates over `/ws`, and the API/Worker TS polling restarts. A fresh host probe to Gateway `/_health/ready` returned 403; investigate if this endpoint is part of the final runtime verification.
+- Git state at this checkpoint: 308 changed/untracked paths, zero staged paths, and no unresolved conflicts. Codex did not commit or push. The next source commit is `4db13b037`; 197 first-parent commits remain after 113.
+
+
+## Upstream checkpoint 9 — commit 114 (`4db13b037`)
+
+- Applied commit 114 from upstream parent `a5c1362f4`. The only patch conflicts were the 34 PO locale catalogs; merged all three new message entries into each catalog while retaining existing Delight translations. `lingui compile --strict` passed.
+- Focused verification: API 7 files / 101 tests; email 2 files / 479 tests; LocaleService 101; i18n CompileMessage 7; OpenAPI generator 24. API and app TypeScript checks passed.
+- The generated OpenAPI test needed 185 seconds, so it passed with an extended five-minute hook/test timeout; the default Vitest hook timeout was too short for this checkout.
+- After upstream changes, the Rspack child process stopped responding and app routes returned 502. Restarted only the app task through its existing supervisor; app proxy `8088` and frontend `3000` now both return HTTP 200. API and sidecar remained running during recovery.
+- Current state at checkpoint: `HEAD` and `origin/delight` remain `79b499382`; 357 changed/untracked paths, zero staged paths, no unresolved conflicts. Codex did not commit or push. 196 upstream first-parent commits remain; next is `6534ee430` (admin resolution requirement/report layout).
+- Still pending: 221 documentation coverage reports, Gateway readiness follow-up, full theme/RTL/responsive visual check, and final audit. Do not report the sync complete.
+
+
+## Upstream checkpoint 10 — commit 115 (`6534ee430`)
+
+- Integrated the admin moderation/report workflow and related admin layout/API/docs changes. Verified all 57 upstream paths against a three-way merge from parent `4db13b037`: 56 files merged and the new `fluxer_admin/src/utils/plural.rs` was added; zero overlap conflicts. Delight-specific changes were retained.
+- `cargo fmt --check --manifest-path fluxer_admin/Cargo.toml` passed. Full `cargo test -p fluxer_admin` passed, including the report-resolution form checks and integration suites.
+- API tests passed for `AdminGuildRoutes.test.ts` (14) and `ModerationEvents.test.ts` (9), total 23/23. API `tsc --noEmit` passed.
+- Runtime remained healthy after this server-rendered admin change: app proxy `8088` = 200 and API `8080/_health` = 200.
+- Current state: 410 changed/untracked paths, zero staged, zero unmerged; `HEAD`/`origin/delight` = `79b499382`. No commit/push. 195 first-parent commits remain; next is `a19002652` (docs wording).
+
+
+## Upstream checkpoint 11 — commit 116 (`a19002652`)
+
+- Applied the upstream British-English wording sweep to eight documentation pages. No product identifiers or Delight branding changed.
+- Docs tests passed 33/33. `VerifyDocsStyle.ts` passed for 104 pages and 2,067 tables with no new style findings.
+- Existing full documentation coverage audit still has 221 known findings (admin-action table parser and self-hosting config coverage); commit 116 does not alter those checks.
+- Next upstream commit 117 is `93d1f8af4` (“remove dead code”), with a large deletion set. Review its deleted paths against the current Delight tree and imports before applying. 194 first-parent commits remain after 116.
+
+
+## Upstream checkpoint 12 — commit 117 (`93d1f8af4`) — completed
+
+- Integrated source commit 117, `refactor: remove dead code (#3337)`, into the local Delight project and stopped at the user's requested boundary. Commit 118 has not been started.
+- Audited upstream deletions against current imports and local UI routes. Preserved two live Delight-only files removed upstream: `FluxerLogo.tsx` and `ClientDeveloperSettingsTab.tsx`.
+- Reconciled all 34 application PO catalogs with upstream's cleanup while keeping current Delight translations and active local-only messages; strict Lingui compilation passed.
+- The full app suite passed: 105 files, 1,421 tests. `fluxer_app` TypeScript check passed. Focused HookOrder and LegacyAppStorageKeyMap suites passed after reducing redundant source scans and excluding test fixtures from the hook-order audit.
+- Rust desktop CI tests passed 50/50. The complete `cargo test --workspace` passed with all test binaries and integration targets green; `cargo fmt --all -- --check` also passed. The workspace emitted existing deprecation warnings for `Atomic::fetch_update` but no test failures.
+- `fluxer_svc` tests passed 49/49 (45 unit, 3 schema-boot integration, 1 prepared-statements integration) with Docker-assigned ephemeral ports and `FLUXER_TEST_POSTGRES_HOST=host.docker.internal` / `FLUXER_TEST_POSTGRES_BIND_ADDRESS=0.0.0.0` for this devcontainer run.
+- The `fluxer_app_proxy` SPA index suite passed 32/32 after pinning `media_endpoint=None` in the shared test fixture and expecting Delight's shipped page title.
+- Current source range after commit 117 contains 193 first-parent commits. The next is 118 (`82abd03a371c85a5194deadcf0c1bdc0564dad0b`, `feat(reports): delete reports and configure retention (#3338)`). Per the user's instruction, wait at this boundary and do not begin it.
+- `HEAD` and `origin/delight` remain `79b499382`; Codex did not create a commit or push. At the final status check, Git showed 1,721 staged paths, 53 unstaged tracked paths, one untracked Delight-only tab, and zero unmerged paths. Do not alter the existing index or stash.

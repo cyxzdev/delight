@@ -897,7 +897,7 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         let served = read_document(response).await;
 
-        assert!(served.contains("<title>Fluxer</title>"));
+        assert!(served.contains("<title>Delight</title>"));
         assert!(served.contains(r#"<meta name="description""#));
     }
 
@@ -1069,6 +1069,7 @@ mod tests {
             HttpEndpoint::parse("TEST_STATIC_CDN_ENDPOINT", endpoint)
                 .expect("test static CDN endpoint must be a valid HTTP endpoint")
         });
+        config.media_endpoint = None;
         config.self_hosted = self_hosted;
 
         let csp = Arc::new(

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {readdirSync, readFileSync, statSync} from 'node:fs';
+import {readdirSync, readFileSync} from 'node:fs';
 import {dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {AppStorageKey} from '@app/features/platform/state/AppStorageKeys';
@@ -11,14 +11,14 @@ const PERSISTED_STORE_PATTERN = /makePersistent\(\s*this,\s*([A-Za-z_.']+)/g;
 
 function collectSourceFiles(directory: string): Array<string> {
 	const files: Array<string> = [];
-	for (const name of readdirSync(directory)) {
-		const path = join(directory, name);
+	for (const entry of readdirSync(directory, {withFileTypes: true})) {
+		const path = join(directory, entry.name);
 		if (EXCLUDED_PATH_PATTERN.test(path)) {
 			continue;
 		}
-		if (statSync(path).isDirectory()) {
+		if (entry.isDirectory()) {
 			files.push(...collectSourceFiles(path));
-		} else if (name.endsWith('.ts') || name.endsWith('.tsx')) {
+		} else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
 			files.push(path);
 		}
 	}
@@ -40,7 +40,13 @@ function resolveStoreName(expression: string, source: string): string {
 
 export const STORES_WITHOUT_DEPLOYED_DATA: ReadonlySet<string> = new Set(['SourceMaps', 'BackgroundAccountPresence']);
 
+let cachedPersistedStoreNames: ReadonlyArray<string> | null = null;
+
 export function readPersistedStoreNames(): Array<string> {
+	if (cachedPersistedStoreNames) {
+		return [...cachedPersistedStoreNames];
+	}
+
 	const names = new Set<string>();
 	for (const path of collectSourceFiles(SOURCE_ROOT)) {
 		const source = readFileSync(path, 'utf8');
@@ -48,5 +54,6 @@ export function readPersistedStoreNames(): Array<string> {
 			names.add(resolveStoreName(match[1]!, source));
 		}
 	}
-	return [...names].sort();
+	cachedPersistedStoreNames = [...names].sort();
+	return [...cachedPersistedStoreNames];
 }

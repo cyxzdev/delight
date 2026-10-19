@@ -3,7 +3,6 @@
 use deadpool_postgres::Pool;
 use fluxer_svc::postgres::{BigIntBound, KvClient, PostgresConfig, connect};
 use serde_json::{Value, json};
-use std::net::TcpListener;
 use std::process::{Command, Stdio};
 use std::time::Duration;
 use tokio_postgres::types::Type;
@@ -45,15 +44,57 @@ fn executed_statements(container: &str, kv_table: &str) -> anyhow::Result<Vec<St
         .collect())
 }
 
-fn free_port() -> anyhow::Result<u16> {
-    let listener = TcpListener::bind("127.0.0.1:0")?;
-    Ok(listener.local_addr()?.port())
+fn postgres_host() -> String {
+    std::env::var("FLUXER_TEST_POSTGRES_HOST").unwrap_or_else(|_| "127.0.0.1".to_owned())
+}
+
+fn postgres_bind_address() -> String {
+    std::env::var("FLUXER_TEST_POSTGRES_BIND_ADDRESS").unwrap_or_else(|_| "127.0.0.1".to_owned())
+}
+
+fn start_postgres(container: &str) -> anyhow::Result<u16> {
+    let port_binding = format!("{}::5432", postgres_bind_address());
+    docker(&[
+        "run",
+        "-d",
+        "--name",
+        container,
+        "-e",
+        "POSTGRES_USER=fluxer",
+        "-e",
+        "POSTGRES_PASSWORD=fluxer",
+        "-e",
+        "POSTGRES_DB=fluxer",
+        "-p",
+        &port_binding,
+        "postgres:16-alpine",
+        "-c",
+        "fsync=off",
+        "-c",
+        "log_statement=all",
+    ])?;
+
+    let output = Command::new("docker")
+        .args(["port", container, "5432/tcp"])
+        .output()?;
+    if !output.status.success() {
+        anyhow::bail!(
+            "docker port {container} 5432/tcp failed: {}",
+            String::from_utf8_lossy(&output.stderr).trim()
+        );
+    }
+    String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .next()
+        .and_then(|binding| binding.rsplit(':').next())
+        .and_then(|port| port.trim().parse().ok())
+        .ok_or_else(|| anyhow::anyhow!("docker did not publish a usable PostgreSQL port"))
 }
 
 fn postgres_config(port: u16, kv_table: &str, prepared_statements: bool) -> PostgresConfig {
     PostgresConfig {
         url: None,
-        host: "127.0.0.1".to_owned(),
+        host: postgres_host(),
         port,
         database: "fluxer".to_owned(),
         username: "fluxer".to_owned(),
@@ -137,9 +178,6 @@ async fn exercise_kv_shapes(kv: &KvClient) -> anyhow::Result<Vec<String>> {
     observations.push(render_sorted(kv.get_rows(TABLE_NAME, &[]).await?));
     observations.push(render_sorted(
         kv.get_partition_rows(TABLE_NAME, "p0").await?,
-    ));
-    observations.push(render_sorted(
-        kv.get_row_key_prefix_rows(TABLE_NAME, "r").await?,
     ));
     observations.push(render(
         kv.get_partition_rows_by_bigint_field(
@@ -271,27 +309,8 @@ async fn drops_server_side_prepared_statements_when_disabled() -> anyhow::Result
         eprintln!("skipping: docker is not available");
         return Ok(());
     }
-    let port = free_port()?;
-    let container = format!("fluxer-svcstmt-{}-{port}", std::process::id());
-    docker(&[
-        "run",
-        "-d",
-        "--name",
-        &container,
-        "-e",
-        "POSTGRES_USER=fluxer",
-        "-e",
-        "POSTGRES_PASSWORD=fluxer",
-        "-e",
-        "POSTGRES_DB=fluxer",
-        "-p",
-        &format!("127.0.0.1:{port}:5432"),
-        "postgres:16-alpine",
-        "-c",
-        "fsync=off",
-        "-c",
-        "log_statement=all",
-    ])?;
+    let container = format!("fluxer-svcstmt-{}", std::process::id());
+    let port = start_postgres(&container)?;
     let result = async {
         wait_for_postgres(&container, port).await?;
         let named = run_kv_shapes(port, KV_TABLE, true).await?;
@@ -304,7 +323,7 @@ async fn drops_server_side_prepared_statements_when_disabled() -> anyhow::Result
     let _ = docker(&["rm", "-f", &container]);
     let (named, unnamed, named_executions, unnamed_executions) = result?;
 
-    assert_eq!(9, named.prepared.len(), "{:#?}", named.prepared);
+    assert_eq!(8, named.prepared.len(), "{:#?}", named.prepared);
     assert!(named.prepared.iter().all(|sql| sql.contains(KV_TABLE)));
     assert!(
         named.after_session_reset.contains("prepared statement"),

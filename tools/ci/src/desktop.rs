@@ -3334,7 +3334,6 @@ const WINDOWS_NATIVE_ADDON_STEMS: &[&str] = &[
     "win-process-loopback",
     "win-clipboard",
     "win-shell",
-    "win-toast",
     "windows-input-hook",
     "platform-info",
 ];
@@ -6222,19 +6221,20 @@ mod tests {
     const BUILD_DESKTOP_WORKFLOW: &str =
         include_str!("../../../.github/workflows/build-desktop.yaml");
 
-    fn workflow_job(job: &str) -> &'static str {
+    fn workflow_job(job: &str) -> String {
+        let workflow = BUILD_DESKTOP_WORKFLOW.replace("\r\n", "\n");
         let header = format!("\n  {job}:\n");
-        let start = BUILD_DESKTOP_WORKFLOW
+        let start = workflow
             .find(&header)
             .unwrap_or_else(|| panic!("build-desktop.yaml has no {job} job"))
             + header.len();
-        let body = &BUILD_DESKTOP_WORKFLOW[start..];
+        let body = &workflow[start..];
         let end = body
             .match_indices('\n')
             .map(|(index, _)| index + 1)
             .find(|&index| body[index..].starts_with("  ") && !body[index..].starts_with("   "))
             .unwrap_or(body.len());
-        &body[..end]
+        body[..end].to_string()
     }
 
     fn workflow_step_names(job: &str) -> Vec<&str> {
@@ -6283,7 +6283,7 @@ mod tests {
         }
 
         assert_eq!(
-            workflow_step_names(workflow_job("publish_release")),
+            workflow_step_names(&workflow_job("publish_release")),
             vec![
                 "Checkout source",
                 "Set up Rust toolchain (CI helpers)",
@@ -7023,7 +7023,7 @@ export const CHANNEL_DISPLAY_NAME = BUILD_CHANNEL;\n"
         let upload = workflow_job("upload");
         assert!(!upload.contains("fluxer-desktop-module-payload"));
         assert!(!upload.contains("payload_tree/desktop/*/modules/"));
-        let steps = workflow_step_names(upload);
+        let steps = workflow_step_names(&upload);
         let manifest = steps
             .iter()
             .position(|step| *step == "Build desktop module manifest")

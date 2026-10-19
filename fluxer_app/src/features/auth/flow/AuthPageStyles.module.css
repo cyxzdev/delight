@@ -86,12 +86,6 @@
 	color: var(--text-primary);
 }
 
-.verifiedIcon {
-	height: 1.5rem;
-	width: 1.5rem;
-	color: var(--text-primary);
-}
-
 .entityStats {
 	display: flex;
 	align-items: center;
@@ -186,23 +180,9 @@ img.entityIcon {
 	text-align: center;
 }
 
-.loginForm {
-	margin-top: 1.25rem;
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-}
-
 .bottomLink {
 	margin-top: 1rem;
 	text-align: left;
-}
-
-.bottomLinks {
-	margin-top: 1.25rem;
-	display: flex;
-	flex-direction: column;
-	gap: 0.75rem;
 }
 
 .bottomLinkText {
@@ -221,45 +201,6 @@ img.entityIcon {
 
 .bottomLinkAnchor:hover {
 	color: color-mix(in srgb, var(--brand-primary) 55%, var(--text-primary));
-	text-decoration: underline;
-}
-
-.divider {
-	margin-top: 1.25rem;
-	margin-bottom: 1.25rem;
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-}
-
-.dividerLine {
-	flex: 1 1 0%;
-	border-top: 0.0625rem solid var(--background-modifier-accent);
-}
-
-.dividerText {
-	font-size: 0.75rem;
-	color: var(--text-tertiary);
-}
-
-.forgotPasswordLink {
-	text-align: left;
-	display: flex;
-	flex-direction: column;
-	gap: 0.5rem;
-}
-
-.forgotPasswordLinkText {
-	font-size: 0.875rem;
-	color: var(--text-tertiary);
-	transition-property: color;
-	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-	transition-duration: 150ms;
-	cursor: pointer;
-}
-
-.forgotPasswordLinkText:hover {
-	color: var(--text-primary);
 	text-decoration: underline;
 }
 
@@ -315,10 +256,6 @@ img.entityIcon {
 
 .policyLink:hover {
 	text-decoration: underline;
-}
-
-.submitSpacer {
-	height: 0.25rem;
 }
 
 .disabledContainer {

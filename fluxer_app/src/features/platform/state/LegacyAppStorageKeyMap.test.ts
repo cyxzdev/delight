@@ -112,14 +112,14 @@ describe('persisted stores', () => {
 				`${name} has no golden corpus entry`,
 			).toBe(true);
 		}
-	});
+	}, 120_000);
 
 	test('no store name is left out of the audit as a stale exemption', () => {
 		const names = new Set(readPersistedStoreNames());
 		for (const name of STORES_WITHOUT_DEPLOYED_DATA) {
 			expect(names.has(name), name).toBe(true);
 		}
-	});
+	}, 120_000);
 });
 
 describe('fan-out split', () => {

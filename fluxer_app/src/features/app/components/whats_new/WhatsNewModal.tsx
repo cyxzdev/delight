@@ -55,7 +55,7 @@ function formatEntryDate(date: Date): string {
 	return getFormattedLongDate(date, getCurrentLocale());
 }
 
-export function WhatsNewModal({entry}: WhatsNewModalProps) {
+function WhatsNewModal({entry}: WhatsNewModalProps) {
 	const {i18n} = useLingui();
 	const initialFocusRef = useRef<HTMLDivElement | null>(null);
 	const scrollerRef = useRef<ScrollerHandle | null>(null);
