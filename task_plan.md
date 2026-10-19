@@ -26,11 +26,12 @@ Audit the verified Fluxer range `f32356801d569afd570c5a8357d38fa932a44c69..b8d43
    - Resolve the ten first-checkpoint conflicts against the existing Delight implementation.
    - Preserve Delight/Premium branding, the auth split-panel layout, and the Delight spark in the reviewed auth files.
    - User confirmed: preserve the local Delight brand and design.
-4. **Incremental integration — in progress (checkpoint 1 of 7)**
+4. **Incremental integration — in progress (checkpoint 1 complete; next is 51–60)**
    - Integrate the verified final upstream behavior by dependency-ordered subsystem batches.
    - Run targeted checks after each batch and record evidence before proceeding.
    - Resolve every conflict based on local behavior and upstream intent.
-   - Checkpoint 1 covers 50 of 310 target commits after the common base; next checkpoint is 100.
+   - Checkpoint 1 covers 50 of 310 target commits after the common base and is committed locally as `5d13a9c03`.
+   - To keep the next stage reviewable, checkpoints are now capped at 10 commits and sized by unique changed paths. Commits 51–60 affect 222 paths.
 5. **Channel chooser icons — implemented; visual coverage pending**
    - Render a channel-type icon, label, and description for each existing radio option in the channel creation modal.
    - Still verify the rendered chooser across supported themes, responsive layout, and RTL where available.
@@ -58,4 +59,4 @@ Audit the verified Fluxer range `f32356801d569afd570c5a8357d38fa932a44c69..b8d43
 
 ## Next Step
 
-Update the subsystem impact map for the next 50-commit checkpoint, merge through commit 100 after the common base, resolve conflicts, run the affected checks, and record results before advancing.
+Update the subsystem impact map for commits 51–60, ending at `7937d5f802`; review the 222 changed paths, resolve conflicts, run affected checks, and record results before advancing.

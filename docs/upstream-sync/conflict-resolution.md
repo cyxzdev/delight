@@ -26,6 +26,6 @@ The original 11 staged user paths are preserved in `stash@{0}` with their staged
 - `pnpm --filter fluxer_app run typecheck:only`: passed.
 - `pnpm --filter fluxer_app run test -- --maxWorkers=4 --testTimeout=60000`: passed, 101 test files and 1,392 tests.
 - The channel-type chooser renders an icon, label, and description for each option within the existing radio-group modal.
-- Checkpoint commit is local to `D:\Haze\delight`; no push or deployment has occurred.
+- Checkpoint commit `5d13a9c03` is local to `D:\Haze\delight`; no push or deployment has occurred.
 
 The full initial same-path overlap inventory is in [the Delight customization map](delight-customization-map.md). Continue adding semantic conflict decisions here for later checkpoints.
