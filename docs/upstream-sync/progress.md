@@ -30,16 +30,16 @@
 - Eight affected desktop test files: 195 passed, 3 skipped, 0 failed. The skipped cases require POSIX filesystem mode bits and remain enabled on Linux.
 - `pnpm --filter fluxer_desktop exec tsc --noEmit`, `pnpm --filter fluxer_app run typecheck:only`, and Gateway wire-transport test (18/18) passed.
 
-## Checkpoint 3 — commit 55 (staged, uncommitted)
+## Checkpoint 3 — commit 55 (committed and pushed)
 
 - Source: `7a4aa42d4b5fa6b7cd67ed7fa97350117c4e9601` (`feat(premium): native Nordic prices and subscribing during grace`).
 - Applied as one reviewable checkpoint: 84 upstream changed paths, with 12 scoped local proxy/HMR, Windows test-portability, and progress-record paths also staged (96 paths total); 0 merge conflicts. Upstream changes cover gift-trial metadata/reversal, subscription-period handling, Nordic currency selection, gift/grace subscription actions, related translations, and tests.
 - Tests: 9 API test files passed (288 tests); 2 frontend premium test files passed (15 tests); app typecheck passed; the proxy route Rust test passed (1 test); `cargo build -p fluxer-dev` passed.
 - `pnpm --filter fluxer_api run typecheck`: passed.
 - Rspack development build compiled successfully with 160 CSS module-order warnings and no compile errors. The running dev endpoint `/` returned 200.
-- The user owns the checkpoint merge commit and push. No commit/push was made. The current merge has 96 staged paths: 84 upstream paths and 12 local files. `HEAD` remains `9c149eefc`, `MERGE_HEAD` is `7a4aa42d4b`, and there are no unmerged paths.
+- The user committed and pushed checkpoint 3 as `be99c9db8`. The local profile-effect and HMR fixes are included.
 
-## Local profile-effect and hot-reload fix in progress
+## Local profile-effect and hot-reload fix (verified and committed)
 
 - `ProfileEffectStore` correctly sends `PUT /delight/effects/@me`; the sidecar supports that method. The dev proxy lacked a `/delight` route and the devcontainer lacked the sidecar, so the request fell through to the GET/HEAD-only app proxy. Reproduction returned `405 Allow: GET,HEAD`; `GET /delight/health` returned the app shell instead of sidecar health.
 - Added a devcontainer Delight sidecar with a named persistent SQLite volume, a prefix-stripping `/delight` proxy route, and route-rewrite unit coverage.
@@ -51,4 +51,14 @@
 - Initial all-task dev startup timed out at Gateway readiness after 300 seconds. Starting app, API/services, and Gateway independently restored the local services; API health and Gateway readiness now return 200.
 - User owns all commits and pushes. No deployment has occurred. The original 11 staged user paths remain preserved in `stash@{0}`.
 
-Next: let the user commit/push this merge checkpoint before continuing at commit 56 (`1515a8487f`, two desktop outbound-HTTP paths). 255 of the 310 post-base commits remain. Keep updating this report per checkpoint, then restore the user's original 11 staged paths and finish channel-chooser visual and final audit/verification. Do not claim the sync is complete while those items remain.
+## Checkpoint 4 — commits 56–70 (staged, uncommitted)
+
+- Source range: `1515a8487f987fd8ebf9621b31e422339c2e8b4d..4da8dec4ac251ddb0b92f213158995d93591e5df` (15 first-parent commits).
+- Applied 241 upstream paths spanning threads, desktop browser handoff and update behavior, trusted certificates, streamed request bodies, self-host media recovery, instance branding, and related fixes.
+- OAuth conflict resolution keeps Delight's `displayApplicationName()` for app labels and upstream's `getActiveInstanceProductName()` for session-expired copy. `Updater.test.mjs` uses the upstream rewrite aligned with the new update-gate behavior.
+- Four additional Windows test paths and five portability edits normalize CRLF in `BootstrapEntry`, `MainAppEntry`, and `WindowChrome`, and normalize path separators in `ChannelIsolation` and `SplashBundleOwnership`. `BootstrapEntry` is within the upstream paths; the other four tests add paths. The staged checkpoint contains 245 code/test paths plus these five progress files: 250 total.
+- Verification passed: 18 API test files / 209 tests; 4 app test files / 62 tests; full schema suite / 1,021 tests; 22 affected desktop test files / 382 tests; API, app, desktop, and schema TypeScript checks. CSS module types were regenerated before app typechecking.
+- The broader desktop suite reports 1,350 passed, 12 failed, 8 skipped. Remaining failures are in unchanged tests requiring Linux-specific entry behavior, Windows filesystem/symlink handling, or a native passkey backend not available on this host. npm registry DNS failures prevented pnpm dependency reconciliation, so local installed executables ran the checks.
+- No unresolved paths remain. `HEAD` and `origin/delight` remain `be99c9db8`; the agent made no commit or push. 70 of 310 post-base commits are staged or user-committed; 240 remain.
+
+Next: the user commits and pushes checkpoint 4, then integration resumes at commit 71 (`0906a85d6`). Restore the user's original 11 staged paths after upstream checkpoints; channel chooser visual checks and the final audit/verification remain pending.

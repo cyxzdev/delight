@@ -6,7 +6,7 @@ import path from 'node:path';
 import {describe, test} from 'node:test';
 import {fileURLToPath} from 'node:url';
 
-const source = readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'Window.ts'), 'utf8');
+const source = readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'Window.ts'), 'utf8').replace(/\r\n/g, '\n');
 
 describe('window chrome', () => {
 	test('macOS keeps the native frame behind the custom title bar', () => {

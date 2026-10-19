@@ -26,14 +26,16 @@ Audit the verified Fluxer range `f32356801d569afd570c5a8357d38fa932a44c69..b8d43
    - Resolve the ten first-checkpoint conflicts against the existing Delight implementation.
    - Preserve Delight/Premium branding, the auth split-panel layout, and the Delight spark in the reviewed auth files.
    - User confirmed: preserve the local Delight brand and design.
-4. **Incremental integration — in progress (55 of 310 post-base commits integrated in the working tree)**
+4. **Incremental integration — in progress (70 of 310 post-base commits applied across reviewable checkpoints)**
    - Integrate the verified final upstream behavior by dependency-ordered subsystem batches.
    - Run targeted checks after each batch and record evidence before proceeding.
    - Resolve every conflict based on local behavior and upstream intent.
    - Checkpoint 1 covers commits 1–50 after the common base (`5d13a9c03`).
    - Checkpoint 2 covers commits 51–54, ending at `0ef1cd14c3`; the user committed and pushed the integration as `9c149eefc`.
-   - Checkpoint 3 applies commit 55 (`7a4aa42d4b`, 84 upstream paths) with 12 scoped local files for the profile-effect/HMR fix, Windows test portability, and progress records: 96 staged paths total, zero merge conflicts. It is staged but uncommitted; the user owns its commit and push.
-   - 255 post-base commits remain. The next first-parent commit is 56 (`1515a8487f`), which changes two desktop outbound-HTTP paths. Continue after the user completes the current merge commit.
+   - Checkpoint 3 (commit 55, `7a4aa42d4b`) and the profile-effect/HMR fix were committed and pushed by the user as `be99c9db8`.
+   - Checkpoint 4 covers commits 56–70 through `4da8dec4ac251ddb0b92f213158995d93591e5df`: 241 upstream paths plus 4 additional local test paths. Five Windows portability edits cover those four paths and the upstream-changed `BootstrapEntry` test. The 245 code/test paths and 5 progress-record paths are staged (250 total), with zero unresolved conflicts. The user owns the checkpoint commit and push.
+   - Verification for checkpoint 4: 209 API tests, 62 app tests, 1,021 schema tests, and 382 tests across 22 affected desktop test files passed; API, app, desktop, and schema TypeScript checks passed. A broader desktop suite had 1,350 passing, 12 host-sensitive failures, and 8 skipped tests; details are recorded in `progress.md`.
+   - 240 post-base commits remain. After the user commits and pushes checkpoint 4, continue with commit 71 (`0906a85d6`), preserving the same staged checkpoint workflow.
 5. **Channel chooser icons — implemented; visual coverage pending**
    - Render a channel-type icon, label, and description for each existing radio option in the channel creation modal.
    - Still verify the rendered chooser across supported themes, responsive layout, and RTL where available.
@@ -70,7 +72,9 @@ Audit the verified Fluxer range `f32356801d569afd570c5a8357d38fa932a44c69..b8d43
 | Historical dev launcher path was absent in this checkout | 1 | Started the project stack with `cargo run -p fluxer-dev -- dev`. |
 | Full dev startup initially timed out waiting for Gateway after 300 seconds | 1 | The Rust NIFs and Erlang Gateway dependencies were cold. Retried app, API/services, and Gateway separately; Gateway now reports ready at `127.0.0.1:8771/_health/ready`. |
 | Running the dev proxy route test from Windows host failed to compile an existing `std::os::unix` reference in `tools/dev/src/tunnel.rs` | 1 | Ran the route test in the project's Linux devcontainer; it passed (1 test). The unrelated host-platform compile path remains unchanged. |
+| pnpm attempted to reconcile workspace dependencies and failed against intermittent npm registry DNS errors | 1 | Used the existing local Vitest, TypeScript, and tsx executables directly; all recorded focused tests and checks then completed. |
+| Desktop source-inspection tests assumed LF endings or POSIX path separators on Windows | 1 | Normalized source text and resolved test paths before comparison; the affected desktop test set now passes. |
 
 ## Next Step
 
-Checkpoint 3 and the local profile-effect/HMR fix are ready for the user's review: 96 staged paths (84 from upstream commit 55 plus 12 scoped local paths), zero conflicts, and no agent commit or push. The user must complete the merge commit before commit 56 can be merged. The overall sync is not complete: 255 post-base commits, original-stash restoration, channel chooser visual checks, and final audit/verification remain.
+Checkpoint 4 is ready for the user's review in `D:\Haze\delight`: 250 staged paths (241 upstream changes from commits 56–70, 4 additional test paths, and 5 progress records), zero unresolved conflicts, and no agent commit or push. Five Windows portability edits cover those additional paths and the upstream-changed `BootstrapEntry` test. The user owns the commit and push. The overall sync is not complete: 240 post-base commits, original-stash restoration, channel chooser visual checks, and final audit/verification remain.

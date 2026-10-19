@@ -302,6 +302,58 @@ describe('DesktopOutboundHTTP origin anchoring', () => {
 		}
 	});
 
+	test('a streamed request body reaches the server for every method that carries one', async () => {
+		const received = [];
+		const {port, server} = await startServer({
+			'/api/v1/oauth2/applications/1': (request, response) => {
+				let body = '';
+				request.setEncoding('utf8');
+				request.on('data', (chunk) => {
+					body += chunk;
+				});
+				request.on('end', () => {
+					received.push({body, method: request.method, sudo: request.headers['x-fluxer-sudo-mode-jwt'] ?? null});
+					response.writeHead(204, {'x-fluxer-sudo-mode-jwt': 'granted'});
+					response.end();
+				});
+			},
+		});
+		try {
+			const outboundHTTP = new DesktopOutboundHTTP({
+				resolveHostAddresses: stubResolver({'lan.example': ['127.0.0.1']}),
+			});
+			await outboundHTTP.registerAnchoredOrigins({anchorOrigin: `http://lan.example:${port}`, origins: []});
+			const payload = JSON.stringify({mfa_method: 'totp', mfa_code: '123456'});
+			for (const method of ['DELETE', 'POST', 'PATCH', 'PUT']) {
+				const message = await outboundHTTP.request({
+					body: Readable.toWeb(Readable.from([Buffer.from(payload)])),
+					expectedOrigin: `http://lan.example:${port}`,
+					headers: {'content-type': 'application/json', 'x-fluxer-sudo-mode-jwt': 'previous'},
+					method,
+					originTrust: DesktopOriginTrust.REGISTERED,
+					serviceName: 'test',
+					signal: null,
+					timeoutMs: 2000,
+					url: `http://lan.example:${port}/api/v1/oauth2/applications/1`,
+				});
+				assert.equal(message.status, 204);
+				assert.equal(message.headers['x-fluxer-sudo-mode-jwt'], 'granted');
+				message.message.resume();
+			}
+			assert.deepEqual(
+				received.map((entry) => entry.method),
+				['DELETE', 'POST', 'PATCH', 'PUT'],
+			);
+			for (const entry of received) {
+				assert.equal(entry.body, payload);
+				assert.equal(entry.sudo, 'previous');
+			}
+			outboundHTTP.cleanup();
+		} finally {
+			server.close();
+		}
+	});
+
 	test('a private literal anchor binds and registers without a public requirement', async () => {
 		const outboundHTTP = new DesktopOutboundHTTP({resolveHostAddresses: stubResolver({})});
 		await outboundHTTP.registerAnchoredOrigins({anchorOrigin: 'http://192.168.1.10', origins: []});
@@ -456,7 +508,7 @@ describe('DesktopOutboundHTTP origin anchoring', () => {
 		}
 	});
 
-	test('a released binding refuses a re-resolution that changes the address scope', async () => {
+	test('a released cleartext binding that re-resolves to a public address never sends cleartext there', async () => {
 		const {port, server} = await startServer({});
 		await new Promise((resolve) => server.close(resolve));
 		let rebound = false;
@@ -476,7 +528,67 @@ describe('DesktopOutboundHTTP origin anchoring', () => {
 		};
 		await assert.rejects(client.fetch(request), /ECONNREFUSED/);
 		rebound = true;
-		await assert.rejects(client.fetch(request), /resolved to both public and non-public addresses/);
+		await assert.rejects(client.fetch(request), /requires https for the publicly routable origin/);
+		outboundHTTP.cleanup();
+	});
+
+	test('a split-horizon origin that moves from its LAN address to a public one is resolved again instead of failing until restart', async () => {
+		const {port, server} = await startServer({});
+		await new Promise((resolve) => server.close(resolve));
+		let rebound = false;
+		let resolutions = 0;
+		const outboundHTTP = new DesktopOutboundHTTP({
+			resolveHostAddresses: async () => {
+				resolutions += 1;
+				return rebound ? ['93.184.216.34'] : ['127.0.0.1'];
+			},
+		});
+		const request = (signal) => ({
+			body: null,
+			expectedOrigin: `https://home.example:${port}`,
+			headers: null,
+			method: 'GET',
+			originTrust: DesktopOriginTrust.BOUND,
+			serviceName: 'test',
+			signal,
+			timeoutMs: 2000,
+			url: `https://home.example:${port}/ping`,
+		});
+		await assert.rejects(outboundHTTP.request(request(null)), /ECONNREFUSED/);
+		rebound = true;
+		const left = new AbortController();
+		left.abort();
+		await assert.rejects(outboundHTTP.request(request(left.signal)), /was aborted by its caller/);
+		assert.equal(resolutions, 2);
+		outboundHTTP.cleanup();
+	});
+
+	test('an address that swallows connections is released when the request gives up before connecting', async () => {
+		let resolutions = 0;
+		const outboundHTTP = new DesktopOutboundHTTP({
+			resolveHostAddresses: async () => {
+				resolutions += 1;
+				return ['10.255.255.1'];
+			},
+		});
+		const request = {
+			body: null,
+			expectedOrigin: 'http://blackhole.example:9',
+			headers: null,
+			method: 'GET',
+			originTrust: DesktopOriginTrust.BOUND,
+			serviceName: 'test',
+			signal: null,
+			timeoutMs: 200,
+			url: 'http://blackhole.example:9/ping',
+		};
+		await assert.rejects(outboundHTTP.request(request));
+		await assert.rejects(outboundHTTP.request(request));
+		assert.equal(
+			resolutions,
+			2,
+			'a binding whose address never answers stays pinned for the process lifetime when a timeout does not release it',
+		);
 		outboundHTTP.cleanup();
 	});
 
@@ -676,6 +788,99 @@ describe('DesktopOutboundHTTP origin anchoring', () => {
 			process.off('uncaughtException', onUncaught);
 			outboundHTTP.cleanup();
 		}
+	});
+
+	test('the pinned lookup offers every validated address for happy eyeballs', async () => {
+		const lookup = createPinnedHostLookup('dual.example', [
+			{address: '2606:4700:4700::1111', family: 6},
+			{address: '93.184.216.34', family: 4},
+		]);
+		const all = await new Promise((resolve) =>
+			lookup('dual.example', {all: true}, (error, addresses) => resolve({addresses, error})),
+		);
+		assert.equal(all.error, null);
+		assert.deepEqual(all.addresses, [
+			{address: '2606:4700:4700::1111', family: 6},
+			{address: '93.184.216.34', family: 4},
+		]);
+		const single = await new Promise((resolve) =>
+			lookup('dual.example', {}, (error, address, family) => resolve({address, error, family})),
+		);
+		assert.equal(single.address, '2606:4700:4700::1111');
+		assert.equal(single.family, 6);
+	});
+
+	test('a registered origin whose IPv6 address refuses connects over IPv4 without waiting', async () => {
+		const {port, requested, server} = await startServer({
+			'/ping': (_request, response) => sendImage(response, 'text/plain', 'ok'),
+		});
+		try {
+			const outboundHTTP = new DesktopOutboundHTTP({
+				resolveHostAddresses: stubResolver({'dual.example': ['::1', '127.0.0.1']}),
+			});
+			await outboundHTTP.registerAnchoredOrigins({anchorOrigin: `http://dual.example:${port}`, origins: []});
+			const startedAt = Date.now();
+			const response = await outboundHTTP.request({
+				body: null,
+				expectedOrigin: `http://dual.example:${port}`,
+				headers: null,
+				method: 'GET',
+				originTrust: DesktopOriginTrust.REGISTERED,
+				serviceName: 'test',
+				signal: null,
+				timeoutMs: 2000,
+				url: `http://dual.example:${port}/ping`,
+			});
+			response.message.resume();
+			assert.equal(response.status, 200, 'the refused IPv6 address must fall back to the IPv4 one like Chromium does');
+			assert.ok(Date.now() - startedAt < 1000);
+			assert.deepEqual(requested, ['/ping']);
+			outboundHTTP.cleanup();
+		} finally {
+			server.close();
+		}
+	});
+
+	test('a registered origin whose first address never answers is reached on the next one', async () => {
+		const {port, requested, server} = await startServer({
+			'/ping': (_request, response) => sendImage(response, 'text/plain', 'ok'),
+		});
+		try {
+			const outboundHTTP = new DesktopOutboundHTTP({
+				resolveHostAddresses: stubResolver({'multi.example': ['127.0.0.2', '127.0.0.1']}),
+			});
+			await outboundHTTP.registerAnchoredOrigins({anchorOrigin: `http://multi.example:${port}`, origins: []});
+			const startedAt = Date.now();
+			const response = await outboundHTTP.request({
+				body: null,
+				expectedOrigin: `http://multi.example:${port}`,
+				headers: null,
+				method: 'GET',
+				originTrust: DesktopOriginTrust.REGISTERED,
+				serviceName: 'test',
+				signal: null,
+				timeoutMs: 3000,
+				url: `http://multi.example:${port}/ping`,
+			});
+			response.message.resume();
+			assert.equal(response.status, 200, 'a dead first address must not stop the connection from trying the others');
+			assert.ok(Date.now() - startedAt < 1500);
+			assert.deepEqual(requested, ['/ping']);
+			outboundHTTP.cleanup();
+		} finally {
+			server.close();
+		}
+	});
+
+	test('a public requirement still refuses an answer that includes a private address', async () => {
+		const outboundHTTP = new DesktopOutboundHTTP({
+			resolveHostAddresses: stubResolver({'mixed.example': ['2606:4700:4700::1111', '127.0.0.1']}),
+		});
+		const client = new DesktopSelectedInstanceClient(outboundHTTP);
+		await assert.rejects(
+			client.fetch({expectedOrigin: 'https://mixed.example', timeoutMs: 2000, url: 'https://mixed.example/ping'}),
+		);
+		outboundHTTP.cleanup();
 	});
 
 	test('the pinned lookup refuses a hostname it was not created for', async () => {

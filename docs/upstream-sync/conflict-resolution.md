@@ -2,7 +2,7 @@
 
 The active integration is happening in the user's project checkout at `D:\Haze\delight`, on branch `delight`. The requested upstream range remains pinned to `f32356801d569afd570c5a8357d38fa932a44c69..b8d43af1919fa0e96382577899241535c71be694` (561 commits total). The first verified integration checkpoint is `6de6be23581c96b33c40584948c92788f4323d12`, 50 first-parent commits after the common base. User identity decision: preserve Delight branding and design.
 
-The original 11 staged user paths are preserved in `stash@{0}` with their staged state. They have not been included in the upstream integration commit and must be restored after the checkpoint sequence, resolving any overlap without losing either side. No changes have been pushed or deployed.
+The original 11 staged user paths are preserved in `stash@{0}` with their staged state. They have not been included in the upstream integration commit and must be restored after the checkpoint sequence, resolving any overlap without losing either side. The user committed and pushed checkpoints 2 and 3; no deployment has occurred.
 
 ## Checkpoint 1 conflict decisions
 
@@ -29,3 +29,12 @@ The original 11 staged user paths are preserved in `stash@{0}` with their staged
 - Checkpoint commit `5d13a9c03` is local to `D:\Haze\delight`; no push or deployment has occurred.
 
 The full initial same-path overlap inventory is in [the Delight customization map](delight-customization-map.md). Continue adding semantic conflict decisions here for later checkpoints.
+
+## Checkpoint 4 conflict decisions
+
+| Path | Resolution | Evidence |
+|---|---|---|
+| `fluxer_app/src/features/auth/components/pages/oauth_authorize_page/state/useAuthorizeFlow.ts` | Kept Delight's `displayApplicationName()` for the OAuth client label and incorporated upstream's `getActiveInstanceProductName()` for the session-expired message. | App typecheck and affected app tests pass. |
+| `fluxer_desktop/src/main/Updater.test.mjs` | Took the upstream test rewrite. The local Windows permission-mode skip covered an AppImage test removed by the upstream update-gate rewrite; retaining the old file would test a path the new updater no longer uses. | All 22 affected desktop test files pass (382 tests). |
+
+Desktop test portability fixes normalize CRLF before checking source text and normalize `path.relative()` output to `/` before comparing module IDs. These changes are test-only; application source behavior is unchanged by them.

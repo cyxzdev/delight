@@ -8,9 +8,10 @@
 - The local branch already shares 251 commits in the target history through the common base; 310 later upstream commits remain to integrate.
 - Checkpoint 1 is the first 50 of those 310 commits, ending at `6de6be23581c96b33c40584948c92788f4323d12`.
 - Checkpoint 2 integrates commits 51–54 through `0ef1cd14c3`; the user committed and pushed it as `9c149eefc`.
-- Checkpoint 3 currently applies upstream commit 55 (`7a4aa42d4b`) plus 12 scoped local proxy/HMR, Windows test portability, and progress-record paths: 96 staged paths total, with zero conflicts. 55 post-base commits are in the working tree; 255 remain.
-- The checkpoint 3 merge is intentionally uncommitted. The user owns all commits and pushes; do not advance to commit 56 until the user has committed/pushed this bounded checkpoint.
-- `HEAD` remains `9c149eefc` during the current no-commit merge. The agent has not committed or pushed.
+- Checkpoint 3 (upstream commit 55, `7a4aa42d4b`) and the profile-effect/HMR fix were committed and pushed by the user as `be99c9db8`.
+- Checkpoint 4 applies commits 56–70 through `4da8dec4ac251ddb0b92f213158995d93591e5df`: 241 upstream paths and 4 additional local test paths, plus 5 updated progress files (250 staged paths total). Five Windows portability edits cover the 4 additional paths and the upstream-changed `BootstrapEntry` test. There are zero unresolved conflicts.
+- `HEAD` and `origin/delight` remain `be99c9db8`; checkpoint 4 is staged, not committed. The agent has not committed or pushed.
+- 70 of 310 post-base commits are now staged or user-committed; 240 remain. Continue at commit 71 (`0906a85d6`) after the user commits and pushes this checkpoint.
 - The original 11 staged user paths are preserved in `stash@{0}` with their staged state. Restore them after the upstream checkpoints and verify all overlaps; do not drop the stash.
 - No deployment has occurred. Local rollback ref: `backup/delight-before-fluxer-sync-2026-10`.
 
@@ -44,7 +45,7 @@
 - Rspack polls the Windows-mounted source tree every second in development, serves uncompressed development bundles, and directs the HMR WebSocket through the 8088 proxy. Isolated Chrome loads the sign-in screen, connects to `/ws`, and receives `hot`, `liveReload`, and successful `hash`/`ok` updates without console errors.
 - Full startup initially timed out at the Gateway readiness wait. Starting services/API and Gateway separately succeeded; the Gateway now reports ready at `127.0.0.1:8771/_health/ready`. Postgres, object-store, and other development volumes were retained.
 
-## Checkpoint 3 — commit 55 (staged, uncommitted)
+## Checkpoint 3 — commit 55 (committed and pushed by the user)
 
 - Upstream SHA: `7a4aa42d4b5fa6b7cd67ed7fa97350117c4e9601`, title “feat(premium): native Nordic prices and subscribing during grace”.
 - Applied as a single bounded checkpoint: 84 changed paths, no overlapping local fixes, zero merge conflicts. The app and billing presentation still use the existing Delight product identity.
@@ -55,8 +56,26 @@
 - Rspack dev build compiled successfully (160 CSS-order warnings, no build errors). A temporary CSS change produced the HMR `invalid → new hash → ok` cycle in 4.4 seconds; the probe file was restored byte-for-byte and `/` returned 200 afterward.
 - Root cause for the browser stall was gzip compression of the 1.6 MB development entry bundle; the root cause for the CSP error was the HMR client targeting port 3000 instead of the 8088 proxy. Disabling development-only compression and setting the HMR WebSocket URL to `ws://localhost:8088/ws` fixed both. Chrome now loads the sign-in page and connects to the HMR socket.
 - A temporary comment in `fluxer_app/src/app/globals.css` triggered a browser-client HMR update; the file was restored byte-for-byte and Rspack completed the restored build. No console or page errors were observed.
-- No commit or push was made. The index contains 96 staged paths: 84 upstream paths for commit 55 and 12 scoped local code/test/progress paths. The user owns the merge commit and push.
+- The user committed and pushed the checkpoint as `be99c9db8`. The profile-effect routing and HMR fixes are in that checkpoint.
+
+## Checkpoint 4 — commits 56–70 (staged, uncommitted)
+
+- Source range: `1515a8487f987fd8ebf9621b31e422339c2e8b4d..4da8dec4ac251ddb0b92f213158995d93591e5df` along upstream first-parent history (15 commits).
+- Scope includes threads and the Plutonium page, desktop browser sign-in handoff, trusted system certificates and streamed request framing, user-initiated desktop updates, self-hosted media recovery, macOS window behavior, context menus, instance branding, and unseen-mention handling.
+- Applied 241 upstream paths. Resolved the OAuth conflict by keeping Delight's `displayApplicationName()` for app labels and integrating upstream's active-instance product name for session-expired copy. Used upstream's revised `Updater.test.mjs`, which replaces the older AppImage-specific cases affected by the update-gate rewrite.
+- Added four extra Windows test paths and five portability edits: normalized CRLF in `BootstrapEntry`, `MainAppEntry`, and `WindowChrome`; normalized path separators in `ChannelIsolation` and `SplashBundleOwnership`. `BootstrapEntry` is already one of the 241 upstream paths; the other four tests are additional paths.
+- Current staged checkpoint total is 250 paths: 241 upstream, 4 additional desktop test paths, and 5 progress records. There are zero unresolved paths. `HEAD` and `origin/delight` remain `be99c9db8`; the agent has not committed or pushed.
+
+### Checkpoint 4 verification
+
+- Changed API tests: 18 files, 209 passed.
+- Changed app tests: 4 files, 62 passed.
+- Full schema package suite: 34 files, 1,021 passed.
+- Affected desktop tests: 22 files, 382 passed.
+- API, app, desktop, and schema TypeScript checks passed. App CSS module declarations were regenerated with the project's local `GenerateCssTypes.ts` script before the app typecheck.
+- Broader desktop suite: 1,350 passed, 12 failed, 8 skipped. Remaining failures are in unchanged Windows-host-sensitive tests covering Linux desktop-entry behavior, filesystem/symlink behavior, and unavailable native passkey initialization; the affected 22-file set passes.
+- `git diff --cached --check` passed. `pnpm` could not reconcile its workspace install because npm registry requests intermittently failed with DNS errors, so tests and typechecks were run with the already-installed local executables.
 
 ## Next
 
-Next: the user reviews and commits/pushes the current merge checkpoint; then continue at upstream commit 56 (`1515a8487f`, two desktop outbound-HTTP paths). All 255 remaining commits, restoration of the original 11 staged paths, channel chooser visual checks, and final audit/verification are pending. Do not report the full task complete before those steps are finished.
+Next: the user reviews and commits/pushes checkpoint 4; then continue at upstream commit 71 (`0906a85d6`). There are 240 post-base commits remaining. Restore the original 11 staged paths after the upstream checkpoints, then complete channel chooser visual checks and the final audit/verification. Do not report the full task complete before those steps are finished.

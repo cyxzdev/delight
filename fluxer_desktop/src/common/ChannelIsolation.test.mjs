@@ -74,7 +74,7 @@ describe('running channels stay apart', () => {
 	});
 
 	test('only a packaged app claims its deep link scheme, so a dev Electron run never takes it from an installed app', () => {
-		const source = fs.readFileSync(path.join(DESKTOP_DIR, 'src/main/DeepLinks.ts'), 'utf8');
+		const source = fs.readFileSync(path.join(DESKTOP_DIR, 'src/main/DeepLinks.ts'), 'utf8').replace(/\r\n/g, '\n');
 		assert.doesNotMatch(source, /setAsDefaultProtocolClient\(['"]/u);
 		assert.doesNotMatch(source, /process\.defaultApp/u);
 		assert.match(source, /if \(app\.isPackaged\) \{\n\t\tapp\.setAsDefaultProtocolClient\(APP_PROTOCOL\);/u);

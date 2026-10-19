@@ -36,7 +36,7 @@
 ## Evidence limitations
 
 - Checkpoint 1 has been integrated through `6de6be23581c96b33c40584948c92788f4323d12`; all 10 merge conflicts are documented in `docs/upstream-sync/conflict-resolution.md`.
-- Checkpoint 2 integrates source commits 51–54 through `0ef1cd14c3be963c99e70c3b9bf1a2ad19a40f7b`, committed and pushed by the user as `9c149eefc`. The current code work remains uncommitted, per the user's instruction.
+- Checkpoint 2 integrates source commits 51–54 through `0ef1cd14c3be963c99e70c3b9bf1a2ad19a40f7b`, committed and pushed by the user as `9c149eefc`. Checkpoint 3 and the profile-effect/HMR fix were later committed and pushed by the user as `be99c9db8`.
 - Checkpoint 1 app typecheck passed, and the app suite passed with 101 files and 1,392 tests. This does not establish final sync completion.
 - For commits 51–54, eight changed desktop test files passed with 195 pass / 3 Windows-only POSIX checks skipped / 0 failures; desktop TSC, app typecheck, and the Gateway transport test passed.
 - Security, migration-wide, performance, full application visual, responsive, and RTL review remain to be completed across the remaining checkpoints.
@@ -51,12 +51,20 @@
 - Runtime checks on `localhost:8088` and `127.0.0.1:8088`: sidecar health 200; unauthenticated `PUT /delight/effects/@me` returns 401 (expected without a session) rather than 405. The isolated browser revealed a slow gzip response for the 1.6 MB dev entry and a CSP-blocked HMR socket aimed at port 3000. Development-only compression was disabled and the HMR client was directed through `ws://localhost:8088/ws`. Chrome now loads the sign-in screen, receives `hot`/`liveReload` and successful HMR hash/ok frames, and has no CSP/console/page errors. A temporary CSS probe was restored byte-for-byte and the rebuilt app returned 200. Authenticated profile-effect persistence is not exercised.
 - The first all-task development startup timed out after 300 seconds waiting for Gateway readiness. Separate app, API/services, and Gateway task startup restored health; Gateway now responds at `127.0.0.1:8771/_health/ready`. Development data volumes were not reset.
 
-## Checkpoint 3: upstream commit 55
+## Checkpoint 3: upstream commit 55 (committed and pushed)
 
-- `7a4aa42d4b5fa6b7cd67ed7fa97350117c4e9601`, 84 upstream paths, is applied as a staged, uncommitted merge with zero conflicts. There are 96 staged paths total after adding 12 local files for proxy/HMR, Windows test portability, and persistent progress records. Upstream scope includes Nordic billing currencies, subscribing during gift/grace time, Stripe gift-trial reversal/metadata, premium subscription UI state, and translations.
+- `7a4aa42d4b5fa6b7cd67ed7fa97350117c4e9601` changed 84 upstream paths. The user committed and pushed checkpoint 3 as `be99c9db8`. Upstream scope includes Nordic billing currencies, subscribing during gift/grace time, Stripe gift-trial reversal/metadata, premium subscription UI state, and translations.
 - Verification: 288 API tests across 9 files passed; 15 frontend premium tests across 2 files passed; app typecheck passed; targeted Rust proxy route test passed; `cargo build -p fluxer-dev` passed.
-- The change remains inside the current Delight project and the app retains Delight identity. No commit, push, or deployment occurred.
-- The next source commit is `1515a8487f987fd8ebf9621b31e422339c2e8b4d` (commit 56, two desktop outbound-HTTP paths). The current Git merge must be completed by the user before the next merge; the user owns all commits and pushes.
+- The change remains inside the current Delight project and the app retains Delight identity. The authenticated profile-effect save is still untested; HMR was verified in an isolated browser.
+
+## Checkpoint 4: upstream commits 56–70
+
+- Applied 15 first-parent commits through `4da8dec4ac251ddb0b92f213158995d93591e5df`, covering 241 upstream paths. Features include public threads and Plutonium, desktop browser sign-in handoff, trusted CA use, user-confirmed update application, self-hosted media recovery, instance branding, and related fixes.
+- Resolved the OAuth overlap by preserving Delight's application-name normalization and using upstream's active-instance product name in the session-expired message. Selected upstream's rewritten updater test file because the upstream update-gate change removes the local permission-mode test it had replaced.
+- Four additional local Windows test paths bring this batch to 245 code/test paths; five portability edits also touch the upstream-changed `BootstrapEntry` test. Five progress records make the staged checkpoint total 250. No unresolved paths remain; no commit or push was made by the agent.
+- Verification passed: 209 API tests, 62 app tests, 1,021 schema tests, 382 tests across 22 affected desktop test files, and TypeScript checks for API, app, desktop, and schema. CSS module declarations were generated before app typechecking.
+- A broader desktop run had 1,350 passing, 12 failing, and 8 skipped tests. The remaining failures are in unchanged tests for Linux desktop-entry behavior, Windows file/symlink assumptions, and native passkey initialization. npm registry DNS failures prevented pnpm dependency reconciliation, so local installed test/typecheck executables were used.
+- Current `HEAD` and `origin/delight` are `be99c9db8`; checkpoint 4 remains staged and awaits the user's commit/push. Next is commit 71 (`0906a85d6`); 240 post-base commits remain.
 
 ## Generated source inventory
 
