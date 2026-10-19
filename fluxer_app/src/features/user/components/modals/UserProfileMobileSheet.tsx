@@ -2,6 +2,7 @@
 
 import {showDmActionErrorModal} from '@app/features/app/components/alerts/DmActionErrorModal';
 import {ConfirmModal} from '@app/features/app/components/dialogs/ConfirmModal';
+import {UserSettingsModal} from '@app/features/app/components/dialogs/LoadableSettingsModals';
 import {
 	CustomStatusDisplay,
 	type EmojiPressData,
@@ -52,7 +53,6 @@ import {getProfileEffect} from '@app/features/user/utils/ProfileEffects';
 import {ProfileFrame} from '@app/features/user/components/profile_frames/ProfileFrame';
 import {getProfileFrame} from '@app/features/user/utils/ProfileFrames';
 import {getContrastingNotchColor} from '@app/features/user/components/modals/UserProfileUtils';
-import {UserSettingsModal} from '@app/features/user/components/modals/UserSettingsModal';
 import {getMutualItemsDescriptor} from '@app/features/user/components/modals/user_profile_modal/MutualItemsDescriptors';
 import {
 	getMutualCommunityDisplayItems,
@@ -81,6 +81,7 @@ import {
 	toProfileDisplayContext,
 } from '@app/features/user/utils/ProfileGuildMembership';
 import {createMockProfile} from '@app/features/user/utils/ProfileUtils';
+import {shouldShowDiscriminator} from '@app/features/user/utils/UserTagUtils';
 import * as CallUtils from '@app/features/voice/utils/CallUtils';
 import {hasActiveDirectCallWithUser} from '@app/features/voice/utils/PrivateCallMenuUtils';
 import {ME} from '@fluxer/constants/src/AppConstants';
@@ -366,12 +367,15 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 		};
 		const handleEditProfile = () => {
 			ModalCommands.push(
-				modal(() => (
-					<UserSettingsModal
-						initialTab="my_profile"
-						data-flx="user.user-profile-mobile-sheet.handle-edit-profile.user-settings-modal"
-					/>
-				)),
+				modal(
+					() => (
+						<UserSettingsModal
+							initialTab="my_profile"
+							data-flx="user.user-profile-mobile-sheet.handle-edit-profile.user-settings-modal"
+						/>
+					),
+					'user-settings',
+				),
 			);
 		};
 		const handleStartVoiceCall = async () => {
@@ -625,7 +629,7 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 													>
 														{displayName}
 													</span>
-													{isDisplayNameUsername && (
+													{isDisplayNameUsername && shouldShowDiscriminator(user) && (
 														<span
 															className={styles.discriminator}
 															data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.discriminator"
@@ -643,7 +647,7 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 															className={styles.fullTag}
 															data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.full-tag"
 														>
-															{NicknameUtils.formatTagForStreamerMode(`${user.username}#${user.discriminator}`)}
+															{NicknameUtils.formatTagForStreamerMode(user.tag)}
 														</span>
 													)}
 													<div

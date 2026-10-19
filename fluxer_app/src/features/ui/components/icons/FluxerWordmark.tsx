@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {resolveAppShellBranding} from '@app/features/app/state/AppShellBranding';
 import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import {type BrandSvgProps, getDataFlx, getImageSizingProps} from '@app/features/ui/components/icons/BrandImageUtils';
 import {DELIGHT_SPARK_PATH} from '@app/features/ui/components/icons/FluxerIconMark';
@@ -18,27 +19,26 @@ interface FluxerWordmarkProps extends BrandSvgProps {
 
 export const FluxerWordmark = observer(({variant = 'default', ...props}: FluxerWordmarkProps) => {
 	const {i18n} = useLingui();
-	const productName = RuntimeConfig.productName;
+	const branding = resolveAppShellBranding(RuntimeConfig.getSnapshotOrNull());
+	const productName = branding.productName;
 	const ariaLabel = i18n._(APPLICATION_WORDMARK_DESCRIPTOR, {productName});
-	if (RuntimeConfig.wordmarkUrl) {
+	if (branding.wordmarkUrl !== null) {
 		return (
 			<img
 				{...getImageSizingProps(props)}
-				src={RuntimeConfig.wordmarkUrl}
+				src={branding.wordmarkUrl}
 				alt={ariaLabel}
 				data-flx={getDataFlx(props, 'ui.icons.fluxer-wordmark.img')}
 			/>
 		);
 	}
-	// Delight wordmark: spark + product name. The text follows currentColor; the spark is brand purple
-	// unless the monochrome variant is asked for.
 	return (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
 			viewBox="0 0 232 64"
 			role="img"
 			aria-label={ariaLabel}
-			data-flx="ui.icons.fluxer-wordmark.img"
+			data-flx={getDataFlx(props, 'ui.icons.fluxer-wordmark.img')}
 			{...props}
 		>
 			<path
@@ -47,13 +47,13 @@ export const FluxerWordmark = observer(({variant = 'default', ...props}: FluxerW
 				d={DELIGHT_SPARK_PATH}
 			/>
 			<text
-				x={70}
-				y={45}
+				x="70"
+				y="45"
 				fill="currentColor"
 				fontFamily="Inter, var(--font-sans), Helvetica, Arial, sans-serif"
-				fontSize={40}
-				fontWeight={600}
-				letterSpacing={-1}
+				fontSize="40"
+				fontWeight="600"
+				letterSpacing="-1"
 			>
 				{productName}
 			</text>

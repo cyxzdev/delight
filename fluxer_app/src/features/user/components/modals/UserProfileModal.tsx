@@ -2,6 +2,7 @@
 
 import {showDmActionErrorModal} from '@app/features/app/components/alerts/DmActionErrorModal';
 import {ConfirmModal} from '@app/features/app/components/dialogs/ConfirmModal';
+import {UserSettingsModal} from '@app/features/app/components/dialogs/LoadableSettingsModals';
 import * as Modal from '@app/features/app/components/dialogs/Modal';
 import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import Authentication from '@app/features/auth/state/Authentication';
@@ -47,7 +48,6 @@ import ContextMenu from '@app/features/ui/state/ContextMenu';
 import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
 import {ManageBadgesModal} from '@app/features/user/components/modals/ManageBadgesModal';
 import userProfileModalStyles from '@app/features/user/components/modals/UserProfileModal.module.css';
-import {UserSettingsModal} from '@app/features/user/components/modals/UserSettingsModal';
 import {ProfileModalContent} from '@app/features/user/components/modals/user_profile_modal/ProfileModalContent';
 import {UserProfileLoadingSkeleton} from '@app/features/user/components/profile/UserProfileLoadingSkeleton';
 import {getProfileEffect} from '@app/features/user/utils/ProfileEffects';
@@ -272,12 +272,15 @@ export const UserProfileModal: UserProfileModalComponent = observer(
 		const handleEditProfile = () => {
 			ModalCommands.pop();
 			ModalCommands.push(
-				modal(() => (
-					<UserSettingsModal
-						initialTab="my_profile"
-						data-flx="user.user-profile-modal.handle-edit-profile.user-settings-modal"
-					/>
-				)),
+				modal(
+					() => (
+						<UserSettingsModal
+							initialTab="my_profile"
+							data-flx="user.user-profile-modal.handle-edit-profile.user-settings-modal"
+						/>
+					),
+					'user-settings',
+				),
 			);
 		};
 		const handleMessage = async () => {
@@ -355,7 +358,7 @@ export const UserProfileModal: UserProfileModalComponent = observer(
 			openReportUserModal({i18n, user: displayUser, guildId});
 		};
 		const handleCopyFluxerTag = () => {
-			TextCopyCommands.copy(i18n, `${displayUser.username}#${displayUser.discriminator}`, true);
+			TextCopyCommands.copy(i18n, displayUser.tag, true);
 		};
 		const handleCopyUserId = () => {
 			TextCopyCommands.copy(i18n, displayUser.id, true);

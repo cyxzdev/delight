@@ -36,6 +36,7 @@ export const EXAMPLE_CALLBACK_URL = `${EXAMPLE_URL}/callback`;
 export const EXAMPLE_EMAIL = 'name@example.com';
 export const EXAMPLE_PERSONAL_EMAIL = 'marty@example.com';
 export const EXAMPLE_USERNAME_TAG = 'Username#0000';
+export const EXAMPLE_USERNAME = 'Username';
 export const EXAMPLE_REPORT_EMAIL = 'you@example.com';
 export const EXAMPLE_REPORT_USER_TAG = 'username#1234';
 export const EXAMPLE_INVITE_CODE = 'abcDEF12';
