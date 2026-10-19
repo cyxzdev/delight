@@ -327,6 +327,7 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
     let self_tool = self_tool_command()?;
     let api_dir = ROOT.join("fluxer_api");
     let api_tsx = api_dir.join("node_modules/.bin/tsx");
+    let api_tsx_watcher = ROOT.join("tools/dev/watch_tsx.mjs");
     let app_dir = ROOT.join("fluxer_app");
     let app_dev_server = ROOT.join("tools/ci/run.sh");
     let public_url = public_url();
@@ -351,9 +352,9 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
     insert(DevTask {
         name: "api",
         args: vec![
+            "node".to_owned(),
+            api_tsx_watcher.display().to_string(),
             api_tsx.display().to_string(),
-            "watch".to_owned(),
-            "--clear-screen=false".to_owned(),
             "src/AppEntrypoint.ts".to_owned(),
         ],
         cwd: api_dir.clone(),
@@ -382,9 +383,9 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
     insert(DevTask {
         name: "worker",
         args: vec![
+            "node".to_owned(),
+            api_tsx_watcher.display().to_string(),
             api_tsx.display().to_string(),
-            "watch".to_owned(),
-            "--clear-screen=false".to_owned(),
             "src/WorkerEntrypoint.ts".to_owned(),
         ],
         cwd: api_dir,
@@ -1013,6 +1014,17 @@ mod tests {
         let expected_admin_port = ADMIN_PORT.to_string();
         let expected_app_upstream_url = format!("http://{LOOPBACK_HOST}:{APP_PORT}/");
         assert!(tasks["proxy"].args.ends_with(&["proxy".to_owned()]));
+        for (task, entrypoint) in [
+            ("api", "src/AppEntrypoint.ts"),
+            ("worker", "src/WorkerEntrypoint.ts"),
+        ] {
+            assert_eq!(tasks[task].args.first().map(String::as_str), Some("node"));
+            assert!(
+                Path::new(&tasks[task].args[1])
+                    .ends_with(Path::new("tools").join("dev").join("watch_tsx.mjs"))
+            );
+            assert_eq!(tasks[task].args[3], entrypoint);
+        }
         assert!(
             tasks["gateway-single"]
                 .args

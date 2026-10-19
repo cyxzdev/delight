@@ -33,6 +33,15 @@ function isDraftSource(source: string): boolean {
 	return parseFrontmatter(source).frontmatter.draft === true;
 }
 
+export function frontmatterBlock(source: string): string | null {
+	const normalized = source.replace(/\r\n/gu, '\n');
+	if (!normalized.startsWith('---\n')) {
+		return null;
+	}
+	const end = normalized.indexOf('\n---', 4);
+	return end === -1 ? null : normalized.slice(4, end);
+}
+
 async function partitionMarkdownFiles(directory: string, drafts: boolean): Promise<Array<string>> {
 	const files: Array<string> = [];
 	for (const file of await collectMarkdownFiles(directory)) {

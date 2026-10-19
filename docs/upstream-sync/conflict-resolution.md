@@ -38,3 +38,10 @@ The full initial same-path overlap inventory is in [the Delight customization ma
 | `fluxer_desktop/src/main/Updater.test.mjs` | Took the upstream test rewrite. The local Windows permission-mode skip covered an AppImage test removed by the upstream update-gate rewrite; retaining the old file would test a path the new updater no longer uses. | All 22 affected desktop test files pass (382 tests). |
 
 Desktop test portability fixes normalize CRLF before checking source text and normalize `path.relative()` output to `/` before comparing module IDs. These changes are test-only; application source behavior is unchanged by them.
+
+## Checkpoint 5 conflict review
+
+- Range: commits 71–100, ending at `94f123905`.
+- `git apply --3way --check --index` passed for all 212 upstream paths. Application completed with 0 unresolved index paths. Thirty-eight paths differed between the Delight checkpoint tree and source commit 70; Git applied these patches cleanly, so no manual conflict resolution was required.
+- The source change in `ThreadRoutes.test.ts` printed a three-way fallback notice and then applied cleanly. No failed hunks or conflict markers remain.
+- Delight product identity and local UI branding remain intact; no product rename or wholesale design replacement was applied.

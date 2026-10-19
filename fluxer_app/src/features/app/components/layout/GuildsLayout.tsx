@@ -215,7 +215,7 @@ function useGuildNavigationVisibility(): GuildNavigationVisibility {
 	const fluxerVisible = !RuntimeConfig.directMessagesDisabled;
 	const favoritesVisible = Accessibility.showFavorites;
 	const downloadVisible = !Platform.isElectron && !Platform.isPWA && !HiddenGuildListButtons.downloadButtonHidden;
-	const helpVisible = !HiddenGuildListButtons.helpButtonHidden;
+	const helpVisible = !HiddenGuildListButtons.helpButtonHidden && Routes.help() != null;
 	return useMemo(
 		() =>
 			Object.freeze({
@@ -1286,6 +1286,7 @@ const SKELETON_NAGBAR_ROW_SHAPES: Record<NagbarType, SkeletonNagbarRowShape> = {
 	[NagbarType.VISIONARY_MFA]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
 	[NagbarType.VOICE_SESSION_RESTORE]: {tone: SkeletonNagbarTone.VOICE, hasActions: true},
 	[NagbarType.TERMS_ACCEPTANCE]: {tone: SkeletonNagbarTone.LEGAL, hasActions: true},
+	[NagbarType.PRIVACY_SETUP]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
 	[NagbarType.SOFTWARE_ENCODER]: {tone: SkeletonNagbarTone.ENCODER, hasActions: true},
 	[NagbarType.STREAMER_MODE]: {tone: SkeletonNagbarTone.STREAMER, hasActions: true},
 	[NagbarType.DOMAIN_MOVED]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},

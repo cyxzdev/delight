@@ -51,7 +51,7 @@
 - Initial all-task dev startup timed out at Gateway readiness after 300 seconds. Starting app, API/services, and Gateway independently restored the local services; API health and Gateway readiness now return 200.
 - User owns all commits and pushes. No deployment has occurred. The original 11 staged user paths remain preserved in `stash@{0}`.
 
-## Checkpoint 4 — commits 56–70 (staged, uncommitted)
+## Checkpoint 4 — commits 56–70 (committed and pushed)
 
 - Source range: `1515a8487f987fd8ebf9621b31e422339c2e8b4d..4da8dec4ac251ddb0b92f213158995d93591e5df` (15 first-parent commits).
 - Applied 241 upstream paths spanning threads, desktop browser handoff and update behavior, trusted certificates, streamed request bodies, self-host media recovery, instance branding, and related fixes.
@@ -59,6 +59,17 @@
 - Four additional Windows test paths and five portability edits normalize CRLF in `BootstrapEntry`, `MainAppEntry`, and `WindowChrome`, and normalize path separators in `ChannelIsolation` and `SplashBundleOwnership`. `BootstrapEntry` is within the upstream paths; the other four tests add paths. The staged checkpoint contains 245 code/test paths plus these five progress files: 250 total.
 - Verification passed: 18 API test files / 209 tests; 4 app test files / 62 tests; full schema suite / 1,021 tests; 22 affected desktop test files / 382 tests; API, app, desktop, and schema TypeScript checks. CSS module types were regenerated before app typechecking.
 - The broader desktop suite reports 1,350 passed, 12 failed, 8 skipped. Remaining failures are in unchanged tests requiring Linux-specific entry behavior, Windows filesystem/symlink handling, or a native passkey backend not available on this host. npm registry DNS failures prevented pnpm dependency reconciliation, so local installed executables ran the checks.
-- No unresolved paths remain. `HEAD` and `origin/delight` remain `be99c9db8`; the agent made no commit or push. 70 of 310 post-base commits are staged or user-committed; 240 remain.
+- The user committed and pushed checkpoint 4 as `081140f4b`; the agent made no commit or push.
 
-Next: the user commits and pushes checkpoint 4, then integration resumes at commit 71 (`0906a85d6`). Restore the user's original 11 staged paths after upstream checkpoints; channel chooser visual checks and the final audit/verification remain pending.
+## Checkpoint 5 — commits 71–100 (staged, uncommitted)
+
+- Source range: `0906a85d6f6fde6d341d143d291a31ad7bbbedb3..94f123905065ee322dcbe67809eedb294c3bad47` (30 first-parent commits; 212 upstream paths).
+- Applied in the active `D:\Haze\delight` project checkout. The three-way patch check and application completed without unresolved paths; 38 source-vs-Delight overlapping paths applied cleanly.
+- Forum and media: forum post attachments are derived from the actual `CloudUpload` draft attachments, and forum post lists include known/closed posts with stable archived sorting. Thread follow-ups improve keyboard/focus behavior, member-list scrolling, private-thread leave confirmation, context-menu actions, and muted-community sidebar behavior.
+- Tests passed: API 17 files / 302; focused app 8 files / 114; desktop 3 files / 16; Rust admin 313; focused Gateway EUnit 11; errors package 12 files / 184; schema package 34 files / 1,021. API, app, desktop, errors, and schema typechecks passed after regenerating app CSS declarations.
+- Full app suite: 104 files / 1,419 assertions passed, but Vitest exited nonzero for two unhandled Idle timer exceptions in unchanged test files. Both affected files pass isolated (6 tests total); neither those tests nor `Idle.ts` changed in this batch.
+- Full Gateway EUnit ran twice and consistently exits nonzero: 42 passed, 0 failed, 5 cancelled because the unchanged `call_ringing` test cannot start its `meck` mock within the timeout. The isolated module reproduces it; `call_ringing.erl` is outside this source range. The changed Gateway test module passes its focused 11 tests.
+- Checkpoint 5 has 212 upstream code paths and five updated progress records staged (217 total); no commit or push was made by the agent. `HEAD` and `origin/delight` are `081140f4b`.
+- Overall progress is 100 of 310 post-base commits, with 210 remaining. The original 11 user paths remain saved in `stash@{0}` for restoration after upstream checkpoints.
+
+Next: the user commits/pushes checkpoint 5, then integration continues at commit 101 (`ae820ba4ea8bc0c1413706f6829559662035e108`). Channel chooser visual verification, original-stash restoration, and final traceability/security/migration/performance review remain pending.

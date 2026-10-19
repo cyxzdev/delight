@@ -61,10 +61,19 @@
 
 - Applied 15 first-parent commits through `4da8dec4ac251ddb0b92f213158995d93591e5df`, covering 241 upstream paths. Features include public threads and Plutonium, desktop browser sign-in handoff, trusted CA use, user-confirmed update application, self-hosted media recovery, instance branding, and related fixes.
 - Resolved the OAuth overlap by preserving Delight's application-name normalization and using upstream's active-instance product name in the session-expired message. Selected upstream's rewritten updater test file because the upstream update-gate change removes the local permission-mode test it had replaced.
-- Four additional local Windows test paths bring this batch to 245 code/test paths; five portability edits also touch the upstream-changed `BootstrapEntry` test. Five progress records make the staged checkpoint total 250. No unresolved paths remain; no commit or push was made by the agent.
+- Four additional local Windows test paths brought this batch to 245 code/test paths; five portability edits also touched the upstream-changed `BootstrapEntry` test. Five progress records made the staged checkpoint total 250. No unresolved paths remained. The user later committed and pushed checkpoint 4 as `081140f4b`.
 - Verification passed: 209 API tests, 62 app tests, 1,021 schema tests, 382 tests across 22 affected desktop test files, and TypeScript checks for API, app, desktop, and schema. CSS module declarations were generated before app typechecking.
 - A broader desktop run had 1,350 passing, 12 failing, and 8 skipped tests. The remaining failures are in unchanged tests for Linux desktop-entry behavior, Windows file/symlink assumptions, and native passkey initialization. npm registry DNS failures prevented pnpm dependency reconciliation, so local installed test/typecheck executables were used.
-- Current `HEAD` and `origin/delight` are `be99c9db8`; checkpoint 4 remains staged and awaits the user's commit/push. Next is commit 71 (`0906a85d6`); 240 post-base commits remain.
+- Checkpoint 4 was committed and pushed as `081140f4b`. Checkpoint 5 is now staged, and the next source commit after it is `ae820ba4e`.
+
+## Checkpoint 5: forum, media, and thread follow-ups
+
+- Commits 71–100 apply 212 upstream paths, staged in the user's active project. The patch check and three-way application completed without conflicts, including 38 same-path source/Delight divergences.
+- Forum post uploads now determine media-required validation from `CloudUpload`'s actual draft attachments. Forum post lists include all known posts (including closed posts) and sort archived posts. This is a forum/media follow-up, not a claim that every media-proxy change in the 561-commit range is complete.
+- Thread work includes focus and keyboard containment in the creation pane, scrollable member lists, confirmation before leaving private threads, thread browser context menus/debug actions, and correct sidebar unread behavior for joined threads in muted communities. The initial public Threads/Forum feature landed in checkpoint 4.
+- Verification passed: 302 API, 114 focused app, 16 desktop, 313 Rust admin, 11 focused Gateway EUnit, 184 errors-package, and 1,021 schema tests. API, app, desktop, errors, and schema typechecks passed.
+- Full app suite: 1,419 assertions passed, then Vitest reported two unhandled `Idle.applyIdleState()` timer exceptions from unchanged tests. Running those two files alone passed all 6 tests; neither file nor `Idle.ts` is part of this batch.
+- Full Gateway EUnit repeatedly reports 42 passed, 0 failed, 5 cancelled. The reproducible cancellation is in unchanged `call_ringing:apply_pending_ringing_publishes_one_ring_per_new_user_test/0` during `meck` mock startup; the changed Gateway test module itself passes. This remains an unrelated test-suite issue to revisit in final audit.
 
 ## Generated source inventory
 
@@ -72,3 +81,22 @@
 - The commit-title category counts independently match the supplied breakdown exactly: 352 bug fixes, 123 features, 11 performance, 16 refactors, and 59 maintenance/other.
 - `docs/upstream-sync/file-inventory.md` contains 7,943 rename-aware endpoint status rows across 7,952 distinct source/target paths.
 - These are inventory facts only; the generated per-commit impact/test/status fields remain pending review.
+
+## TypeScript hot reload on the Windows development mount
+
+- `tsx watch` was configured for the API and Worker, but a live edit to the API entrypoint did not restart the running process in the Docker devcontainer.
+- A focused Node probe confirmed the mount behavior: native `fs.watch` emitted no change event, while `fs.watchFile` polling observed the changed size/mtime after the host write propagated into the container.
+- `tools/dev/watch_tsx.mjs` now polls API `src/`, workspace package `src/` directories, and TS runtime/config files only through the `fluxer-dev` API/Worker tasks. It restarts the existing TSX entrypoint on changes; production launch/build commands are unaffected.
+- Live verification: a temporary comment changed the API child PID and triggered Worker restart messages; restoring the source triggered another restart. API `/_health`, the frontend app proxy, and the Gateway readiness endpoint returned 200 after recovery. A separate CSS probe produced Rspack HMR invalid/hash/ok cycles over the `/ws` proxy.
+- The first polling-wrapper attempt launched the `.bin/tsx` shell shim via Node and failed with a shell-script syntax error. Spawning the shim as the executable fixed the launch. Rust/Gateway polling was also explored, then removed after ten watchers stalled on mounted filesystem reads; it is not needed for the requested React/TypeScript dev reload.
+
+## Gateway verification caveat for checkpoint 6
+
+- `gateway_cluster_membership_tests` passed 21/21 when run alone, but its 300 ms concurrency assertion failed in two combined EUnit runs. Treat the combined-run failure as unresolved/flaky until reproduced under a quieter test environment.
+- The isolated `presence_cache_tests` run reported a `meck_proc:start/2` timeout in the existing `rebalance_drop_does_not_suppress_repair_test`. That test was already present in the staged checkpoint; the new grace-expiry test passed in the same run. Re-run the affected Gateway suite later, and keep the failure visible in the final test report if the test harness still times out.
+
+## Report-flow checkpoint 7
+
+- Upstream commit 110 touches API, schema, admin, client UI, and locale catalogs. The staged application of its locale patch conflicted only with a Japanese translation that said Delight where upstream expected Fluxer. All other hunks applied; the obsolete translation belonged to a report screen removed by the same change, so that entry was removed while retaining Delight branding in active UI copy.
+- `ReportRepositoryPostgresKv.test.ts` originally could not reach its ephemeral Docker Postgres from the Windows-backed devcontainer because it bound to host loopback. Added explicit host/bind-address test environment overrides with safe local defaults; the integration test then passed 10/10.
+- The API report suites passed after the locale and Docker test setup were complete. The OpenAPI generator test requires longer than Vitest's default 60-second `beforeAll` hook on this checkout; a 300-second isolated rerun passed. Do not interpret the initial timeout as a generator failure.

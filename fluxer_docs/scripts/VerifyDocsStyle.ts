@@ -3,7 +3,7 @@
 import {readdir, readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {DOCS_ROOT, readMarkdownPages} from './DocsSource.ts';
+import {DOCS_ROOT, frontmatterBlock, readMarkdownPages} from './DocsSource.ts';
 import {
 	columnWidthPercents,
 	extractTables,
@@ -55,22 +55,11 @@ interface Finding {
 	readonly detail: string;
 }
 
-function frontmatterOf(source: string): string | null {
-	if (!source.startsWith('---\n')) {
-		return null;
-	}
-	const end = source.indexOf('\n---', 4);
-	if (end === -1) {
-		return null;
-	}
-	return source.slice(4, end);
-}
-
 const pages = await readMarkdownPages(DOCS_ROOT, {includeDrafts: true});
 const findings: Array<Finding> = [];
 
 for (const {file, relativePath: relative, source, lines} of pages) {
-	const frontmatter = frontmatterOf(source);
+	const frontmatter = frontmatterBlock(source);
 
 	if (frontmatter == null) {
 		findings.push({file: relative, line: 1, rule: 'frontmatter', detail: 'missing frontmatter block'});
@@ -268,12 +257,12 @@ const TABLE_COUNT_FLOOR = 1800;
 const ACCEPTED_TABLE_FINDINGS = new Map<string, Readonly<Partial<Record<TableRule, number>>>>([
 	['admin-api/applications.mdx', {'table-identifier': 1}],
 	['admin-api/discovery.mdx', {'table-identifier': 1}],
-	['admin-api/gateway.mdx', {'table-identifier': 2}],
+	['admin-api/gateway.mdx', {'table-fit': 1, 'table-identifier': 3}],
 	['admin-api/guilds.mdx', {'table-identifier': 3}],
 	['admin-api/index.mdx', {'table-identifier': 3}],
 	['admin-api/instance.mdx', {'table-identifier': 8}],
 	['admin-api/messages.mdx', {'table-identifier': 1}],
-	['admin-api/reports.mdx', {'table-fit': 1, 'table-identifier': 2}],
+	['admin-api/reports.mdx', {'table-fit': 1, 'table-identifier': 3}],
 	['admin-api/users.mdx', {'table-identifier': 3}],
 	['admin-api/voice.mdx', {'table-identifier': 3}],
 	['gateway/event-filtering.md', {'table-cell': 2}],
@@ -298,12 +287,12 @@ const ACCEPTED_TABLE_FINDINGS = new Map<string, Readonly<Partial<Record<TableRul
 	['http-api/guild-moderation.mdx', {'table-cell': 1}],
 	['http-api/guild-stickers.mdx', {'table-cell': 3}],
 	['http-api/guilds.mdx', {'table-fit': 1, 'table-identifier': 4}],
-	['http-api/instance.mdx', {'table-identifier': 7}],
+	['http-api/instance.mdx', {'table-identifier': 8}],
 	['http-api/invites.mdx', {'table-cell': 6}],
 	['http-api/messages.mdx', {'table-fit': 1, 'table-cell': 20, 'table-identifier': 1}],
 	['http-api/permissions.mdx', {'table-cell': 8}],
 	['http-api/premium.mdx', {'table-identifier': 5}],
-	['http-api/reports.mdx', {'table-cell': 5, 'table-identifier': 1}],
+	['http-api/reports.mdx', {'table-identifier': 1}],
 	['http-api/search.mdx', {'table-fit': 1, 'table-cell': 2, 'table-identifier': 1}],
 	['http-api/streams.mdx', {'table-cell': 5}],
 	['http-api/unfurl.mdx', {'table-cell': 2, 'table-parallel': 1}],

@@ -516,7 +516,7 @@ Default `http://localhost:3900`. The S3 API address. `media-proxy` defaults to e
 
 #### `FLUXER_S3_PUBLIC_ENDPOINT`
 
-No default. The host substituted into presigned URLs, which are the only place it appears. Compose forwards it from `.env`, and uses `FLUXER_S3_ENDPOINT` when it is unset, except on `app-proxy`, which gets only a value `.env` sets and adds it to its Content Security Policy.
+No default. The host substituted into presigned URLs, which are the only place it appears. Compose forwards it from `.env`, and uses `FLUXER_S3_ENDPOINT` when it is unset, except on `app-proxy`, which gets only a value `.env` sets and adds it to its Content Security Policy. `admin` reads it to find the origin that report downloads are presigned against. See `FLUXER_S3_BUCKET_REPORTS`.
 
 #### `FLUXER_S3_FORCE_PATH_STYLE`
 
@@ -548,7 +548,7 @@ Default `fluxer-uploads`. Raw uploads. `media-proxy` defaults to `uploads`, `app
 
 #### `FLUXER_S3_BUCKET_REPORTS`
 
-Default `fluxer-reports`. Abuse report evidence. Read by `api` and `worker`. Compose forwards it from `.env` with a default of `fluxer-reports`, so every service and `seaweedfs-init` name the same bucket.
+Default `fluxer-reports`. Abuse report evidence. Read by `api`, `worker`, and `admin`. Compose forwards it from `.env` with a default of `fluxer-reports`, so every service and `seaweedfs-init` name the same bucket. `admin` allows one image origin for report attachments and profile snapshots in its Content Security Policy, the origin `api` presigns report downloads against. It works that origin out from this name, `FLUXER_S3_PUBLIC_ENDPOINT` or else `FLUXER_S3_ENDPOINT`, `FLUXER_S3_FORCE_PATH_STYLE` and `FLUXER_S3_BUCKET_UPLOADS`, so give `admin` the same values as `api`. The images load only when that origin is an address browsers can reach.
 
 #### `FLUXER_S3_BUCKET_HARVESTS`
 
@@ -1002,26 +1002,6 @@ With prices saved in the dashboard, add the retired ID to its legacy prices befo
 
 All are optional.
 
-#### `FLUXER_NCMEC_ENABLED`
-
-Default `false`. NCMEC reporting. Compose forwards it from `.env`.
-
-#### `FLUXER_NCMEC_BASE_URL`
-
-Default empty. The reporting endpoint, `https://report.cybertip.org/ispws` in production. Required when reporting is on. Compose forwards it from `.env`.
-
-#### `FLUXER_NCMEC_USERNAME`
-
-Default empty. The reporting login. Required when reporting is on. Compose forwards it from `.env`.
-
-#### `FLUXER_NCMEC_PASSWORD`
-
-Default empty. The reporting password. Required when reporting is on. Compose forwards it from `.env`.
-
-#### `FLUXER_NCMEC_REPORTER_EMAIL`
-
-Default empty. The contact address on reports. Required when reporting is on. Compose forwards it from `.env`.
-
 #### `FLUXER_CLAMAV_ENABLED`
 
 Default `false`. Upload virus scanning. Compose forwards it from `.env`, and no ClamAV container ships.
@@ -1043,6 +1023,10 @@ Default `false`. Behaviour when the scanner is unreachable. With scanning on and
 Defaults to the inverse of `FLUXER_SELF_HOSTED`. Off by default on a self-hosted instance. With feeds on, the worker downloads the URLhaus and PhishTank URL lists every six hours, and MalwareBazaar file hashes every twelve hours. Fluxer checks posted links against the URLs and uploads against the hashes.
 
 With feeds off, Fluxer checks none of this data. The first worker start with feeds off removes the URL feed file and every `malware_bazaar` file-SHA ban that no Admin added. File-SHA bans added through the Admin API stay. Turning feeds back on downloads the URLs within six hours and the hashes within twelve. Compose forwards it from `.env`.
+
+#### `FLUXER_REPORT_RETENTION_DRY_RUN`
+
+Default unset, which keeps the dry run. Read by `worker`. The daily [report retention](/admin-api/reports/#report-retention) job deletes reports 365 days after they were filed, with their evidence copies and search entries, unless a legal hold is in place. Until this is `false` or `0`, the job only logs what it would delete. Any other value, or no value, keeps the dry run. Check the counts in the `Processed report retention` log line before you turn deletion on, because deleted evidence cannot be restored. Compose forwards it from `.env`.
 
 #### `FLUXER_BREACHED_PASSWORD_CHECK_ENABLED`
 
@@ -1441,7 +1425,7 @@ Default `off`. The [cross-origin read policy](/media-proxy/overview/#cross-origi
 
 #### `FLUXER_MEDIA_PROXY_CORS_ALLOWED_ORIGINS`
 
-Default empty. Comma-separated origins that may read media through CORS, such as `https://web.fluxer.app`. Spaces around an entry and empty entries are ignored. Each entry is parsed as a URL and must be `http` or `https` with no credentials, query, fragment, or path beyond `/`. Its host must be an IPv4 address, a bracketed IPv6 address, or a domain name whose labels are ASCII letters, digits, and hyphens after parsing. So a wildcard such as `https://*.fluxer.app`, a brace pattern, an underscore, a trailing dot on a domain name, or any non-ASCII character fails. Write an internationalised domain name in its punycode form. Any failing entry makes the process exit. An entry is compared in the form a browser sends. `https://Web.Fluxer.App:443/` matches `https://web.fluxer.app`. Required when `FLUXER_MEDIA_PROXY_CORS_MODE` is `report` or `enforce`. When the policy is `report` or `enforce`, the Media Proxy logs the parsed list once at startup. When `FLUXER_MEDIA_PROXY_MODE` is `static` or `relay`, the Media Proxy ignores it.
+Default empty. Comma-separated origins that may read media through CORS, such as `https://web.fluxer.app`. Spaces around an entry and empty entries are ignored. Each entry is parsed as a URL and must be `http` or `https` with no credentials, query, fragment, or path beyond `/`. Its host must be an IPv4 address, a bracketed IPv6 address, or a domain name whose labels are ASCII letters, digits, and hyphens after parsing. So a wildcard such as `https://*.fluxer.app`, a brace pattern, an underscore, a trailing dot on a domain name, or any non-ASCII character fails. Write an internationalised domain name in its punycode form. The one exception is the desktop app origin `fluxer-app://app`. It is accepted as an entry and is always allowed without one. Any failing entry makes the process exit. An entry is compared in the form a browser sends. `https://Web.Fluxer.App:443/` matches `https://web.fluxer.app`. Required when `FLUXER_MEDIA_PROXY_CORS_MODE` is `report` or `enforce`. When the policy is `report` or `enforce`, the Media Proxy logs the parsed list once at startup. When `FLUXER_MEDIA_PROXY_MODE` is `static` or `relay`, the Media Proxy ignores it.
 
 Compose forwards it from `.env`, and defaults it to the public origin, built from `FLUXER_PUBLIC_ORIGIN`, or from `FLUXER_PUBLIC_SCHEME`, `FLUXER_DOMAIN`, and `FLUXER_PUBLIC_PORT`. That origin is the only entry, so the web app the instance serves reads its own media. The hosted web client and the desktop app run on `https://web.fluxer.app`. To let them read this instance's media through CORS, set the list in `.env` to the public origin and `https://web.fluxer.app`, such as `https://chat.example.com,https://web.fluxer.app`. A value set in `.env` replaces the Compose value, so it must name the public origin too.
 
@@ -1753,7 +1737,7 @@ The admin dashboard at `FLUXER_ADMIN_BASE_PATH` stores these in the database. Th
 
 #### Instance Config, Public App Identity
 
-Product name, client-visible brand assets, and the setup state in the instance discovery document.
+Product name, client-visible brand assets, the terms, privacy, and community guidelines links, and the setup state in the instance discovery document. No environment variable sets a legal link. On a self-hosted instance, the enforcement emails list only the terms and guidelines links set here, and the clients and report flows show no guidelines link until one is set.
 
 #### Instance Config, Registration Controls
 
@@ -2189,7 +2173,7 @@ Volume names are prefixed with the Compose project name, so `postgres-data` is `
 | --- | --- | --- |
 | fluxer | `FLUXER_S3_BUCKET_CDN` | Avatars, guild and entity assets, themes, entrance sounds, memes, and processed attachments |
 | fluxer-uploads | `FLUXER_S3_BUCKET_UPLOADS` | Raw attachment uploads, before processing |
-| fluxer-reports | `FLUXER_S3_BUCKET_REPORTS` | Abuse report evidence, and NCMEC payloads where that integration is on |
+| fluxer-reports | `FLUXER_S3_BUCKET_REPORTS` | Abuse report evidence |
 | fluxer-harvests | `FLUXER_S3_BUCKET_HARVESTS` | User and guild data archives |
 
 `FLUXER_S3_BUCKET_STATIC` names an optional bucket. The shipped stack does not use or create it.
