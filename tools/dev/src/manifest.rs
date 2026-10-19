@@ -8,6 +8,7 @@ pub const ANY_HOST: &str = "0.0.0.0";
 
 pub const DEV_PROXY_PORT: u16 = 8088;
 pub const DEV_PROXY_GATEWAY_PORTS_ENV: &str = "FLUXER_DEV_PROXY_GATEWAY_PORTS";
+pub const DELIGHT_SERVICE_PORT: u16 = 3000;
 pub const APP_PORT: u16 = 3000;
 pub const APP_PROXY_PORT: u16 = 8773;
 pub const ADMIN_PORT: u16 = 3020;
@@ -70,6 +71,20 @@ pub const PROXY_ROUTES: &[ProxyRoute] = &[
         prefix: "/devmail",
         host: "mailpit",
         port: DEVMAIL_PORT,
+        strip_prefix: false,
+        alternate_ports: &[],
+    },
+    ProxyRoute {
+        prefix: "/delight",
+        host: "delight-service",
+        port: DELIGHT_SERVICE_PORT,
+        strip_prefix: true,
+        alternate_ports: &[],
+    },
+    ProxyRoute {
+        prefix: "/ws",
+        host: LOOPBACK_HOST,
+        port: APP_PORT,
         strip_prefix: false,
         alternate_ports: &[],
     },

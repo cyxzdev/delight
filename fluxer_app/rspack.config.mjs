@@ -919,12 +919,22 @@ export default () => {
 				new LightningCssMinimizerRspackPlugin(),
 			],
 		},
+		// Poll the mounted source tree so edits made on the Windows host reach the devcontainer watcher.
+		watchOptions: isDevelopment ? {aggregateTimeout: 250, poll: 1000} : undefined,
 		devServer: {
 			port: Number(process.env.FLUXER_APP_DEV_PORT) || DEFAULT_DEV_SERVER_PORT,
-			hot: false,
-			liveReload: false,
-			client: false,
-			webSocketServer: false,
+			client: {
+				webSocketURL: {
+					hostname: 'localhost',
+					pathname: '/ws',
+					port: Number(process.env.FLUXER_DEV_PROXY_PORT) || 8088,
+					protocol: 'ws',
+				},
+			},
+			hot: true,
+			liveReload: true,
+			// Avoid slow compression of the large development bundle on the Windows-mounted workspace.
+			compress: false,
 			historyApiFallback: true,
 			allowedHosts: 'all',
 			headers: isDevelopment ? devServerHeaders : devCorsHeaders,

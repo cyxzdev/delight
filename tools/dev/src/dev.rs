@@ -402,6 +402,10 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
             ("RAYON_NUM_THREADS".to_owned(), Some("4".to_owned())),
             ("FLUXER_APP_DEV_PORT".to_owned(), Some(APP_PORT.to_string())),
             (
+                "FLUXER_DEV_PROXY_PORT".to_owned(),
+                Some(DEV_PROXY_PORT.to_string()),
+            ),
+            (
                 "FLUXER_STATIC_CDN_ENDPOINT".to_owned(),
                 Some(public_url.clone()),
             ),
@@ -437,6 +441,10 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
             (
                 "FLUXER_STATIC_DIR".to_owned(),
                 Some("fluxer_static".to_owned()),
+            ),
+            (
+                "FLUXER_CSP_EXTRA_CONNECT_SRC".to_owned(),
+                Some(format!("ws://localhost:{DEV_PROXY_PORT}")),
             ),
             ("RELEASE_CHANNEL".to_owned(), Some("canary".to_owned())),
         ],

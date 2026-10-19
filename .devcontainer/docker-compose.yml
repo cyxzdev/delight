@@ -268,6 +268,36 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  delight-service:
+    image: oven/bun:1-alpine
+    restart: unless-stopped
+    working_dir: /app
+    command: ["bun", "run", "/app/server.ts"]
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3000"
+      DATA_DIR: /data
+      FLUXER_API_URL: http://workspace:8080
+      FLUXER_ORIGIN: "http://localhost:${FLUXER_DEV_PROXY_PORT:-8088}"
+      DELIGHT_BADGE_ASSET_DIR: /badges
+      DELIGHT_FRAME_ASSET_DIR: /frames
+      DELIGHT_EFFECT_ASSET_DIR: /effects
+    volumes:
+      - ../delight/service:/app:ro
+      - ../delight/badges:/badges:ro
+      - ../delight/frames:/frames:ro
+      - ../delight/effects:/effects:ro
+      - delight-data:/data
+    depends_on:
+      workspace:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:3000/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
   postgres:
     image: postgres:16-alpine
     environment:
@@ -391,4 +421,5 @@ volumes:
   nats-data:
   meilisearch-data:
   mailpit-data:
+  delight-data:
   postgres-data:

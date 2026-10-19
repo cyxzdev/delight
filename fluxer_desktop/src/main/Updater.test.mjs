@@ -330,7 +330,12 @@ describe('Updater AppImage lifecycle', () => {
 	});
 
 	test('offers the manual download when the install directory is not writable', {
-		skip: process.getuid?.() === 0,
+		skip:
+			process.platform === 'win32'
+				? 'requires POSIX filesystem permissions'
+				: process.getuid?.() === 0
+					? 'requires an unprivileged user to test write permissions'
+					: false,
 	}, async () => {
 		const install = createInstall();
 		chmodSync(install.applications, 0o500);

@@ -191,7 +191,17 @@ describe('AppImageUpdate target resolution', () => {
 		assertUnavailable(resolveAppImageTarget(), 'appimage-path-not-a-file');
 	});
 
-	test('falls back when the containing directory is not writable', {skip: process.getuid?.() === 0}, () => {
+	test(
+		'falls back when the containing directory is not writable',
+		{
+			skip:
+				process.platform === 'win32'
+					? 'requires POSIX filesystem permissions'
+					: process.getuid?.() === 0
+						? 'requires an unprivileged user to test write permissions'
+						: false,
+		},
+		() => {
 		const install = createInstall();
 		chmodSync(install.applications, 0o500);
 		try {
@@ -201,7 +211,8 @@ describe('AppImageUpdate target resolution', () => {
 		} finally {
 			chmodSync(install.applications, 0o755);
 		}
-	});
+		},
+	);
 
 	test('resolves a writable AppImage to its own path', () => {
 		const install = createInstall();
@@ -215,7 +226,10 @@ describe('AppImageUpdate target resolution', () => {
 });
 
 describe('AppImageUpdate in-place replacement', () => {
-	test('replaces the running AppImage and keeps the user filename', async () => {
+	test(
+		'replaces the running AppImage and keeps the user filename',
+		{skip: process.platform === 'win32' ? 'requires POSIX executable mode bits' : false},
+		async () => {
 		const install = createInstall();
 		const appImageUpdate = loadAppImageUpdate({APPIMAGE: install.installedPath});
 		const resolved = appImageUpdate.resolveAppImageTarget();
@@ -242,7 +256,8 @@ describe('AppImageUpdate in-place replacement', () => {
 		assert.equal(readFileSync(install.installedPath).equals(NEW_BYTES), true);
 		assert.equal(createHash('sha256').update(readFileSync(install.installedPath)).digest('hex'), NEW_SHA256);
 		assert.equal(statSync(install.installedPath).mode & 0o111, 0o111);
-	});
+		},
+	);
 
 	test('stages inside the install directory so the rename cannot cross filesystems', async () => {
 		const install = createInstall();

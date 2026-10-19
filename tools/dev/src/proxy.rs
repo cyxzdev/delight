@@ -714,6 +714,17 @@ mod tests {
             rewrite_path("/devmail/messages?x=1", devmail),
             "/devmail/messages?x=1"
         );
+        let delight = route_for_path("/delight/effects/@me");
+        assert_eq!(delight.prefix, "/delight");
+        assert_eq!(delight.host, "delight-service");
+        assert_eq!(
+            rewrite_path("/delight/effects/@me", delight),
+            "/effects/@me"
+        );
+        let hmr = route_for_path("/ws");
+        assert_eq!(hmr.host, crate::manifest::LOOPBACK_HOST);
+        assert_eq!(hmr.port, crate::manifest::APP_PORT);
+        assert_eq!(rewrite_path("/ws?token=dev", hmr), "/ws?token=dev");
         let admin = route_for_path("/admin/users");
         assert_eq!(admin.prefix, "/admin");
         assert_eq!(rewrite_path("/admin/users", admin), "/users");

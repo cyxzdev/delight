@@ -21,4 +21,34 @@
 | Unresolved Git paths | 0 |
 | `git diff --check` | No whitespace errors; only LF/CRLF notice for `.gitignore` |
 
-No commit has been pushed and nothing has been deployed. To keep upcoming reviews smaller, the next checkpoint is commits 51–60 after the common base, through `7937d5f802`; this range changes 222 unique paths. Each checkpoint must be reviewed, tested, and recorded before moving forward.
+## Checkpoint 2 — commits 51–54
+
+- Upstream source checkpoint ends at `0ef1cd14c3be963c99e70c3b9bf1a2ad19a40f7b` (commit 54).
+- The user completed and pushed the merge as `9c149eefcfe94a3c25fcb71bf9203197bd5baffb`; the agent did not commit or push.
+- 54 of 310 post-base commits are integrated; 256 remain. There is no open merge. At the last check, `HEAD` matched `origin/delight`.
+- Integrated desktop proxy-detection/fallback and splash diagnostics changes across 30 paths.
+- Eight affected desktop test files: 195 passed, 3 skipped, 0 failed. The skipped cases require POSIX filesystem mode bits and remain enabled on Linux.
+- `pnpm --filter fluxer_desktop exec tsc --noEmit`, `pnpm --filter fluxer_app run typecheck:only`, and Gateway wire-transport test (18/18) passed.
+
+## Checkpoint 3 — commit 55 (staged, uncommitted)
+
+- Source: `7a4aa42d4b5fa6b7cd67ed7fa97350117c4e9601` (`feat(premium): native Nordic prices and subscribing during grace`).
+- Applied as one reviewable checkpoint: 84 upstream changed paths, with 12 scoped local proxy/HMR, Windows test-portability, and progress-record paths also staged (96 paths total); 0 merge conflicts. Upstream changes cover gift-trial metadata/reversal, subscription-period handling, Nordic currency selection, gift/grace subscription actions, related translations, and tests.
+- Tests: 9 API test files passed (288 tests); 2 frontend premium test files passed (15 tests); app typecheck passed; the proxy route Rust test passed (1 test); `cargo build -p fluxer-dev` passed.
+- `pnpm --filter fluxer_api run typecheck`: passed.
+- Rspack development build compiled successfully with 160 CSS module-order warnings and no compile errors. The running dev endpoint `/` returned 200.
+- The user owns the checkpoint merge commit and push. No commit/push was made. The current merge has 96 staged paths: 84 upstream paths and 12 local files. `HEAD` remains `9c149eefc`, `MERGE_HEAD` is `7a4aa42d4b`, and there are no unmerged paths.
+
+## Local profile-effect and hot-reload fix in progress
+
+- `ProfileEffectStore` correctly sends `PUT /delight/effects/@me`; the sidecar supports that method. The dev proxy lacked a `/delight` route and the devcontainer lacked the sidecar, so the request fell through to the GET/HEAD-only app proxy. Reproduction returned `405 Allow: GET,HEAD`; `GET /delight/health` returned the app shell instead of sidecar health.
+- Added a devcontainer Delight sidecar with a named persistent SQLite volume, a prefix-stripping `/delight` proxy route, and route-rewrite unit coverage.
+- Enabled Rspack HMR/live reload, restored the dev-server client/WebSocket defaults, routed `/ws` to the app server, added the local WebSocket CSP allowance, and enabled 1-second source polling for the Windows-mounted devcontainer tree.
+- Compose config validation and targeted proxy unit test passed. Sidecar health is green: `/delight/health` returns 200. An unauthenticated `PUT /delight/effects/@me` now returns the sidecar's expected 401 rather than 405; an authenticated save has not been exercised.
+- Two issues blocked the clean browser: gzip compression stalled the 1.6 MB entry bundle, and the default HMR client tried `ws://localhost:3000/ws`, which CSP blocked. Development-only Rspack compression is disabled, and `client.webSocketURL` now points to `ws://localhost:8088/ws` through the dev proxy. The app process was restarted to apply the config.
+- Isolated Chrome now loads the Delight sign-in page, opens `ws://localhost:8088/ws`, receives `hot`, `liveReload`, and successful `hash`/`ok` frames, and reports no CSP, console, or page errors. An uncompressed request for `main.js` returns all 1,603,622 bytes in about 0.23 seconds even when the client advertises gzip.
+- A temporary CSS comment triggered a browser-client HMR update. The file was restored byte-for-byte; the restored build completed, and `/` and `/delight/health` returned 200. Authenticated profile-effect persistence remains untested; without a session, the same PUT endpoint returns the expected 401 instead of 405.
+- Initial all-task dev startup timed out at Gateway readiness after 300 seconds. Starting app, API/services, and Gateway independently restored the local services; API health and Gateway readiness now return 200.
+- User owns all commits and pushes. No deployment has occurred. The original 11 staged user paths remain preserved in `stash@{0}`.
+
+Next: let the user commit/push this merge checkpoint before continuing at commit 56 (`1515a8487f`, two desktop outbound-HTTP paths). 255 of the 310 post-base commits remain. Keep updating this report per checkpoint, then restore the user's original 11 staged paths and finish channel-chooser visual and final audit/verification. Do not claim the sync is complete while those items remain.

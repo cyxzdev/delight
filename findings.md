@@ -11,6 +11,7 @@
 ## Local repository baseline
 
 - Workspace: `D:\Haze\delight`.
+- Current branch: `delight`; last observed `HEAD` and `origin/delight` were both `9c149eefcfe94a3c25fcb71bf9203197bd5baffb`.
 - Branch: `delight`; `HEAD=7ca7ebee85d16101c6430a25a7083ea4d03bff7f`.
 - HEAD subject: `LiveKit on Railway: bridge ICE-TCP to the container address, not loopback`.
 - HEAD parent: `50c80dc727dfb83366415c5382bce2ea1900c213` (2026-10-09, `Railway app build: turn off pnpm's deps check before scripts`).
@@ -35,8 +36,27 @@
 ## Evidence limitations
 
 - Checkpoint 1 has been integrated through `6de6be23581c96b33c40584948c92788f4323d12`; all 10 merge conflicts are documented in `docs/upstream-sync/conflict-resolution.md`.
+- Checkpoint 2 integrates source commits 51–54 through `0ef1cd14c3be963c99e70c3b9bf1a2ad19a40f7b`, committed and pushed by the user as `9c149eefc`. The current code work remains uncommitted, per the user's instruction.
 - Checkpoint 1 app typecheck passed, and the app suite passed with 101 files and 1,392 tests. This does not establish final sync completion.
+- For commits 51–54, eight changed desktop test files passed with 195 pass / 3 Windows-only POSIX checks skipped / 0 failures; desktop TSC, app typecheck, and the Gateway transport test passed.
 - Security, migration-wide, performance, full application visual, responsive, and RTL review remain to be completed across the remaining checkpoints.
+
+## Profile-effect 405 root cause
+
+- `ProfileEffectStore.saveOwnChoice()` correctly sends `PUT /delight/effects/@me`.
+- `delight/service/server.ts` supports that exact `PUT` route and strips the `/delight` prefix at the edge.
+- The local dev proxy had no `/delight` route, and the devcontainer did not start the Delight sidecar. Requests fell through to `fluxer_app_proxy`, which serves only GET/HEAD. Reproduction returned `405 Method Not Allowed` with `Allow: GET,HEAD`; `GET /delight/health` returned the app shell rather than the sidecar.
+- The fix adds a devcontainer sidecar, a persistent named development data volume, and a `/delight` proxy route to `delight-service:3000` with prefix stripping. The exact route rewrite has a Rust unit test.
+- HMR had been disabled by `hot: false`, `liveReload: false`, `client: false`, and `webSocketServer: false`. The config now enables hot/live reload, restores the dev-server client and WebSocket defaults, routes `/ws` through the local dev proxy, adds the local WebSocket origin to CSP, and polls the mounted source tree once per second in development.
+- Runtime checks on `localhost:8088` and `127.0.0.1:8088`: sidecar health 200; unauthenticated `PUT /delight/effects/@me` returns 401 (expected without a session) rather than 405. The isolated browser revealed a slow gzip response for the 1.6 MB dev entry and a CSP-blocked HMR socket aimed at port 3000. Development-only compression was disabled and the HMR client was directed through `ws://localhost:8088/ws`. Chrome now loads the sign-in screen, receives `hot`/`liveReload` and successful HMR hash/ok frames, and has no CSP/console/page errors. A temporary CSS probe was restored byte-for-byte and the rebuilt app returned 200. Authenticated profile-effect persistence is not exercised.
+- The first all-task development startup timed out after 300 seconds waiting for Gateway readiness. Separate app, API/services, and Gateway task startup restored health; Gateway now responds at `127.0.0.1:8771/_health/ready`. Development data volumes were not reset.
+
+## Checkpoint 3: upstream commit 55
+
+- `7a4aa42d4b5fa6b7cd67ed7fa97350117c4e9601`, 84 upstream paths, is applied as a staged, uncommitted merge with zero conflicts. There are 96 staged paths total after adding 12 local files for proxy/HMR, Windows test portability, and persistent progress records. Upstream scope includes Nordic billing currencies, subscribing during gift/grace time, Stripe gift-trial reversal/metadata, premium subscription UI state, and translations.
+- Verification: 288 API tests across 9 files passed; 15 frontend premium tests across 2 files passed; app typecheck passed; targeted Rust proxy route test passed; `cargo build -p fluxer-dev` passed.
+- The change remains inside the current Delight project and the app retains Delight identity. No commit, push, or deployment occurred.
+- The next source commit is `1515a8487f987fd8ebf9621b31e422339c2e8b4d` (commit 56, two desktop outbound-HTTP paths). The current Git merge must be completed by the user before the next merge; the user owns all commits and pushes.
 
 ## Generated source inventory
 
