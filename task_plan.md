@@ -129,3 +129,10 @@ The pinned upstream range is fully integrated. Review the unstaged project chang
 - Rust: `cargo test --workspace --exclude fluxer-media-proxy` passed; `cargo test -p fluxer_common` passed 52/52; `cargo test -p fluxer-ci` passed 127/127; `cargo fmt --all -- --check` passed. Full workspace is blocked building `fluxer-media-proxy` because Windows lacks `pkg-config` and libvips.
 - Fixed a Windows build regression in `fluxer_common::now_ms`: Unix retains `clock_gettime`; non-Unix uses `Instant`. The monotonic-clock regression test passes. Corrected the SPA test's self-hosted title expectation to Delight; `fluxer_app_proxy` passed 142/142.
 - Helm chart parity passed 2/2, desktop TypeScript passed, and `git diff --check` passed. The real Git index remains empty, with zero unresolved paths; `HEAD` and `origin/delight` remain `9fc3400073bfffdcf75a5b19b5a6c6dd92782737`.
+
+## Final publication checkpoint — 2026-10-20
+
+- The requested 561 upstream commits are integrated in the Delight checkout. The user explicitly requested publication; commit 1352b5aa9c977e5f9e3a14d546e4e18ad286dc27 (feat: integrate Fluxer upstream updates) was pushed to origin/delight.
+- The commit contains 5,366 changed paths. Post-push verification showed HEAD and origin/delight at the same SHA, with zero staged or working-tree paths. No further commit or push is pending.
+- Runtime verification after startup returned HTTP 200 from localhost:8088, localhost:3000, and localhost:8080/_health. Frontend HMR and API/worker source polling were verified in the preceding development checkpoint.
+- The recorded Batch 3 tests passed for the API (5,234 tests), supported Rust workspace, package suites (678 tests), and changed desktop/app paths. Remaining environment limits: two voice suites need regenerated ignored WASM output; media-proxy needs Windows pkg-config/libvips; Gateway EUnit needs Erlang/rebar3; the broader desktop suite needs a native Passkeys backend. Cross-theme and RTL visual review remains for the user review pass.

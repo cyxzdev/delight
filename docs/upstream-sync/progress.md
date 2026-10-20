@@ -93,3 +93,11 @@ Next: the user commits/pushes checkpoint 5, then integration continues at commit
 - Rust: full workspace excluding `fluxer-media-proxy` passed, as did `fluxer_common` 52/52 and `fluxer-ci` 127/127. `fluxer_app_proxy` passed 142/142 after correcting a Fluxer title expectation to Delight. `cargo fmt --all -- --check` passed. Building `fluxer-media-proxy` is blocked by missing Windows `pkg-config`/libvips.
 - Fixed Windows monotonic time in `fluxer_common::now_ms` with an `Instant` fallback. Desktop and API typechecks passed; desktop tests 11/11; Helm parity 2/2; `git diff --check` passed.
 - Next: source entries 497–561 (65 commits), `e403fb6cce65241456ab9884f8a8efb6fec52d8a..b8d43af1919fa0e96382577899241535c71be694`.
+
+## Final upstream sync and GitHub publication — 2026-10-20
+
+- Completed all 561 pinned upstream commits, including Batch 3 entries 497–561, while preserving Delight branding and local customizations.
+- At the user request, committed and pushed 5,366 changed paths as 1352b5aa9c977e5f9e3a14d546e4e18ad286dc27 (feat: integrate Fluxer upstream updates) to origin/delight.
+- Post-push verification: HEAD and origin/delight match at 1352b5aa9c977e5f9e3a14d546e4e18ad286dc27; the index and working tree are clean.
+- The API, supported Rust workspace, package suites, and changed app/desktop paths passed as recorded in the Batch 3 results. Known environment limits remain: two voice suites need regenerated ignored WASM output; media-proxy needs Windows pkg-config/libvips; Gateway EUnit needs Erlang/rebar3; the broader desktop suite needs a native Passkeys backend. Cross-theme and RTL visual review remains open.
+- Development runtime checks returned HTTP 200 from localhost:8088, localhost:3000, and localhost:8080/_health; HMR and API/worker source polling were verified in the development checkpoint.
