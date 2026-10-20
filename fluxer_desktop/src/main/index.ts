@@ -9,6 +9,7 @@ import {
 	WINDOWS_APP_USER_MODEL_ID,
 	WINDOWS_TOAST_ACTIVATOR_CLSID,
 } from '@electron/common/DesktopIdentity';
+import {writeLogFilesUnder} from '@electron/common/Logger';
 import {configureUserDataPath} from '@electron/common/UserDataPath';
 import {
 	APP_STORE_ADDON_PACKAGE,
@@ -72,7 +73,7 @@ import {
 	registerIpcHandlers,
 } from '@electron/main/IpcHandlers';
 import {initializeJumpList} from '@electron/main/JumpList';
-import {describeLaunchDiagnosticOptions} from '@electron/main/LaunchOptions';
+import {describeLaunchDiagnosticOptions, shouldDisableModuleUpdatesForLaunch} from '@electron/main/LaunchOptions';
 import {cleanupLegacyHarvestHandlers, registerLegacyHarvestHandlers} from '@electron/main/LegacyHarvestIpc';
 import {initializeLegacyOriginHarvest} from '@electron/main/LegacyOriginHarvest';
 import {cleanupVirtmic, registerVirtmicHandlers} from '@electron/main/LinuxAudioCapture';
@@ -94,7 +95,6 @@ import {
 } from '@electron/main/NativeHardwareEncoder';
 import {type NativeModulePreflightResult, runNativeModulePreflight} from '@electron/main/NativeModulePreflight';
 import {armNativeProbeCache} from '@electron/main/NativeProbeCache';
-import {cleanupNativeScreenCapture, registerNativeScreenCaptureHandlers} from '@electron/main/NativeScreenCapture';
 import {applyPreReadyChromiumConfiguration} from '@electron/main/PreReadyChromium';
 import {cleanupLinuxChromiumSpellcheckDictionaries} from '@electron/main/Spellcheck';
 import {
@@ -151,8 +151,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
 const userDataConfig = configureUserDataPath();
 if (userDataConfig.portable) {
-	const portableLogsPath = app.getPath('logs');
-	log.transports.file.resolvePathFn = (variables) => path.join(portableLogsPath, variables.fileName ?? 'main.log');
+	writeLogFilesUnder(app.getPath('logs'));
 }
 armNativeProbeCache(userDataConfig.base);
 const processConfiguredAt = Date.now();
@@ -540,11 +539,6 @@ if (launchConfigurationError) {
 					log.error('[Init] Failed to remove the legacy Squirrel uninstall entry:', error);
 				}
 				try {
-					runStartupPhase('native-screen-capture-handlers', registerNativeScreenCaptureHandlers);
-				} catch (error: unknown) {
-					log.error('[Init] Failed to register native screen capture handlers:', error);
-				}
-				try {
 					runStartupPhase('native-hardware-encoder-handlers', registerNativeHardwareEncoderHandlers);
 				} catch (error: unknown) {
 					log.error('[Init] Failed to register native hardware encoder handlers:', error);
@@ -606,7 +600,7 @@ if (launchConfigurationError) {
 						showWindow,
 					});
 				});
-				if (process.env.FLUXER_OFFLINE !== '1') {
+				if (process.env.FLUXER_OFFLINE !== '1' && !shouldDisableModuleUpdatesForLaunch()) {
 					const {registerUpdater} = await import('@electron/main/Updater');
 					registerUpdater(getMainWindow);
 				}
@@ -691,7 +685,6 @@ if (launchConfigurationError) {
 			cleanupIpcHandlers({quitting: true});
 			cleanupGlobalShortcuts();
 			cleanupNativeAudio();
-			cleanupNativeScreenCapture();
 			cleanupNativeHardwareEncoderHandlers();
 			cleanupVirtmic();
 			destroyDesktopTray();

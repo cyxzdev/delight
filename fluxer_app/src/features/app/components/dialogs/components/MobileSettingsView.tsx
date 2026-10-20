@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {Routes} from '@app/app/Routes';
 import {ClientInfo} from '@app/features/app/components/dialogs/components/ClientInfo';
 import {LogoutModal} from '@app/features/app/components/dialogs/components/LogoutModal';
 import styles from '@app/features/app/components/dialogs/components/MobileSettingsView.module.css';
@@ -9,11 +10,17 @@ import {
 	MobileSettingsDangerItem,
 } from '@app/features/app/components/dialogs/shared/MobileSettingsComponents';
 import {SettingsCurrentTabProvider} from '@app/features/app/components/dialogs/shared/SettingsCurrentTabContext';
+import {settingsModalStyles} from '@app/features/app/components/dialogs/shared/SettingsModalLayout';
+import {SETTINGS_FADE_VARIANTS} from '@app/features/app/components/dialogs/shared/SettingsTransitions';
 import {LongPressable} from '@app/features/app/components/LongPressable';
-import {hasWhatsNewEntries} from '@app/features/app/components/whats_new/WhatsNewEntries';
-import {openWhatsNewModal} from '@app/features/app/components/whats_new/WhatsNewModal';
 import {usePressable} from '@app/features/app/hooks/usePressable';
-import {SETTINGS_DESCRIPTOR, SIGN_OUT_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
+import {
+	OPENS_IN_BROWSER_DESCRIPTOR,
+	SETTINGS_DESCRIPTOR,
+	SIGN_OUT_DESCRIPTOR,
+	SUBMIT_FEEDBACK_DESCRIPTOR,
+	WHATS_NEW_DESCRIPTOR,
+} from '@app/features/i18n/utils/CommonMessageDescriptors';
 import {isKeyboardActivationKey} from '@app/features/input/utils/KeyboardUtils';
 import {activateLatestServiceWorker} from '@app/features/platform/types/Versioning';
 import {Logger} from '@app/features/platform/utils/AppLogger';
@@ -21,9 +28,11 @@ import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import {modal} from '@app/features/ui/commands/ModalCommands';
 import * as TextCopyCommands from '@app/features/ui/commands/TextCopyCommands';
 import {MentionBadgeAnimated} from '@app/features/ui/components/MentionBadge';
+import {NotificationDot} from '@app/features/ui/components/NotificationDot';
 import {Scroller, type ScrollerHandle} from '@app/features/ui/components/Scroller';
 import {Spinner} from '@app/features/ui/components/Spinner';
 import {StatusAwareAvatar} from '@app/features/ui/components/StatusAwareAvatar';
+import {openExternalUrl} from '@app/features/ui/utils/NativeUtils';
 import ApplicationsTabState from '@app/features/user/components/modals/tabs/applications_tab/ApplicationsTabState';
 import userSettingsStyles from '@app/features/user/components/modals/UserSettingsModal.module.css';
 import {getSettingsTabComponent} from '@app/features/user/components/settings_utils/DesktopSettingsTabs';
@@ -31,6 +40,7 @@ import type {SettingsTab} from '@app/features/user/components/settings_utils/Set
 import {
 	getCategoryLabel,
 	getUserSettingsTabLabel,
+	PRIVACY_REVIEW_NEEDED_DESCRIPTOR,
 } from '@app/features/user/components/settings_utils/SettingsConstants';
 import {isSettingsItemNew} from '@app/features/user/components/settings_utils/SettingsMetadata';
 import {
@@ -44,10 +54,19 @@ import {buildUserSettingsDeepLink} from '@app/features/user/components/settings_
 import type {MobileNavigationState} from '@app/features/user/hooks/useMobileNavigation';
 import {useSettingsContentKey} from '@app/features/user/hooks/useSettingsContentKey';
 import {useUnsavedChangesFlash} from '@app/features/user/hooks/useUnsavedChangesFlash';
+import UserSettings from '@app/features/user/state/UserSettings';
 import Users from '@app/features/user/state/Users';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
-import {ArrowClockwiseIcon, ArrowLeftIcon, type IconWeight, MegaphoneIcon, SignOutIcon} from '@phosphor-icons/react';
+import {
+	ArrowClockwiseIcon,
+	ArrowLeftIcon,
+	ArrowSquareOutIcon,
+	ChatCircleDotsIcon,
+	type IconWeight,
+	SignOutIcon,
+	SparkleIcon,
+} from '@phosphor-icons/react';
 import {clsx} from 'clsx';
 import {AnimatePresence, motion} from 'framer-motion';
 import {observer} from 'mobx-react-lite';
@@ -55,10 +74,6 @@ import React, {type UIEvent, useCallback, useEffect, useMemo, useRef, useState} 
 
 const UPDATE_SERVICE_WORKER_DESCRIPTOR = msg({
 	message: 'Update service worker',
-	comment: 'Short label in the settings dialog mobile settings view.',
-});
-const WHAT_S_NEW_DESCRIPTOR = msg({
-	message: "What's new",
 	comment: 'Short label in the settings dialog mobile settings view.',
 });
 const DEBUG_DESCRIPTOR = msg({
@@ -137,9 +152,10 @@ interface PressableSettingsItemProps {
 	tab: SettingsTab;
 	onSelect: () => void;
 	badge?: React.ReactNode;
+	attention?: string;
 }
 
-const PressableSettingsItem: React.FC<PressableSettingsItemProps> = observer(({tab, onSelect, badge}) => {
+const PressableSettingsItem: React.FC<PressableSettingsItemProps> = observer(({tab, onSelect, badge, attention}) => {
 	const {isPressed, pressableProps} = usePressable();
 	const {handleLongPressCopy, consumeSuppressedClick} = useSettingsPageDeepLinkLongPress(tab.type);
 	const handleClick = useCallback(
@@ -187,6 +203,9 @@ const PressableSettingsItem: React.FC<PressableSettingsItemProps> = observer(({t
 					{badge}
 				</div>
 			</div>
+			{attention && (
+				<NotificationDot label={attention} data-flx="app.mobile-settings-view.pressable-settings-item.attention-dot" />
+			)}
 			<ArrowLeftIcon
 				className={styles.settingsItemArrow}
 				data-flx="app.mobile-settings-view.pressable-settings-item.settings-item-arrow"
@@ -202,10 +221,12 @@ interface MobileSettingsActionItemProps {
 	isLoading?: boolean;
 	iconWeight?: IconWeight;
 	showArrow?: boolean;
+	external?: boolean;
 }
 
 const MobileSettingsActionItem: React.FC<MobileSettingsActionItemProps> = observer(
-	({icon: IconComponent, label, onClick, isLoading = false, iconWeight, showArrow = true}) => {
+	({icon: IconComponent, label, onClick, isLoading = false, iconWeight, showArrow = true, external = false}) => {
+		const {i18n} = useLingui();
 		const {isPressed, pressableProps} = usePressable();
 		return (
 			<LongPressable
@@ -240,6 +261,14 @@ const MobileSettingsActionItem: React.FC<MobileSettingsActionItemProps> = observ
 						>
 							{label}
 						</span>
+						{external && (
+							<span
+								className={settingsModalStyles.srOnly}
+								data-flx="app.mobile-settings-view.mobile-settings-action-item.external-hint"
+							>
+								{i18n._(OPENS_IN_BROWSER_DESCRIPTOR)}
+							</span>
+						)}
 						{isLoading && (
 							<Spinner
 								size="small"
@@ -249,11 +278,20 @@ const MobileSettingsActionItem: React.FC<MobileSettingsActionItemProps> = observ
 						)}
 					</div>
 				</div>
-				{showArrow && (
-					<ArrowLeftIcon
-						className={styles.settingsItemArrow}
-						data-flx="app.mobile-settings-view.mobile-settings-action-item.settings-item-arrow"
+				{external ? (
+					<ArrowSquareOutIcon
+						className={styles.settingsItemExternalIcon}
+						weight="bold"
+						aria-hidden="true"
+						data-flx="app.mobile-settings-view.mobile-settings-action-item.settings-item-external-icon"
 					/>
+				) : (
+					showArrow && (
+						<ArrowLeftIcon
+							className={styles.settingsItemArrow}
+							data-flx="app.mobile-settings-view.mobile-settings-action-item.settings-item-arrow"
+						/>
+					)
 				)}
 			</LongPressable>
 		);
@@ -361,7 +399,7 @@ const MobileSettingsList = observer(
 	}) => {
 		const {i18n} = useLingui();
 		const currentUser = Users.currentUser;
-		const shouldShowWhatsNew = hasWhatsNewEntries();
+		const privacySetupPending = UserSettings.isPrivacySetupPending();
 		const advancedSettingsHasNew = useMemo(
 			() =>
 				getAdvancedSettingItems().some((item) => isSettingsItemNew(item, Date.now(), currentUser?.createdAt ?? null)),
@@ -380,6 +418,8 @@ const MobileSettingsList = observer(
 		const handleLogout = useCallback(() => {
 			ModalCommands.push(modal(() => <LogoutModal data-flx="app.mobile-settings-view.handle-logout.logout-modal" />));
 		}, []);
+		const patchNotesUrl = Routes.patchNotes();
+		const feedbackUrl = Routes.feedback();
 		const categories = Object.entries(mobileVisibleTabs);
 		const lastCategoryIndex = categories.length - 1;
 		return (
@@ -432,6 +472,11 @@ const MobileSettingsList = observer(
 											tab={tab}
 											onSelect={() => onTabSelect(tab.type, tab.label)}
 											badge={badge}
+											attention={
+												tab.type === 'privacy_safety' && privacySetupPending
+													? i18n._(PRIVACY_REVIEW_NEEDED_DESCRIPTOR)
+													: undefined
+											}
 											data-flx="app.mobile-settings-view.mobile-settings-list.pressable-settings-item.tab-select"
 										/>
 										{(!isLastTab || isLastCategory) && (
@@ -443,30 +488,39 @@ const MobileSettingsList = observer(
 									</div>
 								);
 							})}
-							{categoryIndex === lastCategoryIndex && (
+							{categoryIndex === lastCategoryIndex && patchNotesUrl && (
 								<>
-									{shouldShowWhatsNew && (
-										<>
-											<MobileSettingsActionItem
-												icon={MegaphoneIcon}
-												iconWeight="fill"
-												label={i18n._(WHAT_S_NEW_DESCRIPTOR)}
-												onClick={openWhatsNewModal}
-												data-flx="app.mobile-settings-view.mobile-settings-list.mobile-settings-action-item.open-whats-new-modal"
-											/>
-											<div
-												className={styles.divider}
-												data-flx="app.mobile-settings-view.mobile-settings-list.divider--2"
-											/>
-										</>
-									)}
-									<MobileSettingsDangerItem
-										icon={SignOutIcon}
-										label={i18n._(SIGN_OUT_DESCRIPTOR)}
-										onClick={handleLogout}
-										data-flx="app.mobile-settings-view.mobile-settings-list.mobile-settings-danger-item.logout"
+									<MobileSettingsActionItem
+										icon={SparkleIcon}
+										iconWeight="fill"
+										label={i18n._(WHATS_NEW_DESCRIPTOR)}
+										onClick={() => void openExternalUrl(patchNotesUrl)}
+										external={true}
+										data-flx="app.mobile-settings-view.mobile-settings-list.mobile-settings-action-item.whats-new"
 									/>
+									<div className={styles.divider} data-flx="app.mobile-settings-view.mobile-settings-list.divider--2" />
 								</>
+							)}
+							{categoryIndex === lastCategoryIndex && feedbackUrl && (
+								<>
+									<MobileSettingsActionItem
+										icon={ChatCircleDotsIcon}
+										iconWeight="fill"
+										label={i18n._(SUBMIT_FEEDBACK_DESCRIPTOR)}
+										onClick={() => void openExternalUrl(feedbackUrl)}
+										external={true}
+										data-flx="app.mobile-settings-view.mobile-settings-list.mobile-settings-action-item.submit-feedback"
+									/>
+									<div className={styles.divider} data-flx="app.mobile-settings-view.mobile-settings-list.divider--3" />
+								</>
+							)}
+							{categoryIndex === lastCategoryIndex && (
+								<MobileSettingsDangerItem
+									icon={SignOutIcon}
+									label={i18n._(SIGN_OUT_DESCRIPTOR)}
+									onClick={handleLogout}
+									data-flx="app.mobile-settings-view.mobile-settings-list.mobile-settings-danger-item.logout"
+								/>
 							)}
 						</div>
 					</div>
@@ -498,17 +552,6 @@ const MobileSettingsList = observer(
 		);
 	},
 );
-const contentFadeVariants = {
-	enter: {opacity: 0},
-	center: {opacity: 1},
-	exit: {opacity: 0},
-};
-const headerFadeVariants = {
-	enter: {opacity: 0},
-	center: {opacity: 1},
-	exit: {opacity: 0},
-};
-
 interface MobileContentWithScrollSpyProps {
 	scrollKey: string;
 	settingsTabType?: UserSettingsTabType;
@@ -660,7 +703,7 @@ export const MobileSettingsView: React.FC<MobileSettingsViewProps> = observer(
 						{showMobileList && (
 							<motion.div
 								key="mobile-list-header"
-								variants={headerFadeVariants}
+								variants={SETTINGS_FADE_VARIANTS}
 								initial="center"
 								animate="center"
 								exit="exit"
@@ -678,7 +721,7 @@ export const MobileSettingsView: React.FC<MobileSettingsViewProps> = observer(
 						{showMobileContent && currentTab && (
 							<motion.div
 								key={`mobile-content-header-${mobileNav.currentView?.tab}`}
-								variants={headerFadeVariants}
+								variants={SETTINGS_FADE_VARIANTS}
 								initial="enter"
 								animate="center"
 								exit="exit"
@@ -709,7 +752,7 @@ export const MobileSettingsView: React.FC<MobileSettingsViewProps> = observer(
 							<motion.div
 								key="mobile-list-content"
 								custom={mobileNav.direction}
-								variants={contentFadeVariants}
+								variants={SETTINGS_FADE_VARIANTS}
 								initial="center"
 								animate="center"
 								exit="exit"
@@ -730,7 +773,7 @@ export const MobileSettingsView: React.FC<MobileSettingsViewProps> = observer(
 							<motion.div
 								key={`mobile-content-${mobileNav.currentView?.tab}`}
 								custom={mobileNav.direction}
-								variants={contentFadeVariants}
+								variants={SETTINGS_FADE_VARIANTS}
 								initial="enter"
 								animate="center"
 								exit="exit"

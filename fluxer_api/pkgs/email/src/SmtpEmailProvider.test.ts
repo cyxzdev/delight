@@ -3,42 +3,55 @@
 import {SmtpEmailProvider} from '@pkgs/email/src/SmtpEmailProvider';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-const {sendMail} = vi.hoisted(() => ({sendMail: vi.fn()}));
+const {createTransport} = vi.hoisted(() => ({createTransport: vi.fn()}));
 
-vi.mock('nodemailer', () => ({
-	default: {createTransport: () => ({sendMail, verify: vi.fn()})},
-}));
-
-const MESSAGE = {
-	to: 'user@example.com',
-	from: {email: 'noreply@example.com', name: 'Fluxer'},
-	subject: 'Subject',
-	text: 'Body',
-};
-
-function createProvider(): SmtpEmailProvider {
-	return new SmtpEmailProvider({host: 'smtp.example.com', port: 587, username: 'user', password: 'pass'});
-}
+vi.mock('nodemailer', () => ({default: {createTransport}}));
 
 describe('SmtpEmailProvider', () => {
 	beforeEach(() => {
-		sendMail.mockReset();
-		sendMail.mockResolvedValue({});
+		createTransport.mockReset();
+		createTransport.mockReturnValue({sendMail: vi.fn(), verify: vi.fn()});
 	});
 
-	it('passes the reply-to address to nodemailer', async () => {
-		await expect(createProvider().sendEmail({...MESSAGE, replyTo: 'support@example.com'})).resolves.toBe(true);
-		expect(sendMail).toHaveBeenCalledWith({
-			to: 'user@example.com',
-			from: 'Fluxer <noreply@example.com>',
-			replyTo: 'support@example.com',
-			subject: 'Subject',
-			text: 'Body',
+	it.each([
+		{port: 465, tlsMode: undefined, secure: true, requireTLS: false, ignoreTLS: false},
+		{port: 587, tlsMode: undefined, secure: false, requireTLS: true, ignoreTLS: false},
+		{port: 587, tlsMode: null, secure: false, requireTLS: true, ignoreTLS: false},
+		{port: 587, tlsMode: 'implicit', secure: true, requireTLS: false, ignoreTLS: false},
+		{port: 465, tlsMode: 'starttls', secure: false, requireTLS: true, ignoreTLS: false},
+		{port: 25, tlsMode: 'opportunistic', secure: false, requireTLS: false, ignoreTLS: false},
+		{port: 587, tlsMode: 'none', secure: false, requireTLS: false, ignoreTLS: true},
+	] as const)('maps TLS mode $tlsMode on port $port to nodemailer options', ({port, tlsMode, ...expected}) => {
+		new SmtpEmailProvider({host: 'smtp.example.com', port, username: 'user', password: 'pass', tlsMode});
+		expect(createTransport).toHaveBeenCalledWith(expect.objectContaining(expected));
+	});
+
+	const message = {
+		to: 'user@example.com',
+		from: {email: 'noreply@example.com', name: 'Example'},
+		subject: 'Hi',
+		text: 'Body',
+	};
+
+	it('sends the configured headers verbatim', async () => {
+		const provider = new SmtpEmailProvider({
+			host: 'smtp.example.com',
+			port: 587,
+			username: 'user',
+			password: 'pass',
+			headers: {'X-Tracking': '{"enable":0}'},
 		});
+		await provider.sendEmail(message);
+		const {sendMail} = createTransport.mock.results[0].value;
+		expect(sendMail).toHaveBeenCalledWith(
+			expect.objectContaining({headers: {'X-Tracking': {prepared: true, value: '{"enable":0}'}}}),
+		);
 	});
 
-	it('omits the reply-to address when the message has none', async () => {
-		await expect(createProvider().sendEmail(MESSAGE)).resolves.toBe(true);
-		expect(sendMail.mock.calls[0][0]).not.toHaveProperty('replyTo');
+	it('sends no extra headers when none are configured', async () => {
+		const provider = new SmtpEmailProvider({host: 'smtp.example.com', port: 587, username: 'user', password: 'pass'});
+		await provider.sendEmail(message);
+		const {sendMail} = createTransport.mock.results[0].value;
+		expect(sendMail.mock.calls[0][0]).not.toHaveProperty('headers');
 	});
 });

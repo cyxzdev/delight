@@ -3,9 +3,12 @@
 import type {APIConfig, BlueskyOAuthConfig, TrustedCallerConfig} from '@app/api/config/APIConfig';
 import {DonationRateLimitConfigs} from '@app/api/rate_limit_configs/DonationRateLimitConfig';
 import {parseIpBanEntry} from '@app/api/utils/IpRangeUtils';
+import {trimTrailingSlash} from '@app/api/utils/UrlUtils';
 import type {WorkerTaskName} from '@app/api/worker/WorkerLaneConfig';
 import type {MasterConfig} from '@fluxer/config/src/MasterConfig';
+import {smtpTlsModeFromSecure} from '@fluxer/constants/src/SmtpConstants';
 import {parseIpAddress} from '@fluxer/ip_utils/src/IpAddress';
+import {normalizeString} from '@fluxer/schema/src/primitives/SchemaPrimitives';
 import {parseGeoipSourceConfig, resolveGeoipRuntimeSourceConfig} from '@pkgs/geoip/src/GeoipStartup';
 
 function extractHostname(url: string): string {
@@ -14,10 +17,6 @@ function extractHostname(url: string): string {
 	} catch {
 		throw new Error(`Invalid URL: ${url}`);
 	}
-}
-
-function trimTrailingSlash(url: string): string {
-	return url.replace(/\/+$/u, '');
 }
 
 function resolveEmailAppBaseUrl(master: MasterConfig): string {
@@ -38,6 +37,18 @@ function resolveEmailAppBaseUrl(master: MasterConfig): string {
 	} catch {
 		throw new Error(`Invalid email app base URL: ${configuredAppBaseUrl}`);
 	}
+}
+
+function toSmtpConfig(
+	smtp: NonNullable<MasterConfig['integrations']['email']['smtp']>,
+): NonNullable<APIConfig['email']['smtp']> {
+	return {
+		host: smtp.host,
+		port: smtp.port,
+		username: smtp.username,
+		password: smtp.password,
+		tlsMode: smtp.tls_mode ?? smtpTlsModeFromSecure(smtp.secure),
+	};
 }
 
 function isBoolean(value: unknown): value is boolean {
@@ -77,27 +88,6 @@ function normalizeIpBanExemptIps(values: Array<string>): Array<string> {
 		normalized.add(parsed.normalized);
 	}
 	return Array.from(normalized);
-}
-
-function mapApnsApps(
-	apps:
-		| Array<{
-				app_id?: string;
-				topic?: string;
-				environment?: 'production' | 'development';
-		  }>
-		| undefined,
-): APIConfig['push']['apns']['apps'] {
-	return (apps ?? []).map((app) => {
-		if (!app.app_id) {
-			throw new Error('FLUXER_PUSH_APNS_APPS contains an entry with no app_id');
-		}
-		return {
-			appId: app.app_id,
-			topic: app.topic,
-			environment: app.environment,
-		};
-	});
 }
 
 const TRUSTED_CALLER_MIN_KEY_LENGTH = 32;
@@ -144,6 +134,24 @@ function buildTrustedCallers(master: MasterConfig): Array<TrustedCallerConfig> {
 		});
 	}
 	return trustedCallers;
+}
+
+const SETUP_TOKEN_MIN_LENGTH = 32;
+const SETUP_TOKEN_MAX_LENGTH = 256;
+
+function resolveSetupToken(master: MasterConfig): string | null {
+	const token = master.instance.setup.token?.trim();
+	if (!token) return null;
+	if (
+		token.length < SETUP_TOKEN_MIN_LENGTH ||
+		token.length > SETUP_TOKEN_MAX_LENGTH ||
+		normalizeString(token) !== token
+	) {
+		throw new Error(
+			`FLUXER_SETUP_TOKEN must be ${SETUP_TOKEN_MIN_LENGTH} to ${SETUP_TOKEN_MAX_LENGTH} printable characters`,
+		);
+	}
+	return token;
 }
 
 export function buildAPIConfigFromMaster(master: MasterConfig): APIConfig {
@@ -295,13 +303,14 @@ export function buildAPIConfigFromMaster(master: MasterConfig): APIConfig {
 			fromName: master.integrations.email.from_name,
 			replyToEmail: master.integrations.email.reply_to_email,
 			appBaseUrl: resolveEmailAppBaseUrl(master),
-			smtp: master.integrations.email.smtp
+			smtp: master.integrations.email.smtp ? toSmtpConfig(master.integrations.email.smtp) : undefined,
+			fallback: master.integrations.email.fallback
 				? {
-						host: master.integrations.email.smtp.host,
-						port: master.integrations.email.smtp.port,
-						username: master.integrations.email.smtp.username,
-						password: master.integrations.email.smtp.password,
-						secure: master.integrations.email.smtp.secure ?? true,
+						domains: master.integrations.email.fallback.domains,
+						smtp: {
+							...toSmtpConfig(master.integrations.email.fallback.smtp),
+							headers: master.integrations.email.fallback.smtp.headers,
+						},
 					}
 				: undefined,
 		},
@@ -318,6 +327,7 @@ export function buildAPIConfigFromMaster(master: MasterConfig): APIConfig {
 			url: master.integrations.voice.url,
 			internalUrl: master.integrations.voice.internal_url,
 			defaultRegion: master.integrations.voice.default_region,
+			p2pStunUrls: master.integrations.voice.p2p_stun_urls,
 		},
 		stripe: {
 			enabled: master.integrations.stripe.enabled,
@@ -376,6 +386,11 @@ export function buildAPIConfigFromMaster(master: MasterConfig): APIConfig {
 				token: master.integrations.cache_purge.http.token,
 				timeoutMs: master.integrations.cache_purge.http.timeout_ms,
 			},
+			controller: {
+				endpoint: master.integrations.cache_purge.controller.endpoint,
+				token: master.integrations.cache_purge.controller.token,
+				timeoutMs: master.integrations.cache_purge.controller.timeout_ms,
+			},
 		},
 		clamav: {
 			enabled: master.integrations.clamav.enabled,
@@ -395,11 +410,6 @@ export function buildAPIConfigFromMaster(master: MasterConfig): APIConfig {
 				rpName: master.auth.passkeys.rp_name,
 				rpId: master.auth.passkeys.rp_id,
 				allowedOrigins: master.auth.passkeys.additional_allowed_origins,
-			},
-			vapid: {
-				publicKey: master.auth.vapid.public_key,
-				privateKey: master.auth.vapid.private_key,
-				email: master.auth.vapid.email,
 			},
 			bluesky: master.auth.bluesky as BlueskyOAuthConfig,
 		},
@@ -428,6 +438,7 @@ export function buildAPIConfigFromMaster(master: MasterConfig): APIConfig {
 			},
 			setup: {
 				configured: master.instance.setup.configured,
+				token: resolveSetupToken(master),
 			},
 			accountIdentity: master.instance.account_identity,
 			tagStyle: master.instance.tag_style,
@@ -448,16 +459,12 @@ export function buildAPIConfigFromMaster(master: MasterConfig): APIConfig {
 		attachmentDecayEnabled: master.attachment_decay_enabled,
 		deletionGracePeriodHours: master.dev.test_mode_enabled ? 0.01 : master.deletion_grace_period_hours,
 		inactivityDeletionThresholdDays: master.inactivity_deletion_threshold_days,
+		reportRetention: {
+			days: master.report_retention.days,
+			dryRun: master.report_retention.dry_run,
+		},
 		push: {
 			publicVapidKey: master.auth.vapid.public_key,
-			apns: {
-				enabled: master.integrations.push.apns.enabled,
-				teamId: master.integrations.push.apns.team_id,
-				keyId: master.integrations.push.apns.key_id,
-				privateKey: master.integrations.push.apns.private_key,
-				privateKeyPath: master.integrations.push.apns.private_key_path,
-				apps: mapApnsApps(master.integrations.push.apns.apps),
-			},
 		},
 		appStore: {
 			enabled: master.integrations.app_store.enabled,

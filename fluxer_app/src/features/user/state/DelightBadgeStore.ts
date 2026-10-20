@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import Authentication from '@app/features/auth/state/Authentication';
+import SessionManager from '@app/features/platform/state/AuthSession';
 import {Logger} from '@app/features/platform/utils/AppLogger';
 import {sortDelightBadgeIds} from '@app/features/user/utils/DelightBadges';
 import {delightServiceBaseUrl} from '@app/features/user/utils/DelightService';
@@ -109,7 +110,7 @@ class DelightBadgeStore {
 	/** Ask the sidecar once per session whether the signed-in user is badge staff. */
 	checkCanManage(): void {
 		const me = Authentication.currentUserId;
-		const token = Authentication.authToken;
+		const token = SessionManager.token;
 		if (!me || !token || this.canManageFor === me) return;
 		this.canManageFor = me;
 		void (async () => {
@@ -130,7 +131,7 @@ class DelightBadgeStore {
 
 	/** Staff only: replace a user's badge set. */
 	async setBadges(userId: string, badgeIds: ReadonlyArray<string>): Promise<void> {
-		const token = Authentication.authToken;
+		const token = SessionManager.token;
 		if (!token) throw new Error('Not signed in');
 		const next = sortDelightBadgeIds(badgeIds);
 		const response = await fetch(`${delightServiceBaseUrl()}/badges/${userId}`, {

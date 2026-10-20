@@ -63,6 +63,7 @@ function createStore({
 	bootAttempt = 0,
 	missing = [],
 	installedManifests = {},
+	shellRanges = {},
 } = {}) {
 	const absent = new Set(missing);
 	return {
@@ -77,11 +78,28 @@ function createStore({
 		isRejected: (moduleName, sha256) => rejected[moduleName] === sha256,
 		isInstalled: async (moduleName, sha256) => !absent.has(`${moduleName}:${sha256}`),
 		getInstalledManifest: async (moduleName, sha256) => installedManifests[`${moduleName}:${sha256}`] ?? null,
+		getShellRange: (moduleName, sha256) => shellRanges[`${moduleName}/${sha256}`] ?? null,
 	};
 }
 
-function createPlanner(store, {shellVersion = SHELL_VERSION, hasOfflineRenderer = false} = {}) {
-	return new ModuleUpdatePlanner(store, parseModuleVersion(shellVersion, 'desktop shell version'), hasOfflineRenderer);
+function createPlanner(
+	store,
+	{shellVersion = SHELL_VERSION, hasOfflineRenderer = false, bundledRendererVersion = null} = {},
+) {
+	return new ModuleUpdatePlanner(
+		store,
+		parseModuleVersion(shellVersion, 'desktop shell version'),
+		hasOfflineRenderer,
+		bundledRendererVersion == null ? null : parseModuleVersion(bundledRendererVersion, 'bundled renderer version'),
+	);
+}
+
+function bundledPlanner(store, bundledRendererVersion = SHELL_VERSION) {
+	return createPlanner(store, {hasOfflineRenderer: true, bundledRendererVersion});
+}
+
+function installedRenderer(sha256, buildVersion) {
+	return {[`fluxer_renderer:${sha256}`]: {build_version: buildVersion}};
 }
 
 describe('ModuleUpdatePlanner.isShellCompatible', () => {
@@ -221,13 +239,109 @@ describe('ModuleUpdatePlanner.plan', () => {
 		assert.deepEqual(plan.items, []);
 		assert.deepEqual(plan.base, {fluxer_renderer: RENDERER_SHA});
 	});
+
+	test('plan keeps the committed renderer and assets when the feed renderer needs a newer shell', async () => {
+		const dictionarySha = 'd'.repeat(64);
+		const store = createStore({committed: {fluxer_renderer: RENDERER_SHA, fluxer_overlay: OVERLAY_SHA}});
+		const planner = createPlanner(store);
+		const plan = await planner.plan(
+			manifest({
+				modules: {
+					fluxer_renderer: {sha256: 'c'.repeat(64), minimumShellVersion: '2026.900.1'},
+					fluxer_overlay: {sha256: 'e'.repeat(64)},
+					fluxer_dict_en: {sha256: dictionarySha},
+				},
+				required: ['fluxer_renderer', 'fluxer_dict_en'],
+			}),
+		);
+
+		assert.deepEqual(
+			plan.items.map((item) => [item.module, item.entry.sha256, item.requirement]),
+			[['fluxer_dict_en', dictionarySha, 'required']],
+		);
+		assert.deepEqual(plan.base, {fluxer_renderer: RENDERER_SHA, fluxer_overlay: OVERLAY_SHA});
+	});
+});
+
+describe('ModuleUpdatePlanner.compatibleEntry', () => {
+	test('a shell below the manifest shell floor gets no entry even when the entry has no floor', () => {
+		const planner = createPlanner(createStore());
+		const feed = manifest({shellMinimum: '2026.900.1', modules: {fluxer_renderer: {sha256: RENDERER_SHA}}});
+
+		assert.equal(planner.compatibleEntry(feed, 'fluxer_renderer'), null);
+	});
+
+	test('an entry inside its shell range is returned, one outside or missing is not', () => {
+		const planner = createPlanner(createStore());
+		const feed = manifest({
+			shellMinimum: '0.0.0',
+			modules: {
+				fluxer_renderer: {sha256: RENDERER_SHA, minimumShellVersion: SHELL_VERSION},
+				fluxer_overlay: {sha256: OVERLAY_SHA, minimumShellVersion: '2026.900.1'},
+			},
+		});
+
+		assert.equal(planner.compatibleEntry(feed, 'fluxer_renderer')?.sha256, RENDERER_SHA);
+		assert.equal(planner.compatibleEntry(feed, 'fluxer_overlay'), null);
+		assert.equal(planner.compatibleEntry(feed, 'toString'), null);
+	});
+});
+
+describe('ModuleUpdatePlanner.isRunnable', () => {
+	const cachedFeed = () =>
+		manifest({
+			shellMinimum: '0.0.0',
+			modules: {fluxer_renderer: {sha256: RENDERER_SHA, minimumShellVersion: '2026.900.1'}},
+		});
+
+	test('a module with no record and no cached entry is runnable', () => {
+		const planner = createPlanner(createStore());
+
+		assert.equal(planner.isRunnable('fluxer_renderer', RENDERER_SHA, null), true);
+	});
+
+	test('a recorded range this shell is outside of is not runnable', () => {
+		const planner = createPlanner(
+			createStore({
+				shellRanges: {
+					[`fluxer_renderer/${RENDERER_SHA}`]: {minimum_shell_version: '2026.900.1', maximum_shell_version: null},
+					[`fluxer_overlay/${OVERLAY_SHA}`]: {minimum_shell_version: null, maximum_shell_version: '2026.823.0'},
+				},
+			}),
+		);
+
+		assert.equal(planner.isRunnable('fluxer_renderer', RENDERER_SHA, null), false);
+		assert.equal(planner.isRunnable('fluxer_overlay', OVERLAY_SHA, null), false);
+	});
+
+	test('a recorded range that ends on this shell is runnable', () => {
+		const planner = createPlanner(
+			createStore({
+				shellRanges: {
+					[`fluxer_renderer/${RENDERER_SHA}`]: {
+						minimum_shell_version: SHELL_VERSION,
+						maximum_shell_version: SHELL_VERSION,
+					},
+				},
+			}),
+		);
+
+		assert.equal(planner.isRunnable('fluxer_renderer', RENDERER_SHA, cachedFeed()), true);
+	});
+
+	test('the cached manifest stands in for a missing record only for the same sha', () => {
+		const planner = createPlanner(createStore());
+
+		assert.equal(planner.isRunnable('fluxer_renderer', RENDERER_SHA, cachedFeed()), false);
+		assert.equal(planner.isRunnable('fluxer_renderer', 'f'.repeat(64), cachedFeed()), true);
+	});
 });
 
 describe('ModuleUpdatePlanner.evaluateUnreachableLaunch', () => {
 	test('a store that never reached the manifest feed blocks with nothing-installed', async () => {
 		const planner = createPlanner(createStore({committed: {fluxer_renderer: RENDERER_SHA}, lastManifestFetch: null}));
 
-		assert.deepEqual(await planner.evaluateUnreachableLaunch(true, false), {
+		assert.deepEqual(await planner.evaluateUnreachableLaunch(true), {
 			kind: ModuleUnreachableLaunchDecision.BLOCK,
 			reason: ModuleUpdaterBlockReason.NOTHING_INSTALLED,
 		});
@@ -236,7 +350,7 @@ describe('ModuleUpdatePlanner.evaluateUnreachableLaunch', () => {
 	test('an empty committed set with no offline renderer blocks with nothing-installed', async () => {
 		const planner = createPlanner(createStore({committed: {}}));
 
-		assert.deepEqual(await planner.evaluateUnreachableLaunch(true, false), {
+		assert.deepEqual(await planner.evaluateUnreachableLaunch(true), {
 			kind: ModuleUnreachableLaunchDecision.BLOCK,
 			reason: ModuleUpdaterBlockReason.NOTHING_INSTALLED,
 		});
@@ -245,22 +359,8 @@ describe('ModuleUpdatePlanner.evaluateUnreachableLaunch', () => {
 	test('an offline renderer carries an empty committed set past the nothing-installed block', async () => {
 		const planner = createPlanner(createStore({committed: {}}), {hasOfflineRenderer: true});
 
-		assert.deepEqual(await planner.evaluateUnreachableLaunch(true, false), {
+		assert.deepEqual(await planner.evaluateUnreachableLaunch(true), {
 			kind: ModuleUnreachableLaunchDecision.LAUNCH,
-		});
-	});
-
-	test('boot attempts at the rollback threshold block with rollback-exhausted', async () => {
-		const planner = createPlanner(
-			createStore({
-				committed: {fluxer_renderer: RENDERER_SHA},
-				bootAttempt: MODULE_BOOT_ATTEMPT_ROLLBACK_THRESHOLD,
-			}),
-		);
-
-		assert.deepEqual(await planner.evaluateUnreachableLaunch(true, false), {
-			kind: ModuleUnreachableLaunchDecision.BLOCK,
-			reason: ModuleUpdaterBlockReason.ROLLBACK_EXHAUSTED,
 		});
 	});
 
@@ -272,17 +372,8 @@ describe('ModuleUpdatePlanner.evaluateUnreachableLaunch', () => {
 			}),
 		);
 
-		assert.deepEqual(await planner.evaluateUnreachableLaunch(true, false), {
+		assert.deepEqual(await planner.evaluateUnreachableLaunch(true), {
 			kind: ModuleUnreachableLaunchDecision.LAUNCH,
-		});
-	});
-
-	test('a pending security update blocks with unreachable-below-floor', async () => {
-		const planner = createPlanner(createStore({committed: {fluxer_renderer: RENDERER_SHA}}));
-
-		assert.deepEqual(await planner.evaluateUnreachableLaunch(false, true), {
-			kind: ModuleUnreachableLaunchDecision.BLOCK,
-			reason: ModuleUpdaterBlockReason.UNREACHABLE_BELOW_FLOOR,
 		});
 	});
 
@@ -293,11 +384,11 @@ describe('ModuleUpdatePlanner.evaluateUnreachableLaunch', () => {
 		});
 		const planner = createPlanner(store);
 
-		assert.deepEqual(await planner.evaluateUnreachableLaunch(true, false), {
+		assert.deepEqual(await planner.evaluateUnreachableLaunch(true), {
 			kind: ModuleUnreachableLaunchDecision.BLOCK,
 			reason: ModuleUpdaterBlockReason.UNREACHABLE_BELOW_FLOOR,
 		});
-		assert.deepEqual(await planner.evaluateUnreachableLaunch(false, false), {
+		assert.deepEqual(await planner.evaluateUnreachableLaunch(false), {
 			kind: ModuleUnreachableLaunchDecision.LAUNCH,
 		});
 	});
@@ -310,7 +401,7 @@ describe('ModuleUpdatePlanner.evaluateUnreachableLaunch', () => {
 			}),
 		);
 
-		assert.deepEqual(await planner.evaluateUnreachableLaunch(false, false), {
+		assert.deepEqual(await planner.evaluateUnreachableLaunch(false), {
 			kind: ModuleUnreachableLaunchDecision.BLOCK,
 			reason: ModuleUpdaterBlockReason.UNREACHABLE_BELOW_FLOOR,
 		});
@@ -324,7 +415,106 @@ describe('ModuleUpdatePlanner.evaluateUnreachableLaunch', () => {
 			}),
 		);
 
-		assert.deepEqual(await planner.evaluateUnreachableLaunch(true, false), {
+		assert.deepEqual(await planner.evaluateUnreachableLaunch(true), {
+			kind: ModuleUnreachableLaunchDecision.LAUNCH,
+		});
+	});
+});
+
+describe('ModuleUpdatePlanner with a renderer bundled in the shell', () => {
+	const OLDER = '2026.822.9';
+	const NEWER = '2026.824.1';
+
+	test('a feed renderer no newer than the bundle is never planned or pending', async () => {
+		const planner = bundledPlanner(createStore());
+		const feed = manifest({modules: {fluxer_renderer: {sha256: RENDERER_SHA}}});
+
+		assert.equal(planner.bundleCoversModule('fluxer_renderer', feed), true);
+		assert.deepEqual(await planner.plan(feed), {items: [], base: {}});
+	});
+
+	test('a feed renderer newer than the bundle is downloaded but never required to launch', async () => {
+		const planner = bundledPlanner(createStore(), OLDER);
+		const feed = manifest({modules: {fluxer_renderer: {sha256: RENDERER_SHA}}});
+
+		assert.equal(planner.bundleCoversModule('fluxer_renderer', feed), false);
+		const plan = await planner.plan(feed);
+		assert.deepEqual(
+			plan.items.map((item) => [item.module, item.requirement]),
+			[['fluxer_renderer', 'optional']],
+		);
+	});
+
+	test('the bundle only ever stands in for the renderer module', async () => {
+		const planner = bundledPlanner(createStore());
+		const feed = manifest({modules: {fluxer_overlay: {sha256: OVERLAY_SHA}}});
+
+		assert.equal(planner.bundleCoversModule('fluxer_overlay', feed), false);
+		assert.equal((await planner.plan(feed)).items.length, 1);
+	});
+
+	test('a committed renderer older than or equal to the bundle is stale, a newer one is not', async () => {
+		for (const [installedVersion, stale] of [
+			[OLDER, true],
+			[SHELL_VERSION, true],
+			[NEWER, false],
+		]) {
+			const planner = bundledPlanner(
+				createStore({
+					committed: {fluxer_renderer: RENDERER_SHA},
+					installedManifests: installedRenderer(RENDERER_SHA, installedVersion),
+				}),
+			);
+			assert.equal(await planner.staleRendererModule(), stale ? RENDERER_SHA : null, installedVersion);
+		}
+	});
+
+	test('a committed renderer whose installation is unreadable is stale', async () => {
+		const planner = bundledPlanner(createStore({committed: {fluxer_renderer: RENDERER_SHA}}));
+
+		assert.equal(await planner.staleRendererModule(), RENDERER_SHA);
+	});
+
+	test('without a bundle no committed renderer is ever stale', async () => {
+		const planner = createPlanner(
+			createStore({
+				committed: {fluxer_renderer: RENDERER_SHA},
+				installedManifests: installedRenderer(RENDERER_SHA, OLDER),
+			}),
+		);
+
+		assert.equal(await planner.staleRendererModule(), null);
+	});
+
+	test('serving drops an older renderer module and keeps every other module', async () => {
+		const planner = bundledPlanner(createStore({installedManifests: installedRenderer(RENDERER_SHA, OLDER)}));
+
+		assert.deepEqual(await planner.selectServedModules({fluxer_renderer: RENDERER_SHA, fluxer_overlay: OVERLAY_SHA}), {
+			modules: {fluxer_overlay: OVERLAY_SHA},
+			renderer: {source: 'bundled', version: SHELL_VERSION, bundledVersion: SHELL_VERSION},
+		});
+	});
+
+	test('serving keeps a renderer module newer than the bundle', async () => {
+		const planner = bundledPlanner(createStore({installedManifests: installedRenderer(RENDERER_SHA, NEWER)}));
+		const modules = {fluxer_renderer: RENDERER_SHA};
+
+		assert.deepEqual(await planner.selectServedModules(modules), {
+			modules,
+			renderer: {source: 'module', version: NEWER, bundledVersion: SHELL_VERSION},
+		});
+	});
+
+	test('a renderer floor never holds the launch of a shell that bundles its renderer', async () => {
+		const planner = bundledPlanner(createStore({floor: {fluxer_renderer: RENDERER_SHA, fluxer_overlay: OVERLAY_SHA}}));
+
+		assert.deepEqual(await planner.modulesBelowFloor(true), ['fluxer_overlay']);
+	});
+
+	test('a fresh install that never reached the feed launches the bundled renderer', async () => {
+		const planner = bundledPlanner(createStore({lastManifestFetch: null}));
+
+		assert.deepEqual(await planner.evaluateUnreachableLaunch(true), {
 			kind: ModuleUnreachableLaunchDecision.LAUNCH,
 		});
 	});

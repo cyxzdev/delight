@@ -45,3 +45,15 @@ Desktop test portability fixes normalize CRLF before checking source text and no
 - `git apply --3way --check --index` passed for all 212 upstream paths. Application completed with 0 unresolved index paths. Thirty-eight paths differed between the Delight checkpoint tree and source commit 70; Git applied these patches cleanly, so no manual conflict resolution was required.
 - The source change in `ThreadRoutes.test.ts` printed a three-way fallback notice and then applied cleanly. No failed hunks or conflict markers remain.
 - Delight product identity and local UI branding remain intact; no product rename or wholesale design replacement was applied.
+
+## Batch 3 conflict review
+
+| Path | Resolution | Evidence |
+|---|---|---|
+| `fluxer_app/scripts/GenerateColorSystem.ts` and `fluxer_app/src/features/theme/utils/ColorSystemPalette.ts` | Kept upstream's refactored palette generator, but set brand/link/accent families to Delight violet and the neutral-dark family to grayscale. Regenerated theme CSS and the variable manifest from the source palette. | Generated CSS and manifest report Delight's `hsl(270, ...)` brand values; app TypeScript passes. |
+| `fluxer_app/src/features/app/components/dialogs/components/DesktopSettingsView.tsx` | Kept the upstream sidebar layout and external What's New/Feedback items, then restored Delight's Developer Portal item with its icon, navigation action, and unsaved-changes check. | App TypeScript passes; Developer Portal import remains active. |
+| `fluxer_app/src/features/app/components/pages/NotFoundPage.module.css` | Used the upstream updated not-found visual treatment with Delight semantic theme variables. | App TypeScript and generated CSS checks pass. |
+| `fluxer_app/src/features/app/components/pages/YouPage.module.css` | Used the upstream updated profile page styles while retaining semantic brand variables. | App TypeScript passes. |
+| `fluxer_app/src/features/theme/variables/ThemeVariableManifest.ts` | Regenerated the manifest after restoring Delight's palette values rather than retaining the target's Fluxer-violet defaults. | `GenerateThemeVariables.ts` completed; app TypeScript passes. |
+
+The original 11 user edits were restored from `stash@{0}` into the current project after Batch 3. The stash remains intact as a backup; these edits are included in the worktree, while the real Git index remains empty.

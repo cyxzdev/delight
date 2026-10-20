@@ -32,6 +32,7 @@ pub fn deserialize_string_or_u64<'de, D: Deserializer<'de>>(d: D) -> Result<u64,
 #[derive(Clone, Debug, Deserialize)]
 pub struct AdminUserMeResponse {
     pub user: AdminUser,
+    pub pending_registration_count: Option<u32>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -59,11 +60,6 @@ pub struct SearchGuildsResponse {
 #[derive(Clone, Debug, Deserialize)]
 pub struct LookupGuildResponse {
     pub guild: Option<GuildDetailInfo>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct GuildUpdateResponse {
-    pub guild: GuildInfo,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -122,6 +118,8 @@ pub struct AdminUser {
     pub deletion_scheduled_by: Option<String>,
     #[serde(default)]
     pub deletion_scheduled_at: Option<String>,
+    #[serde(default)]
+    pub enforcement_decision_id: Option<String>,
     pub last_active_at: Option<String>,
     pub last_active_ip: Option<String>,
     pub last_active_ip_reverse: Option<String>,
@@ -257,6 +255,8 @@ pub struct BanCheckResult {
     #[serde(default)]
     pub expires_at: Option<String>,
     #[serde(default)]
+    pub decision_id: Option<String>,
+    #[serde(default)]
     pub entries: Vec<serde_json::Value>,
 }
 
@@ -282,11 +282,6 @@ pub struct BlocklistEntryPage {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct BulkBanResult {
     pub job_id: String,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct BanAvatarResult {
-    pub hash_short: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

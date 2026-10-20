@@ -48,9 +48,10 @@ export const Routes = {
 	careers: () => marketingUrl('careers'),
 	partners: () => marketingUrl('partners'),
 	bugs: () => marketingUrl('help/report-bug'),
-	plutonium: () => marketingUrl('plutonium'),
 	help: (): string | null => hostedMarketingUrl('help'),
 	helpArticle: (slug: string): string | null => hostedMarketingUrl(`help/${slug}`),
+	patchNotes: (): string | null => hostedMarketingUrl('patch-notes'),
+	feedback: (): string | null => (RuntimeConfig.isSelfHosted() ? null : 'https://feedback.fluxer.com'),
 	dmChannel: (channelId: string) => `/channels/@me/${channelId}`,
 	favoritesChannel: (channelId: string) => `/channels/@favorites/${channelId}`,
 	guildMembers: (guildId: string) => `/channels/${guildId}/members`,
@@ -79,7 +80,6 @@ export const Routes = {
 	isDMRoute: (pathname: string) => pathname.startsWith('/channels/@me'),
 	isFavoritesRoute: (pathname: string) => pathname.startsWith('/channels/@favorites'),
 	isDiscoverRoute: (pathname: string) => pathname.startsWith('/channels/@discover'),
-	isPlutoniumRoute: (pathname: string) => pathname === '/channels/@premium',
 	isChannelRoute: (pathname: string) => pathname.startsWith('/channels/') && !pathname.startsWith('/channels/@premium'),
 	isGuildChannelRoute: (pathname: string) =>
 		pathname.startsWith('/channels/') &&

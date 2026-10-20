@@ -1,8 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {ChannelID, GuildID, RoleID, UserID} from '@app/api/BrandedTypes';
-import {createChannelID, createGuildID, createRoleID, guildIdToRoleId} from '@app/api/BrandedTypes';
-import type {IChannelRepository} from '@app/api/channel/IChannelRepository';
+import {
+	type ChannelID,
+	createChannelID,
+	createGuildID,
+	createRoleID,
+	type GuildID,
+	guildIdToRoleId,
+	type RoleID,
+	type UserID,
+} from '@app/api/BrandedTypes';
+import type {ChannelRepository} from '@app/api/channel/ChannelRepository';
 import {
 	type ChannelFollowerRemovalCopyMode,
 	scheduleDeletedChannelFollowerRemoval,
@@ -10,13 +18,21 @@ import {
 import type {ChannelService} from '@app/api/channel/services/ChannelService';
 import {getContentMessage} from '@app/api/content_i18n/ContentI18n';
 import {BatchBuilder} from '@app/api/database/CassandraQueryExecution';
+import {Db, type DbOp} from '@app/api/database/CassandraTypes';
 import type {PermissionOverwrite} from '@app/api/database/types/ChannelTypes';
 import type {GuildRow} from '@app/api/database/types/GuildTypes';
-import {guildActive, isTainted} from '@app/api/experiment/ChannelThreadsGate';
+import {isTainted} from '@app/api/experiment/ChannelThreadsGate';
 import {mapGuildToGuildResponse, mapGuildToPartialResponse} from '@app/api/guild/GuildModel';
-import type {IGuildDiscoveryRepository} from '@app/api/guild/repositories/GuildDiscoveryRepository';
-import type {IGuildRepositoryAggregate} from '@app/api/guild/repositories/IGuildRepositoryAggregate';
+import type {GuildDiscoveryRepository} from '@app/api/guild/repositories/GuildDiscoveryRepository';
+import type {GuildRepository} from '@app/api/guild/repositories/GuildRepository';
 import type {GuildDataHelpers} from '@app/api/guild/services/data/GuildDataHelpers';
+import {
+	buildTemplateThreadParentConfig,
+	clipTemplateTopic,
+	mapOtherPlatformTemplateChannelType,
+} from '@app/api/guild/services/data/TemplateChannelImport';
+import {memberEndsInvitePause} from '@app/api/guild/services/GuildInvitePauseApplier';
+import {emitGuildCreated, emitGuildFeaturesChanged} from '@app/api/infrastructure/activity/GuildEvents';
 import {contentModerationService} from '@app/api/infrastructure/ContentModerationService';
 import type {EntityAssetService, PreparedAssetUpload} from '@app/api/infrastructure/EntityAssetService';
 import type {IGatewayService} from '@app/api/infrastructure/IGatewayService';
@@ -26,7 +42,6 @@ import {Logger} from '@app/api/Logger';
 import type {LimitConfigService} from '@app/api/limits/LimitConfigService';
 import {resolveLimitSafe} from '@app/api/limits/LimitConfigUtils';
 import {createLimitMatchContext} from '@app/api/limits/LimitMatchContextBuilder';
-import type {RequestCache} from '@app/api/middleware/RequestCacheMiddleware';
 import {getKVThreadAutoArchiveQueue} from '@app/api/middleware/ServiceSingletons';
 import {Guild} from '@app/api/models/Guild';
 import type {User} from '@app/api/models/User';
@@ -34,12 +49,23 @@ import {getGuildSearchService} from '@app/api/SearchFactory';
 import type {GuildDiscoveryContext} from '@app/api/search/guild/GuildSearchSerializer';
 import {deleteChannelMessageSearchDocuments} from '@app/api/search/MessageSearchIndexCleanup';
 import {deleteThreadSearchDocuments} from '@app/api/search/thread/ThreadSearchService';
-import {Channels, ChannelsByGuild, GuildMembers, GuildMembersByUserId, GuildRoles, Guilds} from '@app/api/Tables';
-import type {IUserRepository} from '@app/api/user/IUserRepository';
+import {
+	Channels,
+	ChannelsByGuild,
+	GuildMembers,
+	GuildMembersByUserId,
+	GuildRoles,
+	Guilds,
+	ThreadOnlyChannelsByGuild,
+	ThreadParentConfig as ThreadParentConfigTable,
+} from '@app/api/Tables';
+import type {UserRepository} from '@app/api/user/repositories/UserRepository';
 import {mapUserSettingsToResponse} from '@app/api/user/UserMappers';
 import {addGuildToUncategorizedFolder, removeGuildFromUserFolders} from '@app/api/user/utils/GuildFolderUtils';
+import {serializeGuildForAudit} from '@app/api/utils/AuditSerializationUtils';
 import {mapWithConcurrency} from '@app/api/utils/ConcurrencyUtils';
-import type {IWebhookRepository} from '@app/api/webhook/IWebhookRepository';
+import type {WebhookRepository} from '@app/api/webhook/WebhookRepository';
+import type {WorkerTaskName} from '@app/api/worker/WorkerLaneConfig';
 import {AuditLogActionType} from '@fluxer/constants/src/AuditLogActionType';
 import {ALL_PERMISSIONS, ChannelTypes, DEFAULT_PERMISSIONS, Permissions} from '@fluxer/constants/src/ChannelConstants';
 import {DiscoveryApplicationStatus} from '@fluxer/constants/src/DiscoveryConstants';
@@ -60,6 +86,7 @@ import {
 	VOICE_CHANNEL_CONNECTION_LIMIT_DEFAULT,
 	VOICE_CHANNEL_USER_LIMIT_MAX,
 } from '@fluxer/constants/src/LimitConstants';
+import {THREAD_ONLY_CHANNEL_TYPES} from '@fluxer/constants/src/ThreadConstants';
 import {
 	DEFAULT_THREAD_PERMISSIONS,
 	THREAD_AWARE_ALL_PERMISSIONS,
@@ -67,7 +94,6 @@ import {
 } from '@fluxer/constants/src/ThreadPermissionUtils';
 import {DEFAULT_GUILD_FOLDER_ICON} from '@fluxer/constants/src/UserConstants';
 import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
-import {AccessDeniedError} from '@fluxer/errors/src/domains/core/AccessDeniedError';
 import {InputValidationError} from '@fluxer/errors/src/domains/core/InputValidationError';
 import {MissingPermissionsError} from '@fluxer/errors/src/domains/core/MissingPermissionsError';
 import {BotsCannotCreateGuildsError} from '@fluxer/errors/src/domains/guild/BotsCannotCreateGuildsError';
@@ -84,6 +110,7 @@ import type {
 	TemplateSerializedGuild,
 } from '@fluxer/schema/src/domains/guild/GuildTemplateSchemas';
 import {extractTimestamp} from '@fluxer/snowflake/src/SnowflakeUtils';
+import type {IWorkerService} from '@pkgs/worker/src/contracts/IWorkerService';
 
 const GUILD_IMAGE_FIELDS = [
 	{field: 'icon', hash: 'icon_hash', dimensions: null, gate: null},
@@ -176,8 +203,9 @@ function setsEqual(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
 
 const TEMPLATE_AFK_TIMEOUT_MIN_SECONDS = 60;
 const THREAD_PURGE_CONCURRENCY = 8;
+const GUILD_DELETION_MEMBER_CONCURRENCY = 25;
+const GUILD_DELETION_PENDING_FEATURES = [GuildFeatures.UNAVAILABLE_FOR_EVERYONE, GuildFeatures.UNAVAILABLE_HIDDEN];
 const TEMPLATE_AFK_TIMEOUT_MAX_SECONDS = 3600;
-const THE_OTHER_PLATFORM_GUILD_STAGE_VOICE_CHANNEL_TYPE = 13;
 
 function isSystemChannelType(type: number): boolean {
 	return type === ChannelTypes.GUILD_TEXT || type === ChannelTypes.GUILD_ANNOUNCEMENT;
@@ -185,34 +213,23 @@ function isSystemChannelType(type: number): boolean {
 
 export class GuildOperationsService {
 	constructor(
-		private readonly guildRepository: IGuildRepositoryAggregate,
-		private readonly channelRepository: IChannelRepository,
+		private readonly guildRepository: GuildRepository,
+		private readonly channelRepository: ChannelRepository,
 		private readonly inviteRepository: InviteRepository,
 		private readonly channelService: ChannelService,
 		private readonly gatewayService: IGatewayService,
 		private readonly entityAssetService: EntityAssetService,
-		private readonly userRepository: IUserRepository,
+		private readonly userRepository: UserRepository,
 		private readonly snowflakeService: ISnowflakeService,
-		private readonly webhookRepository: IWebhookRepository,
+		private readonly webhookRepository: WebhookRepository,
 		private readonly helpers: GuildDataHelpers,
 		private readonly limitConfigService: LimitConfigService,
-		private readonly discoveryRepository: IGuildDiscoveryRepository,
+		private readonly discoveryRepository: GuildDiscoveryRepository,
+		private readonly workerService: IWorkerService<WorkerTaskName>,
 	) {}
 
-	async getGuild({userId, guildId}: {userId: UserID; guildId: GuildID}): Promise<GuildResponse> {
-		try {
-			const guild = await this.gatewayService.getGuildData({guildId, userId});
-			if (!guild) throw new UnknownGuildError();
-			return guild;
-		} catch (error) {
-			if (this.isGuildAccessError(error)) {
-				if (await this.guildExists(guildId)) {
-					throw new AccessDeniedError();
-				}
-				throw new UnknownGuildError();
-			}
-			throw error;
-		}
+	async getGuild(params: {userId: UserID; guildId: GuildID}): Promise<GuildResponse> {
+		return this.helpers.getGuildData(params);
 	}
 
 	async getUserGuilds(
@@ -393,6 +410,7 @@ export class GuildOperationsService {
 			audit_logs_indexed_at: null,
 			members_indexed_at: null,
 			message_history_cutoff: null,
+			invites_paused_until: null,
 			version: 1,
 		};
 		batch.addPrepared(Guilds.insert(guildData));
@@ -423,10 +441,9 @@ export class GuildOperationsService {
 		);
 		batch.addPrepared(GuildMembersByUserId.insert({user_id: user.id, guild_id: guildId}));
 		await batch.execute();
-		if (guildActive(guildId)) {
-			await this.channelRepository.threads.ensureGuildMarker(guildId, {permsSeededAt: new Date()});
-		}
+		await this.channelRepository.threads.ensureGuildMarker(guildId, {permsSeededAt: new Date()});
 		const guild = new Guild(guildData);
+		await emitGuildCreated(guild);
 		await this.gatewayService.startGuild(guildId);
 		await this.gatewayService.joinGuild({userId: user.id, guildId});
 		if (!user.isBot) {
@@ -463,7 +480,6 @@ export class GuildOperationsService {
 			userId: UserID;
 			guildId: GuildID;
 			data: GuildUpdateRequest;
-			requestCache: RequestCache;
 		},
 		auditLogReason?: string | null,
 	): Promise<{
@@ -476,7 +492,7 @@ export class GuildOperationsService {
 		await checkPermission(Permissions.MANAGE_GUILD);
 		const currentGuild = await this.guildRepository.findUnique(guildId);
 		if (!currentGuild) throw new UnknownGuildError();
-		const previousSnapshot = this.helpers.serializeGuildForAudit(currentGuild);
+		const previousSnapshot = serializeGuildForAudit(currentGuild);
 		const previousFeatures = new Set(currentGuild.features);
 		contentModerationService.scanText(data.name ?? null, {
 			userId,
@@ -510,6 +526,10 @@ export class GuildOperationsService {
 			}
 		}
 		const updatedFeatures = this.computeUpdatedFeatures(previousFeatures, data.features);
+		const endsInvitePause = memberEndsInvitePause(currentGuild, updatedFeatures);
+		if (endsInvitePause) {
+			updatedFeatures.delete(GuildFeatures.RAID_DETECTED);
+		}
 		const featuresChanged = !setsEqual(previousFeatures, updatedFeatures);
 		const patch: Partial<GuildRow> = {};
 		if (data.name !== undefined) {
@@ -521,7 +541,7 @@ export class GuildOperationsService {
 		if (data.afk_channel_id !== undefined) {
 			if (data.afk_channel_id) {
 				const afkChannelId = createChannelID(data.afk_channel_id);
-				const afkChannel = await this.channelRepository.findUnique(afkChannelId);
+				const afkChannel = await this.channelRepository.channelData.findUnique(afkChannelId);
 				if (!afkChannel || afkChannel.guildId !== guildId) {
 					throw InputValidationError.fromCode('afk_channel_id', ValidationErrorCodes.AFK_CHANNEL_MUST_BE_IN_GUILD);
 				}
@@ -539,7 +559,7 @@ export class GuildOperationsService {
 		if (data.system_channel_id !== undefined) {
 			if (data.system_channel_id) {
 				const systemChannelId = createChannelID(data.system_channel_id);
-				const systemChannel = await this.channelRepository.findUnique(systemChannelId);
+				const systemChannel = await this.channelRepository.channelData.findUnique(systemChannelId);
 				if (!systemChannel || systemChannel.guildId !== guildId) {
 					throw InputValidationError.fromCode(
 						'system_channel_id',
@@ -620,6 +640,9 @@ export class GuildOperationsService {
 		if (featuresChanged) {
 			patch.features = updatedFeatures;
 		}
+		if (endsInvitePause) {
+			patch.invites_paused_until = null;
+		}
 		const preparedAssets = await this.prepareGuildAssetUpdates(currentGuild, data, patch);
 		let updatedGuild: Guild;
 		if (Object.keys(patch).length === 0) {
@@ -638,6 +661,14 @@ export class GuildOperationsService {
 			Logger.error({error, guildId}, 'Failed to commit asset changes after successful guild update');
 		}
 		await this.helpers.dispatchGuildUpdate(updatedGuild);
+		if (featuresChanged) {
+			await emitGuildFeaturesChanged({
+				previous: currentGuild,
+				updated: updatedGuild,
+				actorId: userId,
+				source: 'member',
+			});
+		}
 		const guildSearchService = getGuildSearchService();
 		if (guildSearchService) {
 			let discoveryContext: GuildDiscoveryContext | undefined;
@@ -658,7 +689,7 @@ export class GuildOperationsService {
 		}
 		const auditLogChanges = this.helpers.computeGuildChanges(previousSnapshot, updatedGuild, GUILD_SETTINGS_AUDIT_KEYS);
 		if (auditLogChanges.length > 0) {
-			await this.helpers.recordAuditLog({
+			await this.helpers.guildAuditLogService.record({
 				guildId,
 				userId,
 				action: AuditLogActionType.GUILD_UPDATE,
@@ -756,19 +787,44 @@ export class GuildOperationsService {
 		if (!guildData || guildData.owner_id !== user.id.toString()) {
 			throw new MissingPermissionsError();
 		}
-		await this.performGuildDeletion(guildId, 'source_deleted');
+		await this.scheduleGuildDeletion(guildId, 'source_deleted');
 	}
 
 	async deleteGuildById(guildId: GuildID): Promise<void> {
-		await this.performGuildDeletion(guildId, 'purge');
+		await this.scheduleGuildDeletion(guildId, 'purge');
 	}
 
-	private async performGuildDeletion(guildId: GuildID, copyMode: ChannelFollowerRemovalCopyMode): Promise<void> {
+	private async scheduleGuildDeletion(guildId: GuildID, copyMode: ChannelFollowerRemovalCopyMode): Promise<void> {
 		const guild = await this.guildRepository.findUnique(guildId);
 		if (!guild) {
 			throw new UnknownGuildError();
 		}
-		const channels = await this.channelRepository.listGuildChannels(guildId, 'complete');
+		const features = new Set(guild.features);
+		for (const feature of GUILD_DELETION_PENDING_FEATURES) {
+			features.add(feature);
+		}
+		await this.guildRepository.upsertPartial(guildId, {features}, guild.toRow());
+		await this.gatewayService.reloadGuild(guildId).catch((error) => {
+			Logger.warn({guildId, error}, 'Failed to reload guild after scheduling deletion');
+		});
+		await this.gatewayService.dispatchGuild({
+			guildId,
+			event: 'GUILD_DELETE',
+			data: {id: guildId.toString()},
+		});
+		await this.workerService.addJob(
+			'guildProcessDeletion',
+			{guildId: guildId.toString(), copyMode},
+			{jobKey: `guild-deletion-${guildId}`},
+		);
+	}
+
+	async purgeGuild(guildId: GuildID, copyMode: ChannelFollowerRemovalCopyMode): Promise<void> {
+		const guild = await this.guildRepository.findUnique(guildId);
+		if (!guild) {
+			return;
+		}
+		const channels = await this.channelRepository.channelData.listGuildChannels(guildId, 'complete');
 		for (const channel of channels) {
 			await scheduleDeletedChannelFollowerRemoval({channel, crossposts: this.channelRepository.crossposts, copyMode});
 		}
@@ -778,25 +834,19 @@ export class GuildOperationsService {
 			event: 'GUILD_DELETE',
 			data: {id: guildId.toString()},
 		});
-		await Promise.all(
-			members.map(async (member) => {
-				await this.gatewayService.leaveGuild({userId: member.userId, guildId});
-			}),
-		);
-		await Promise.all(members.map((member) => this.userRepository.deleteGuildSettings(member.userId, guildId)));
-		await Promise.all(
-			members.map(async (member) => {
-				const user = await this.userRepository.findUnique(member.userId);
-				if (user && !user.isBot) {
-					await removeGuildFromUserFolders({
-						userId: member.userId,
-						guildId,
-						userRepository: this.userRepository,
-						gatewayService: this.gatewayService,
-					});
-				}
-			}),
-		);
+		await mapWithConcurrency(members, GUILD_DELETION_MEMBER_CONCURRENCY, async (member) => {
+			await this.gatewayService.leaveGuild({userId: member.userId, guildId});
+			await this.userRepository.deleteGuildSettings(member.userId, guildId);
+			const user = await this.userRepository.findUnique(member.userId);
+			if (user && !user.isBot) {
+				await removeGuildFromUserFolders({
+					userId: member.userId,
+					guildId,
+					userRepository: this.userRepository,
+					gatewayService: this.gatewayService,
+				});
+			}
+		});
 		const invites = await this.inviteRepository.listGuildInvites(guildId);
 		await Promise.all(invites.map((invite) => this.inviteRepository.delete(invite.code)));
 		const webhooks = await this.webhookRepository.listByGuild(guildId);
@@ -805,7 +855,7 @@ export class GuildOperationsService {
 		for (const channel of channels) {
 			await this.channelService.attachments.purgeChannelAttachments(channel);
 		}
-		await Promise.all(channels.map((channel) => this.channelRepository.deleteAllChannelMessages(channel.id)));
+		await Promise.all(channels.map((channel) => this.channelRepository.messages.deleteAllChannelMessages(channel.id)));
 		await Promise.all(
 			channels.map((channel) => deleteChannelMessageSearchDocuments(channel.id, {context: {source: 'guild_delete'}})),
 		);
@@ -815,7 +865,7 @@ export class GuildOperationsService {
 		}
 		if (threadIds.length > 0) {
 			const threadChannels = new Map(
-				(await this.channelRepository.listChannels(threadIds)).map((channel) => [channel.id, channel]),
+				(await this.channelRepository.channelData.listChannels(threadIds)).map((channel) => [channel.id, channel]),
 			);
 			await mapWithConcurrency(threadIds, THREAD_PURGE_CONCURRENCY, async (threadId) => {
 				const thread = threadChannels.get(threadId);
@@ -881,6 +931,7 @@ export class GuildOperationsService {
 					user_limit: bitrate !== null ? 0 : null,
 					voice_connection_limit: bitrate !== null ? VOICE_CHANNEL_CONNECTION_LIMIT_DEFAULT : null,
 					rtc_region: null,
+					rtc_p2p: null,
 					last_message_id: null,
 					last_pin_timestamp: null,
 					permission_overwrites: null,
@@ -931,7 +982,7 @@ export class GuildOperationsService {
 				guild_id: guildId,
 				role_id: guildIdToRoleId(guildId),
 				name: '@everyone',
-				permissions: guildActive(guildId) ? DEFAULT_PERMISSIONS | DEFAULT_THREAD_PERMISSIONS : DEFAULT_PERMISSIONS,
+				permissions: DEFAULT_PERMISSIONS | DEFAULT_THREAD_PERMISSIONS,
 				position: 0,
 				hoist_position: null,
 				color: 0,
@@ -988,7 +1039,7 @@ export class GuildOperationsService {
 				throw new GuildTemplateInvalidError();
 			}
 			seenChannelKeys.add(channelKey);
-			const fluxerType = this.mapOtherPlatformTemplateChannelTypeToFluxer(channel.type);
+			const fluxerType = mapOtherPlatformTemplateChannelType(channel.type);
 			if (fluxerType == null) {
 				skippedOtherPlatformChannelTypes.add(channel.type);
 				continue;
@@ -1007,7 +1058,7 @@ export class GuildOperationsService {
 				'[GuildOperationsService] Template import skipped unsupported channel types',
 			);
 		}
-		const threadsActive = guildActive(guildId);
+		const threadsActive = true;
 		const permissionMask = threadsActive ? THREAD_AWARE_ALL_PERMISSIONS : ALL_PERMISSIONS;
 		const templateEveryonePermissions =
 			this.parseTemplatePermissionBitfield(
@@ -1066,7 +1117,9 @@ export class GuildOperationsService {
 			const parentKey = channel.parent_id != null ? this.getTemplateEntityKey(channel.parent_id) : null;
 			const parentType = parentKey != null ? channelTypeMap.get(parentKey) : null;
 			const parentId =
-				parentKey != null && parentType === ChannelTypes.GUILD_CATEGORY ? (channelIdMap.get(parentKey) ?? null) : null;
+				fluxerType !== ChannelTypes.GUILD_CATEGORY && parentKey != null && parentType === ChannelTypes.GUILD_CATEGORY
+					? (channelIdMap.get(parentKey) ?? null)
+					: null;
 			const isVoice = fluxerType === ChannelTypes.GUILD_VOICE;
 			let permissionOverwrites: Map<RoleID | UserID, PermissionOverwrite> | null = null;
 			if (channel.permission_overwrites && channel.permission_overwrites.length > 0) {
@@ -1096,7 +1149,7 @@ export class GuildOperationsService {
 					guild_id: guildId,
 					type: fluxerType,
 					name: channel.name,
-					topic: channel.topic ?? null,
+					topic: clipTemplateTopic(channel.topic, fluxerType),
 					icon_hash: null,
 					url: null,
 					parent_id: parentId,
@@ -1113,6 +1166,7 @@ export class GuildOperationsService {
 						? (channel.voice_connection_limit ?? VOICE_CHANNEL_CONNECTION_LIMIT_DEFAULT)
 						: null,
 					rtc_region: null,
+					rtc_p2p: null,
 					last_message_id: null,
 					last_pin_timestamp: null,
 					permission_overwrites: permissionOverwrites,
@@ -1123,11 +1177,25 @@ export class GuildOperationsService {
 				}),
 			);
 			batch.addPrepared(
-				ChannelsByGuild.upsertAll({
-					guild_id: guildId,
-					channel_id: channelId,
-				}),
+				THREAD_ONLY_CHANNEL_TYPES.has(fluxerType)
+					? ThreadOnlyChannelsByGuild.upsertAll({guild_id: guildId, channel_id: channelId})
+					: ChannelsByGuild.upsertAll({guild_id: guildId, channel_id: channelId}),
 			);
+			const parentConfig = await buildTemplateThreadParentConfig(channel, fluxerType, () =>
+				this.snowflakeService.generate(),
+			);
+			if (parentConfig) {
+				const ops: Record<string, DbOp<unknown>> = {};
+				for (const [key, value] of Object.entries(parentConfig)) {
+					if (value !== undefined) ops[key] = Db.set(value);
+				}
+				batch.addPrepared(
+					ThreadParentConfigTable.patchByPk(
+						{guild_id: guildId, channel_id: channelId},
+						ops as Parameters<typeof ThreadParentConfigTable.patchByPk>[1],
+					),
+				);
+			}
 		}
 		let systemChannelId: ChannelID | null = null;
 		if (template.system_channel_id != null) {
@@ -1163,6 +1231,7 @@ export class GuildOperationsService {
 					user_limit: null,
 					voice_connection_limit: null,
 					rtc_region: null,
+					rtc_p2p: null,
 					last_message_id: null,
 					last_pin_timestamp: null,
 					permission_overwrites: null,
@@ -1203,21 +1272,6 @@ export class GuildOperationsService {
 		return roles.find((role) => this.getTemplateEntityKey(role.id) === '0') ?? null;
 	}
 
-	private mapOtherPlatformTemplateChannelTypeToFluxer(channelType: number): number | null {
-		if (
-			channelType === ChannelTypes.GUILD_TEXT ||
-			channelType === ChannelTypes.GUILD_ANNOUNCEMENT ||
-			channelType === ChannelTypes.GUILD_VOICE ||
-			channelType === ChannelTypes.GUILD_CATEGORY
-		) {
-			return channelType;
-		}
-		if (channelType === THE_OTHER_PLATFORM_GUILD_STAGE_VOICE_CHANNEL_TYPE) {
-			return ChannelTypes.GUILD_VOICE;
-		}
-		return null;
-	}
-
 	private sanitiseTemplateGuildSettings(template?: TemplateSerializedGuild): TemplateGuildSettings {
 		return {
 			verificationLevel: this.clampTemplateSetting(
@@ -1246,14 +1300,5 @@ export class GuildOperationsService {
 		if (integerValue < min) return min;
 		if (integerValue > max) return max;
 		return integerValue;
-	}
-
-	private isGuildAccessError(error: unknown): boolean {
-		return error instanceof UnknownGuildError;
-	}
-
-	private async guildExists(guildId: GuildID): Promise<boolean> {
-		const guild = await this.guildRepository.findUnique(guildId);
-		return guild !== null;
 	}
 }

@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {AdminAuditReadActions} from '@app/api/admin/AdminAuditActions';
-import {recordAdminRead} from '@app/api/admin/AdminAuditRecorder';
+import {recordAdminRead, recordAdminWrite} from '@app/api/admin/AdminAuditRecorder';
 import {createReportID} from '@app/api/BrandedTypes';
 import {requireAdminACL} from '@app/api/middleware/AdminMiddleware';
 import {RateLimitMiddleware} from '@app/api/middleware/RateLimitMiddleware';
 import {OpenAPI} from '@app/api/middleware/ResponseTypeMiddleware';
 import {getReportRepository} from '@app/api/middleware/ServiceSingletons';
 import {RateLimitConfigs} from '@app/api/RateLimitConfig';
+import {deleteReportNow} from '@app/api/report/ReportDeletion';
+import {getReportSearchService} from '@app/api/SearchFactory';
 import type {HonoApp} from '@app/api/types/HonoEnv';
 import {Validator} from '@app/api/Validator';
 import {AdminACLs} from '@fluxer/constants/src/AdminACLs';
@@ -16,6 +18,11 @@ import {
 	ReportLegalHoldRequest,
 	ReportLegalHoldResponse,
 } from '@fluxer/schema/src/domains/admin/AdminReportLegalHoldSchemas';
+import {
+	ReportNoteListResponse,
+	ReportNoteRequest,
+	ReportNoteResponse,
+} from '@fluxer/schema/src/domains/admin/AdminReportNoteSchemas';
 import {
 	AdminReportListResponse,
 	AdminReportReasonsResponse,
@@ -174,7 +181,7 @@ export function ReportAdminController(app: HonoApp) {
 			operationId: 'get_admin_report',
 			summary: 'Get report',
 			description:
-				'Retrieves detailed information about a specific report including content, reporter, reason, and the message context and profile snapshot captured when it was filed. Requires REPORT_VIEW permission.',
+				'Retrieves detailed information about a specific report including content, reporter, reason, the message context and profile snapshot captured when it was filed, and its internal notes. Requires REPORT_VIEW permission.',
 			responseSchema: ReportAdminResponseSchema,
 			statusCode: 200,
 			security: 'adminApiKey',
@@ -207,7 +214,7 @@ export function ReportAdminController(app: HonoApp) {
 			operationId: 'update_admin_report',
 			summary: 'Update report',
 			description:
-				'Moves a report to the resolved status. The reporter is always told the report was reviewed: an account reporter by system DM and email, a Digital Services Act notifier by email. notify_reporter false leaves the public comment out of that notice. Nothing is sent when the reporter account is deleted or barred from reporting. Creates an audit log entry. Requires REPORT_RESOLVE permission.',
+				'Moves a report to the resolved status. resolution is required. actioned also needs the outcome for the reported item, and no_violation sets the outcome no_violation. duplicate needs duplicate_of and takes the outcome stored on that report. The reporter is told the outcome: an account reporter by system DM and email, a Digital Services Act notifier by email. A duplicate of a report with no outcome yet is resolved without telling the reporter. notify_reporter false leaves the public comment out of that notice. Nothing is sent when the reporter account is deleted, or barred from reporting when the report was filed. Creates an audit log entry. Requires REPORT_RESOLVE permission.',
 			responseSchema: ResolveReportResponse,
 			statusCode: 200,
 			security: 'adminApiKey',
@@ -218,17 +225,76 @@ export function ReportAdminController(app: HonoApp) {
 			const adminUserId = ctx.get('adminUserId');
 			const auditLogReason = ctx.get('auditLogReason');
 			const {report_id} = ctx.req.valid('param');
-			const {public_comment, notify_reporter, resolution} = ctx.req.valid('json');
+			const {public_comment, notify_reporter, resolution, outcome, duplicate_of} = ctx.req.valid('json');
 			return ctx.json(
-				await adminService.reportServiceAggregate.resolveReport(
-					createReportID(report_id),
+				await adminService.reportServiceAggregate.resolveReport(createReportID(report_id), {
 					adminUserId,
-					public_comment || null,
+					publicComment: public_comment || null,
 					auditLogReason,
-					notify_reporter,
+					notifyReporter: notify_reporter,
 					resolution,
-				),
+					outcome,
+					duplicateOf: duplicate_of === undefined ? undefined : createReportID(duplicate_of),
+				}),
 			);
+		},
+	);
+	app.get(
+		'/admin/reports/:report_id/notes',
+		RateLimitMiddleware(RateLimitConfigs.ADMIN_LOOKUP),
+		requireAdminACL(AdminACLs.REPORT_VIEW),
+		Validator('param', ReportIdParam),
+		OpenAPI({
+			operationId: 'list_admin_report_notes',
+			summary: 'List report notes',
+			description:
+				'Lists the internal notes on a report, oldest first. Notes are staff only and are deleted with the report. Requires REPORT_VIEW permission.',
+			responseSchema: ReportNoteListResponse,
+			statusCode: 200,
+			security: 'adminApiKey',
+			tags: 'Admin',
+		}),
+		async (ctx) => {
+			const {report_id} = ctx.req.valid('param');
+			const result = await ctx.get('adminService').reportServiceAggregate.listNotes(createReportID(report_id));
+			await recordAdminRead(ctx, {
+				targetType: 'report',
+				targetId: report_id,
+				action: AdminAuditReadActions.LIST_REPORT_NOTES,
+				metadata: {result_count: result.notes.length},
+			});
+			return ctx.json(result);
+		},
+	);
+	app.post(
+		'/admin/reports/:report_id/notes',
+		RateLimitMiddleware(RateLimitConfigs.ADMIN_USER_MODIFY),
+		requireAdminACL(AdminACLs.REPORT_RESOLVE),
+		Validator('param', ReportIdParam),
+		Validator('json', ReportNoteRequest),
+		OpenAPI({
+			operationId: 'annotate_admin_report',
+			summary: 'Add a note to a report',
+			description:
+				'Appends an internal note to a report. Notes are staff only, never change and are deleted with the report. Creates audit log entry. Requires REPORT_RESOLVE permission.',
+			responseSchema: ReportNoteResponse,
+			statusCode: 200,
+			security: 'adminApiKey',
+			tags: 'Admin',
+		}),
+		async (ctx) => {
+			const {report_id} = ctx.req.valid('param');
+			const reportId = createReportID(report_id);
+			const note = await ctx
+				.get('adminService')
+				.reportServiceAggregate.addNote(reportId, ctx.req.valid('json').body, ctx.get('adminUserId'));
+			await recordAdminWrite(ctx, {
+				targetType: 'report',
+				targetId: report_id,
+				action: 'annotate_report',
+				metadata: {report_id: reportId.toString(), note_id: note.note_id},
+			});
+			return ctx.json(note);
 		},
 	);
 	app.post(
@@ -241,14 +307,13 @@ export function ReportAdminController(app: HonoApp) {
 			operationId: 'set_admin_report_legal_hold',
 			summary: 'Set report legal hold',
 			description:
-				'Places or clears a legal hold on a report. Reports are deleted 365 days after they were filed, together with their stored evidence, unless a hold that ends later is in place. A hold needs an end time in the future and a reason. A null legal_hold_until clears the hold. Creates an audit log entry. Requires REPORT_RESOLVE permission.',
+				'Places or clears a legal hold on a report. A report is deleted together with its stored evidence when its retention period ends, unless a hold that ends later is in place, and a held report cannot be deleted through DELETE /admin/reports/{report_id} either. A hold needs an end time in the future and a reason. A null legal_hold_until clears the hold. Creates an audit log entry. Requires REPORT_RESOLVE permission.',
 			responseSchema: ReportLegalHoldResponse,
 			statusCode: 200,
 			security: 'adminApiKey',
 			tags: 'Admin',
 		}),
 		async (ctx) => {
-			const adminService = ctx.get('adminService');
 			const {report_id} = ctx.req.valid('param');
 			const {legal_hold_until, legal_hold_reason} = ctx.req.valid('json');
 			const until = legal_hold_until === null ? null : new Date(legal_hold_until);
@@ -263,23 +328,17 @@ export function ReportAdminController(app: HonoApp) {
 			const reportRepository = getReportRepository();
 			const previous = await reportRepository.getReport(reportId);
 			const report = await reportRepository.setReportLegalHold(reportId, until, reason);
-			const metadata = new Map([
-				['report_id', reportId.toString()],
-				['report_type', report.reportType.toString()],
-			]);
-			if (until !== null && reason !== null) {
-				metadata.set('legal_hold_until', until.toISOString());
-				metadata.set('legal_hold_reason', reason);
-			}
-			if (previous?.legalHoldUntil) {
-				metadata.set('previous_legal_hold_until', previous.legalHoldUntil.toISOString());
-			}
-			await adminService.auditService.createAuditLog({
-				adminUserId: ctx.get('adminUserId'),
+			const metadata = {
+				report_id: reportId.toString(),
+				report_type: report.reportType.toString(),
+				legal_hold_until: until !== null && reason !== null ? until.toISOString() : undefined,
+				legal_hold_reason: until !== null && reason !== null ? reason : undefined,
+				previous_legal_hold_until: previous?.legalHoldUntil?.toISOString(),
+			};
+			await recordAdminWrite(ctx, {
 				targetType: 'report',
 				targetId: BigInt(reportId),
 				action: until === null ? 'clear_report_legal_hold' : 'set_report_legal_hold',
-				auditLogReason: ctx.get('auditLogReason'),
 				metadata,
 			});
 			return ctx.json({
@@ -287,6 +346,48 @@ export function ReportAdminController(app: HonoApp) {
 				legal_hold_until: report.legalHoldUntil?.toISOString() ?? null,
 				legal_hold_reason: report.legalHoldReason,
 			});
+		},
+	);
+	app.delete(
+		'/admin/reports/:report_id',
+		RateLimitMiddleware(RateLimitConfigs.ADMIN_LOOKUP),
+		requireAdminACL(AdminACLs.REPORT_DELETE),
+		Validator('param', ReportIdParam),
+		OpenAPI({
+			operationId: 'delete_admin_report',
+			summary: 'Delete report',
+			description:
+				'Deletes a report now: its record with the captured message context and profile snapshot, its notes, its stored evidence copies, its search index entry, and the duplicate-report reservation it holds for the reporter. An evidence copy that another report also uses is kept. A report under a legal hold that has not ended is refused with REPORT_UNDER_LEGAL_HOLD. This cannot be undone. Creates an audit log entry. Requires REPORT_DELETE permission.',
+			responseSchema: null,
+			statusCode: 204,
+			security: 'adminApiKey',
+			tags: 'Admin',
+		}),
+		async (ctx) => {
+			const {report_id} = ctx.req.valid('param');
+			const reportId = createReportID(report_id);
+			const deleted = await deleteReportNow(
+				{
+					reportRepository: getReportRepository(),
+					storageService: ctx.get('storageService'),
+					reportSearchService: getReportSearchService(),
+				},
+				reportId,
+				new Date(),
+			);
+			await recordAdminWrite(ctx, {
+				targetType: 'report',
+				targetId: BigInt(reportId),
+				action: 'delete_report',
+				metadata: {
+					report_id: reportId.toString(),
+					report_type: deleted.report.reportType.toString(),
+					status: deleted.report.status.toString(),
+					objects_deleted: deleted.objectsDeleted.toString(),
+					shared_objects_kept: deleted.sharedObjectsKept.toString(),
+				},
+			});
+			return ctx.body(null, 204);
 		},
 	);
 }

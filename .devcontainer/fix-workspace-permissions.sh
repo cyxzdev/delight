@@ -25,10 +25,9 @@ repair_tree() {
 
 for path in \
 	/workspaces/fluxer/target \
-	/home/vscode/.cargo/registry \
-	/home/vscode/.cargo/git \
-	/home/vscode/.local \
-	/home/vscode/.local/share/pnpm/store; do
+	/workspaces/fluxer/.cargo-home \
+	/workspaces/fluxer/.pnpm-store; do
+	mkdir -p "$path"
 	repair_tree "$path"
 done
 

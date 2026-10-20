@@ -5850,13 +5850,6 @@
 						"required": true,
 						"schema": {"description": "The ID of the channel", "$ref": "#/components/schemas/SnowflakeType"},
 						"description": "The ID of the channel"
-					},
-					{
-						"name": "location",
-						"in": "query",
-						"required": false,
-						"schema": {"description": "Accepted and ignored", "type": "string", "maxLength": 100},
-						"description": "Accepted and ignored"
 					}
 				]
 			},
@@ -5915,13 +5908,6 @@
 						"required": true,
 						"schema": {"description": "The ID of the channel", "$ref": "#/components/schemas/SnowflakeType"},
 						"description": "The ID of the channel"
-					},
-					{
-						"name": "location",
-						"in": "query",
-						"required": false,
-						"schema": {"description": "Accepted and ignored", "type": "string", "maxLength": 100},
-						"description": "Accepted and ignored"
 					}
 				]
 			}
@@ -6140,13 +6126,6 @@
 						"required": true,
 						"schema": {"description": "The ID of the user", "$ref": "#/components/schemas/SnowflakeType"},
 						"description": "The ID of the user"
-					},
-					{
-						"name": "location",
-						"in": "query",
-						"required": false,
-						"schema": {"description": "Accepted and ignored", "type": "string", "maxLength": 100},
-						"description": "Accepted and ignored"
 					}
 				]
 			},
@@ -6212,13 +6191,6 @@
 						"required": true,
 						"schema": {"description": "The ID of the user", "$ref": "#/components/schemas/SnowflakeType"},
 						"description": "The ID of the user"
-					},
-					{
-						"name": "location",
-						"in": "query",
-						"required": false,
-						"schema": {"description": "Accepted and ignored", "type": "string", "maxLength": 100},
-						"description": "Accepted and ignored"
 					}
 				]
 			}
@@ -11418,7 +11390,7 @@
 						"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}
 					}
 				},
-				"description": "Sets how people sign in on a new self-hosted instance, and for email sign-in whether usernames are unique with no tag. Username sign-in always uses unique usernames. It works only before setup is finished and before the first account exists. After that it fails with ACCOUNT_IDENTITY_LOCKED.",
+				"description": "Sets how people sign in on a new self-hosted instance, and for email sign-in whether usernames are unique with no tag. Username sign-in always uses unique usernames. It works only before setup is finished and before the first account exists. After that it fails with ACCOUNT_IDENTITY_LOCKED. While the instance requires a setup token, the request must send it as setup_token.",
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -22247,6 +22219,60 @@
 				}
 			}
 		},
+		"/voice/p2p/connection-reports": {
+			"post": {
+				"operationId": "create_voice_p2p_connection_reports",
+				"summary": "Report peer-to-peer connection outcomes",
+				"tags": ["Voice"],
+				"responses": {
+					"204": {"description": "No Content"},
+					"400": {
+						"description": "Bad Request - The request was malformed or contained invalid data",
+						"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}
+					},
+					"401": {
+						"description": "Unauthorized - Authentication is required or the token is invalid",
+						"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}
+					},
+					"403": {
+						"description": "Forbidden - You do not have permission to perform this action",
+						"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}
+					},
+					"429": {
+						"description": "Too Many Requests - You are being rate limited",
+						"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ThrottledError"}}},
+						"headers": {
+							"Retry-After": {
+								"description": "Number of seconds to wait before retrying (only on 429)",
+								"schema": {"type": "integer"}
+							},
+							"X-RateLimit-Limit": {
+								"description": "The number of requests that can be made in the current window",
+								"schema": {"type": "integer"}
+							},
+							"X-RateLimit-Remaining": {
+								"description": "The number of remaining requests that can be made",
+								"schema": {"type": "integer"}
+							},
+							"X-RateLimit-Reset": {
+								"description": "Unix timestamp when the rate limit resets",
+								"schema": {"type": "integer"}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - An unexpected error occurred",
+						"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}
+					}
+				},
+				"description": "Records how peer connections of a peer-to-peer voice call settled, one report for each remote peer. Fluxer adds the request address, its country and the client platform of the session.",
+				"security": [{"sessionToken": []}],
+				"requestBody": {
+					"required": true,
+					"content": {"application/json": {"schema": {"$ref": "#/components/schemas/VoiceP2pConnectionReportsRequest"}}}
+				}
+			}
+		},
 		"/webhooks/{webhook_id}": {
 			"get": {
 				"operationId": "get_webhook",
@@ -22828,6 +22854,82 @@
 				"requestBody": {
 					"required": false,
 					"content": {"application/json": {"schema": {"$ref": "#/components/schemas/InstatusWebhook"}}}
+				}
+			}
+		},
+		"/webhooks/{webhook_id}/{token}/libredesk": {
+			"post": {
+				"operationId": "execute_libredesk_webhook",
+				"summary": "Execute Libredesk webhook",
+				"tags": ["Webhooks"],
+				"responses": {
+					"204": {"description": "No Content"},
+					"400": {
+						"description": "Bad Request - The request was malformed or contained invalid data",
+						"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}
+					},
+					"429": {
+						"description": "Too Many Requests - You are being rate limited",
+						"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ThrottledError"}}},
+						"headers": {
+							"Retry-After": {
+								"description": "Number of seconds to wait before retrying (only on 429)",
+								"schema": {"type": "integer"}
+							},
+							"X-RateLimit-Limit": {
+								"description": "The number of requests that can be made in the current window",
+								"schema": {"type": "integer"}
+							},
+							"X-RateLimit-Remaining": {
+								"description": "The number of remaining requests that can be made",
+								"schema": {"type": "integer"}
+							},
+							"X-RateLimit-Reset": {
+								"description": "Unix timestamp when the rate limit resets",
+								"schema": {"type": "integer"}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - An unexpected error occurred",
+						"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}
+					}
+				},
+				"description": "Receives and processes Libredesk help desk webhook events, formatting them as messages in the configured channel.",
+				"parameters": [
+					{
+						"name": "webhook_id",
+						"in": "path",
+						"required": true,
+						"schema": {"description": "The ID of the webhook", "$ref": "#/components/schemas/SnowflakeType"},
+						"description": "The ID of the webhook"
+					},
+					{
+						"name": "token",
+						"in": "path",
+						"required": true,
+						"schema": {"description": "The webhook token", "type": "string"},
+						"description": "The webhook token"
+					},
+					{
+						"name": "thread_id",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string",
+									"description": "ID of a thread in the webhook channel to target instead of the channel itself",
+									"x-fluxer-experiment": "channel_threads"
+								},
+								{"type": "null"}
+							]
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {"application/json": {"schema": {"$ref": "#/components/schemas/LibredeskWebhook"}}}
 				}
 			}
 		},
@@ -23649,6 +23751,93 @@
 				],
 				"additionalProperties": false
 			},
+			"LibredeskWebhook": {
+				"type": "object",
+				"properties": {
+					"event": {"type": "string"},
+					"payload": {
+						"type": "object",
+						"properties": {
+							"uuid": {"type": ["string", "null"]},
+							"reference_number": {"type": ["string", "null"]},
+							"subject": {"type": ["string", "null"]},
+							"inbox_name": {"type": ["string", "null"]},
+							"contact": {
+								"anyOf": [
+									{
+										"type": "object",
+										"properties": {
+											"first_name": {"type": ["string", "null"]},
+											"last_name": {"type": ["string", "null"]}
+										}
+									},
+									{"type": "null"}
+								]
+							},
+							"conversation_uuid": {"type": ["string", "null"]},
+							"conversation": {
+								"anyOf": [
+									{
+										"type": "object",
+										"properties": {
+											"uuid": {"type": ["string", "null"]},
+											"reference_number": {"type": ["string", "null"]},
+											"subject": {"type": ["string", "null"]},
+											"inbox_name": {"type": ["string", "null"]},
+											"status_category": {"type": ["string", "null"]}
+										}
+									},
+									{"type": "null"}
+								]
+							},
+							"previous_status": {"type": ["string", "null"]},
+							"new_status": {"type": ["string", "null"]},
+							"snooze_until": {"type": ["string", "null"]},
+							"previous_tags": {"anyOf": [{"type": "array", "items": {"type": "string"}}, {"type": "null"}]},
+							"new_tags": {"anyOf": [{"type": "array", "items": {"type": "string"}}, {"type": "null"}]},
+							"assigned_to": {"anyOf": [{"$ref": "#/components/schemas/NonNegativeSafeIntegerType"}, {"type": "null"}]},
+							"type": {"type": ["string", "null"]},
+							"status": {"type": ["string", "null"]},
+							"text_content": {"type": ["string", "null"]},
+							"private": {"type": ["boolean", "null"]},
+							"sender_type": {"type": ["string", "null"]},
+							"meta": {
+								"anyOf": [
+									{
+										"type": "object",
+										"properties": {
+											"is_automated": {"type": ["boolean", "null"]},
+											"is_csat": {"type": ["boolean", "null"]},
+											"continuity_email": {"type": ["boolean", "null"]}
+										}
+									},
+									{"type": "null"}
+								]
+							},
+							"attachments": {
+								"anyOf": [
+									{"type": "array", "items": {"type": "object", "properties": {"name": {"type": ["string", "null"]}}}},
+									{"type": "null"}
+								]
+							},
+							"author": {
+								"anyOf": [
+									{
+										"type": "object",
+										"properties": {
+											"first_name": {"type": ["string", "null"]},
+											"last_name": {"type": ["string", "null"]}
+										}
+									},
+									{"type": "null"}
+								]
+							},
+							"name": {"type": ["string", "null"]}
+						}
+					}
+				},
+				"required": ["event", "payload"]
+			},
 			"InstatusWebhook": {
 				"type": "object",
 				"properties": {
@@ -24441,6 +24630,123 @@
 				},
 				"required": ["id", "guild_id", "channel_id", "name", "type", "user"],
 				"additionalProperties": false
+			},
+			"VoiceP2pConnectionReportsRequest": {
+				"type": "object",
+				"properties": {
+					"reports": {
+						"minItems": 1,
+						"maxItems": 8,
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"channel_id": {
+									"description": "The voice channel or private channel of the call",
+									"$ref": "#/components/schemas/SnowflakeType"
+								},
+								"guild_id": {
+									"anyOf": [{"$ref": "#/components/schemas/SnowflakeType"}, {"type": "null"}],
+									"description": "The guild of the voice channel, null for a call"
+								},
+								"participant_count": {
+									"type": "integer",
+									"minimum": 2,
+									"maximum": 4,
+									"description": "Participants in the call when the peer connection settled"
+								},
+								"outcome": {
+									"description": "How the peer connection settled",
+									"x-enumNames": ["connected", "failed"],
+									"x-enumDescriptions": ["The peer connection reached connected", "The peer connection failed"],
+									"enum": ["connected", "failed"],
+									"type": "string"
+								},
+								"local_candidate_type": {
+									"anyOf": [
+										{
+											"description": "ICE candidate type of one end of the selected candidate pair",
+											"x-enumNames": ["host", "srflx", "prflx", "relay"],
+											"x-enumDescriptions": [
+												"A local interface address",
+												"A public address a STUN server reflected",
+												"A public address learned from a peer during checks",
+												"A relayed address"
+											],
+											"enum": ["host", "srflx", "prflx", "relay"],
+											"type": "string"
+										},
+										{"type": "null"}
+									],
+									"description": "Local candidate type, null without a selected pair"
+								},
+								"remote_candidate_type": {
+									"anyOf": [
+										{
+											"description": "ICE candidate type of one end of the selected candidate pair",
+											"x-enumNames": ["host", "srflx", "prflx", "relay"],
+											"x-enumDescriptions": [
+												"A local interface address",
+												"A public address a STUN server reflected",
+												"A public address learned from a peer during checks",
+												"A relayed address"
+											],
+											"enum": ["host", "srflx", "prflx", "relay"],
+											"type": "string"
+										},
+										{"type": "null"}
+									],
+									"description": "Remote candidate type, null without a selected pair"
+								},
+								"ip_family": {
+									"anyOf": [
+										{
+											"description": "Address family of the selected pair",
+											"x-enumNames": ["ipv4", "ipv6"],
+											"x-enumDescriptions": ["IPv4", "IPv6"],
+											"enum": ["ipv4", "ipv6"],
+											"type": "string"
+										},
+										{"type": "null"}
+									],
+									"description": "Address family of the selected pair, null without one"
+								},
+								"protocol": {
+									"anyOf": [
+										{
+											"description": "Transport protocol of the selected pair",
+											"x-enumNames": ["udp", "tcp"],
+											"x-enumDescriptions": ["UDP", "TCP"],
+											"enum": ["udp", "tcp"],
+											"type": "string"
+										},
+										{"type": "null"}
+									],
+									"description": "Transport protocol of the selected pair, null without one"
+								},
+								"setup_ms": {
+									"anyOf": [{"$ref": "#/components/schemas/Int32Type"}, {"type": "null"}],
+									"description": "Milliseconds from peer connection creation to first connected"
+								},
+								"ice_restarted": {"type": "boolean", "description": "Whether the peer connection ran an ICE restart"}
+							},
+							"required": [
+								"channel_id",
+								"guild_id",
+								"participant_count",
+								"outcome",
+								"local_candidate_type",
+								"remote_candidate_type",
+								"ip_family",
+								"protocol",
+								"setup_ms",
+								"ice_restarted"
+							]
+						},
+						"description": "One report for each remote peer that settled"
+					}
+				},
+				"required": ["reports"]
 			},
 			"EntranceSoundPlayRequest": {
 				"type": "object",
@@ -27199,6 +27505,10 @@
 						"anyOf": [{"$ref": "#/components/schemas/Int32Type"}, {"type": "null"}]
 					},
 					"rtc_region": {"description": "The voice region ID for the voice channel", "type": ["string", "null"]},
+					"rtc_p2p": {
+						"description": "Whether calls in the voice channel connect participants directly instead of through a voice server",
+						"type": "boolean"
+					},
 					"last_message_id": {
 						"description": "The ID of the last message sent in this channel",
 						"anyOf": [{"$ref": "#/components/schemas/SnowflakeStringType"}, {"type": "null"}]
@@ -29325,6 +29635,10 @@
 					"tag_style": {
 						"description": "How usernames are tagged. Defaults to none. Username sign-in accepts only none",
 						"$ref": "#/components/schemas/TagStyleSchema"
+					},
+					"setup_token": {
+						"description": "Setup token of a new self-hosted instance. Required until the first admin account exists",
+						"type": ["string", "null"]
 					}
 				},
 				"required": ["mode"]
@@ -30683,7 +30997,8 @@
 						"properties": {
 							"domain_migration": {"$ref": "#/components/schemas/DomainMigrationAssignmentResponse"},
 							"channel_threads": {"$ref": "#/components/schemas/ChannelThreadsAssignmentResponse"},
-							"plutonium_page": {"$ref": "#/components/schemas/PlutoniumPageAssignmentResponse"}
+							"plutonium_page": {"$ref": "#/components/schemas/PlutoniumPageAssignmentResponse"},
+							"voice_p2p": {"$ref": "#/components/schemas/VoiceP2pAssignmentResponse"}
 						},
 						"additionalProperties": false
 					}
@@ -31005,6 +31320,10 @@
 						"anyOf": [{"$ref": "#/components/schemas/Int32Type"}, {"type": "null"}]
 					},
 					"rtc_region": {"description": "The voice region ID for the voice channel", "type": ["string", "null"]},
+					"rtc_p2p": {
+						"description": "Whether calls in the voice channel connect participants directly instead of through a voice server",
+						"type": "boolean"
+					},
 					"last_message_id": {
 						"description": "The ID of the last message sent in this channel",
 						"anyOf": [{"$ref": "#/components/schemas/SnowflakeStringType"}, {"type": "null"}]
@@ -31310,8 +31629,7 @@
 						"maximum": 21600,
 						"description": "Seconds a user has to wait before sending another message (0-21600)",
 						"$ref": "#/components/schemas/Int32Type"
-					},
-					"location": {"description": "Accepted and ignored", "type": "string", "maxLength": 100}
+					}
 				},
 				"required": ["name"]
 			},
@@ -31356,6 +31674,10 @@
 						"anyOf": [{"$ref": "#/components/schemas/Int32Type"}, {"type": "null"}]
 					},
 					"rtc_region": {"description": "The voice region ID for the voice channel", "type": ["string", "null"]},
+					"rtc_p2p": {
+						"description": "Whether calls in the voice channel connect participants directly instead of through a voice server",
+						"type": "boolean"
+					},
 					"last_message_id": {
 						"description": "The ID of the last message sent in this channel",
 						"anyOf": [{"$ref": "#/components/schemas/SnowflakeStringType"}, {"type": "null"}]
@@ -31946,97 +32268,9 @@
 								"description": "Voice region ID for the voice channel (1-64 characters)",
 								"type": ["string", "null"]
 							},
-							"name": {"description": "The name of the channel", "type": ["string", "null"]},
-							"type": {
-								"description": "Convert between text (0) and announcement (5). Other conversions are rejected.",
-								"anyOf": [{"type": "number", "const": 0}, {"type": "number", "const": 5}]
-							}
-						}
-					},
-					{
-						"type": "object",
-						"properties": {
-							"topic": {"description": "The channel topic (1-1024 characters)", "type": ["string", "null"]},
-							"url": {"description": "External URL for link channels", "type": ["string", "null"]},
-							"parent_id": {
-								"description": "ID of the parent category for this channel",
-								"anyOf": [{"$ref": "#/components/schemas/SnowflakeType"}, {"type": "null"}]
-							},
-							"bitrate": {
-								"description": "Voice channel bitrate in bits per second (8000-384000), clamped to 96000 unless the guild holds an AUDIO_BITRATE feature",
-								"anyOf": [{"type": "integer", "minimum": 8000, "maximum": 384000}, {"type": "null"}]
-							},
-							"user_limit": {
-								"description": "Maximum users allowed in voice channel (0-99, 0 means unlimited)",
-								"anyOf": [{"type": "integer", "minimum": 0, "maximum": 99}, {"type": "null"}]
-							},
-							"voice_connection_limit": {
-								"description": "Maximum active voice connections allowed per user in a voice channel (1-100)",
-								"anyOf": [{"type": "integer", "minimum": 1, "maximum": 100}, {"type": "null"}]
-							},
-							"permission_overwrites": {
-								"description": "Permission overwrites for roles and members",
-								"type": "array",
-								"items": {
-									"type": "object",
-									"properties": {
-										"id": {
-											"description": "The ID of the role or user to overwrite permissions for",
-											"$ref": "#/components/schemas/SnowflakeType"
-										},
-										"type": {
-											"description": "The type of overwrite (0 = role, 1 = member)",
-											"x-enumNames": ["ROLE", "MEMBER"],
-											"enum": [0, 1],
-											"type": "integer"
-										},
-										"allow": {
-											"description": "Bitwise value of allowed permissions",
-											"$ref": "#/components/schemas/UnsignedInt64Type"
-										},
-										"deny": {
-											"description": "Bitwise value of denied permissions",
-											"$ref": "#/components/schemas/UnsignedInt64Type"
-										}
-									},
-									"required": ["id", "type"]
-								}
-							},
-							"rate_limit_per_user": {
-								"description": "Slowmode delay in seconds (0-21600)",
-								"anyOf": [{"type": "integer", "minimum": 0, "maximum": 21600}, {"type": "null"}]
-							},
-							"nsfw": {
-								"description": "Legacy: setting true maps to nsfw_override=true; setting false maps to nsfw_override=null (inherit). Prefer nsfw_override.",
-								"type": ["boolean", "null"]
-							},
-							"nsfw_override": {
-								"description": "Per-channel adult-content override (true=on, false=off, null=inherit from category then guild). Takes precedence over the legacy `nsfw` field if both are present.",
-								"type": ["boolean", "null"]
-							},
-							"content_warning_level": {
-								"description": "Channel-level content warning override (0=inherit, 1=force-warn)",
-								"$ref": "#/components/schemas/ContentWarningLevelInput"
-							},
-							"content_warning_text": {
-								"description": "Custom channel content warning text (max 200 characters); null inherits from parent or guild",
-								"anyOf": [{"type": "string", "maxLength": 200}, {"type": "null"}]
-							},
-							"icon": {
-								"description": "Base64-encoded icon image for group DM channels",
-								"anyOf": [{"$ref": "#/components/schemas/Base64ImageType"}, {"type": "null"}]
-							},
-							"owner_id": {
-								"description": "ID of the new owner for group DM channels",
-								"anyOf": [{"$ref": "#/components/schemas/SnowflakeType"}, {"type": "null"}]
-							},
-							"nicks": {
-								"description": "Custom nicknames for users in this channel",
-								"$ref": "#/components/schemas/ChannelNicknameOverrides"
-							},
-							"rtc_region": {
-								"description": "Voice region ID for the voice channel (1-64 characters)",
-								"type": ["string", "null"]
+							"rtc_p2p": {
+								"description": "Whether calls in the voice channel connect participants directly instead of through a voice server",
+								"type": "boolean"
 							},
 							"name": {"description": "The name of the channel", "type": ["string", "null"]},
 							"type": {
@@ -32129,6 +32363,106 @@
 							"rtc_region": {
 								"description": "Voice region ID for the voice channel (1-64 characters)",
 								"type": ["string", "null"]
+							},
+							"rtc_p2p": {
+								"description": "Whether calls in the voice channel connect participants directly instead of through a voice server",
+								"type": "boolean"
+							},
+							"name": {"description": "The name of the channel", "type": ["string", "null"]},
+							"type": {
+								"description": "Convert between text (0) and announcement (5). Other conversions are rejected.",
+								"anyOf": [{"type": "number", "const": 0}, {"type": "number", "const": 5}]
+							}
+						}
+					},
+					{
+						"type": "object",
+						"properties": {
+							"topic": {"description": "The channel topic (1-1024 characters)", "type": ["string", "null"]},
+							"url": {"description": "External URL for link channels", "type": ["string", "null"]},
+							"parent_id": {
+								"description": "ID of the parent category for this channel",
+								"anyOf": [{"$ref": "#/components/schemas/SnowflakeType"}, {"type": "null"}]
+							},
+							"bitrate": {
+								"description": "Voice channel bitrate in bits per second (8000-384000), clamped to 96000 unless the guild holds an AUDIO_BITRATE feature",
+								"anyOf": [{"type": "integer", "minimum": 8000, "maximum": 384000}, {"type": "null"}]
+							},
+							"user_limit": {
+								"description": "Maximum users allowed in voice channel (0-99, 0 means unlimited)",
+								"anyOf": [{"type": "integer", "minimum": 0, "maximum": 99}, {"type": "null"}]
+							},
+							"voice_connection_limit": {
+								"description": "Maximum active voice connections allowed per user in a voice channel (1-100)",
+								"anyOf": [{"type": "integer", "minimum": 1, "maximum": 100}, {"type": "null"}]
+							},
+							"permission_overwrites": {
+								"description": "Permission overwrites for roles and members",
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"description": "The ID of the role or user to overwrite permissions for",
+											"$ref": "#/components/schemas/SnowflakeType"
+										},
+										"type": {
+											"description": "The type of overwrite (0 = role, 1 = member)",
+											"x-enumNames": ["ROLE", "MEMBER"],
+											"enum": [0, 1],
+											"type": "integer"
+										},
+										"allow": {
+											"description": "Bitwise value of allowed permissions",
+											"$ref": "#/components/schemas/UnsignedInt64Type"
+										},
+										"deny": {
+											"description": "Bitwise value of denied permissions",
+											"$ref": "#/components/schemas/UnsignedInt64Type"
+										}
+									},
+									"required": ["id", "type"]
+								}
+							},
+							"rate_limit_per_user": {
+								"description": "Slowmode delay in seconds (0-21600)",
+								"anyOf": [{"type": "integer", "minimum": 0, "maximum": 21600}, {"type": "null"}]
+							},
+							"nsfw": {
+								"description": "Legacy: setting true maps to nsfw_override=true; setting false maps to nsfw_override=null (inherit). Prefer nsfw_override.",
+								"type": ["boolean", "null"]
+							},
+							"nsfw_override": {
+								"description": "Per-channel adult-content override (true=on, false=off, null=inherit from category then guild). Takes precedence over the legacy `nsfw` field if both are present.",
+								"type": ["boolean", "null"]
+							},
+							"content_warning_level": {
+								"description": "Channel-level content warning override (0=inherit, 1=force-warn)",
+								"$ref": "#/components/schemas/ContentWarningLevelInput"
+							},
+							"content_warning_text": {
+								"description": "Custom channel content warning text (max 200 characters); null inherits from parent or guild",
+								"anyOf": [{"type": "string", "maxLength": 200}, {"type": "null"}]
+							},
+							"icon": {
+								"description": "Base64-encoded icon image for group DM channels",
+								"anyOf": [{"$ref": "#/components/schemas/Base64ImageType"}, {"type": "null"}]
+							},
+							"owner_id": {
+								"description": "ID of the new owner for group DM channels",
+								"anyOf": [{"$ref": "#/components/schemas/SnowflakeType"}, {"type": "null"}]
+							},
+							"nicks": {
+								"description": "Custom nicknames for users in this channel",
+								"$ref": "#/components/schemas/ChannelNicknameOverrides"
+							},
+							"rtc_region": {
+								"description": "Voice region ID for the voice channel (1-64 characters)",
+								"type": ["string", "null"]
+							},
+							"rtc_p2p": {
+								"description": "Whether calls in the voice channel connect participants directly instead of through a voice server",
+								"type": "boolean"
 							},
 							"name": {"description": "The name of the channel", "type": ["string", "null"]}
 						}
@@ -32217,6 +32551,10 @@
 							"rtc_region": {
 								"description": "Voice region ID for the voice channel (1-64 characters)",
 								"type": ["string", "null"]
+							},
+							"rtc_p2p": {
+								"description": "Whether calls in the voice channel connect participants directly instead of through a voice server",
+								"type": "boolean"
 							},
 							"name": {"description": "The name of the category", "type": ["string", "null"]}
 						}
@@ -32306,6 +32644,10 @@
 								"description": "Voice region ID for the voice channel (1-64 characters)",
 								"type": ["string", "null"]
 							},
+							"rtc_p2p": {
+								"description": "Whether calls in the voice channel connect participants directly instead of through a voice server",
+								"type": "boolean"
+							},
 							"name": {"description": "The name of the channel", "type": ["string", "null"]}
 						}
 					},
@@ -32324,6 +32666,10 @@
 							"nicks": {
 								"description": "Custom nicknames for users in this group DM",
 								"anyOf": [{"$ref": "#/components/schemas/ChannelNicknameOverrides"}, {"type": "null"}]
+							},
+							"nsfw": {
+								"description": "Whether the group DM is marked for mature content (owner only)",
+								"type": ["boolean", "null"]
 							}
 						}
 					},
@@ -32651,6 +32997,10 @@
 						],
 						"enum": ["dark", "dark_legacy", "coal", "light", "system"],
 						"type": "string"
+					},
+					"setup_token": {
+						"description": "Setup token of a new self-hosted instance. Required until the first admin account exists",
+						"type": ["string", "null"]
 					}
 				}
 			},
@@ -33390,6 +33740,10 @@
 					"account_identity_locked": {
 						"description": "Present only while a self-hosted instance is unconfigured. True when the sign-in method can no longer change",
 						"type": "boolean"
+					},
+					"setup_token_required": {
+						"description": "Present only while a self-hosted instance is unconfigured. True when registration needs the setup token",
+						"type": "boolean"
 					}
 				},
 				"required": ["configured", "admin_url"],
@@ -34005,6 +34359,10 @@
 						"description": "Voice region ID for the voice channel (1-64 characters)",
 						"type": ["string", "null"]
 					},
+					"rtc_p2p": {
+						"description": "Whether calls in the voice channel connect participants directly instead of through a voice server",
+						"type": "boolean"
+					},
 					"name": {"description": "The name of the channel", "type": ["string", "null"]},
 					"default_auto_archive_duration": {
 						"description": "Default auto archive duration in minutes for new threads",
@@ -34113,6 +34471,10 @@
 					"rtc_region": {
 						"description": "Voice region ID for the voice channel (1-64 characters)",
 						"type": ["string", "null"]
+					},
+					"rtc_p2p": {
+						"description": "Whether calls in the voice channel connect participants directly instead of through a voice server",
+						"type": "boolean"
 					},
 					"name": {"description": "The name of the channel", "type": ["string", "null"]},
 					"default_auto_archive_duration": {
@@ -36036,8 +36398,7 @@
 						},
 						"description": "The first message of the post",
 						"$ref": "#/components/schemas/ForumThreadMessageRequest"
-					},
-					"location": {"description": "Accepted and ignored", "type": "string", "maxLength": 100}
+					}
 				},
 				"required": ["name", "message"],
 				"x-fluxer-experiment": "channel_threads"
@@ -36056,8 +36417,7 @@
 					"invitable": {
 						"description": "Whether non-moderators can add other non-moderators (private threads)",
 						"type": "boolean"
-					},
-					"location": {"description": "Accepted and ignored", "type": "string", "maxLength": 100}
+					}
 				},
 				"required": ["name", "type"]
 			},
@@ -36151,6 +36511,15 @@
 				"additionalProperties": false
 			},
 			"DonationCurrency": {"type": "string", "enum": ["usd", "eur", "brl", "inr", "pln", "try", "sek", "dkk", "nok"]},
+			"VoiceP2pAssignmentResponse": {
+				"type": "object",
+				"properties": {
+					"enabled": {"type": "boolean"},
+					"max_participants": {"type": "integer", "minimum": 2, "maximum": 4}
+				},
+				"required": ["enabled", "max_participants"],
+				"additionalProperties": false
+			},
 			"PlutoniumPageAssignmentResponse": {
 				"type": "object",
 				"properties": {"enabled": {"type": "boolean"}},
@@ -36224,13 +36593,16 @@
 						"anyOf": [{"type": "integer", "minimum": 0, "maximum": 9007199254740991}, {"type": "string"}],
 						"description": "The template-local channel ID"
 					},
-					"type": {"type": "number", "description": "The channel type (0 = text, 2 = voice, 4 = category)"},
+					"type": {
+						"type": "number",
+						"description": "The channel type (0 = text, 2 = voice, 4 = category, 5 = announcement, 13 = stage, 15 = forum, 16 = media)"
+					},
 					"name": {
 						"description": "The name of the channel",
 						"anyOf": [{"type": "string", "maxLength": 100}, {"type": "null"}]
 					},
 					"topic": {
-						"description": "The channel topic, shortened to the Fluxer channel topic limit",
+						"description": "The channel topic or forum guidelines, shortened to the limit for the channel type",
 						"anyOf": [{"type": "string", "maxLength": 4096}, {"type": "null"}]
 					},
 					"position": {"description": "The position of the channel", "$ref": "#/components/schemas/Int32Type"},
@@ -36256,38 +36628,129 @@
 						"description": "The per-user voice connection limit for voice channels",
 						"anyOf": [{"type": "integer", "minimum": 1, "maximum": 100}, {"type": "null"}]
 					},
-					"nsfw": {"description": "Whether the channel is NSFW", "type": "boolean"},
+					"nsfw": {"description": "Whether the channel is NSFW", "type": ["boolean", "null"]},
 					"rate_limit_per_user": {
 						"description": "Slowmode rate limit in seconds",
-						"type": "integer",
-						"minimum": 0,
-						"maximum": 21600
+						"anyOf": [{"type": "integer", "minimum": 0, "maximum": 21600}, {"type": "null"}]
 					},
 					"permission_overwrites": {
 						"description": "Permission overwrites for this channel",
-						"type": "array",
-						"items": {
-							"type": "object",
-							"properties": {
-								"id": {
-									"anyOf": [{"type": "integer", "minimum": 0, "maximum": 9007199254740991}, {"type": "string"}],
-									"description": "The ID of the role or user for this overwrite"
-								},
-								"type": {
-									"description": "The type of overwrite (0/role = role, 1/member = member)",
-									"type": ["number", "string"]
-								},
-								"allow": {
-									"anyOf": [{"type": "string"}, {"type": "integer", "minimum": 0, "maximum": 9007199254740991}],
-									"description": "The allowed permissions bitfield as a string"
-								},
-								"deny": {
-									"anyOf": [{"type": "string"}, {"type": "integer", "minimum": 0, "maximum": 9007199254740991}],
-									"description": "The denied permissions bitfield as a string"
+						"anyOf": [
+							{
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"anyOf": [{"type": "integer", "minimum": 0, "maximum": 9007199254740991}, {"type": "string"}],
+											"description": "The ID of the role or user for this overwrite"
+										},
+										"type": {
+											"description": "The type of overwrite (0/role = role, 1/member = member)",
+											"type": ["number", "string"]
+										},
+										"allow": {
+											"anyOf": [{"type": "string"}, {"type": "integer", "minimum": 0, "maximum": 9007199254740991}],
+											"description": "The allowed permissions bitfield as a string"
+										},
+										"deny": {
+											"anyOf": [{"type": "string"}, {"type": "integer", "minimum": 0, "maximum": 9007199254740991}],
+											"description": "The denied permissions bitfield as a string"
+										}
+									},
+									"required": ["id", "type", "allow", "deny"]
 								}
 							},
-							"required": ["id", "type", "allow", "deny"]
-						}
+							{"type": "null"}
+						]
+					},
+					"available_tags": {
+						"description": "Tags for forum and media channels",
+						"anyOf": [
+							{
+								"maxItems": 100,
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {"type": "string", "maxLength": 100, "description": "The name of the tag"},
+										"moderated": {
+											"description": "Whether only moderators can apply the tag",
+											"type": ["boolean", "null"]
+										},
+										"emoji_id": {
+											"description": "A custom emoji reference, ignored on import",
+											"anyOf": [
+												{
+													"anyOf": [
+														{"type": "string", "maxLength": 64},
+														{"type": "integer", "minimum": 0, "maximum": 9007199254740991}
+													]
+												},
+												{"type": "null"}
+											]
+										},
+										"emoji_name": {
+											"description": "The unicode emoji of the tag",
+											"anyOf": [{"type": "string", "maxLength": 64}, {"type": "null"}]
+										}
+									},
+									"required": ["name"]
+								}
+							},
+							{"type": "null"}
+						]
+					},
+					"default_reaction_emoji": {
+						"description": "Default reaction for forum and media posts",
+						"anyOf": [
+							{
+								"type": "object",
+								"properties": {
+									"emoji_id": {
+										"description": "A custom emoji reference, ignored on import",
+										"anyOf": [
+											{
+												"anyOf": [
+													{"type": "string", "maxLength": 64},
+													{"type": "integer", "minimum": 0, "maximum": 9007199254740991}
+												]
+											},
+											{"type": "null"}
+										]
+									},
+									"emoji_name": {
+										"description": "The unicode emoji",
+										"anyOf": [{"type": "string", "maxLength": 64}, {"type": "null"}]
+									}
+								}
+							},
+							{"type": "null"}
+						]
+					},
+					"default_sort_order": {
+						"description": "Default post sort order for forum and media channels",
+						"anyOf": [{"type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991}, {"type": "null"}]
+					},
+					"default_forum_layout": {
+						"description": "Default layout for forum channels",
+						"anyOf": [{"type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991}, {"type": "null"}]
+					},
+					"default_tag_setting": {
+						"description": "How posts are filtered by several tags",
+						"anyOf": [{"type": "string", "maxLength": 32}, {"type": "null"}]
+					},
+					"default_thread_rate_limit_per_user": {
+						"description": "Slowmode in seconds copied onto new threads",
+						"anyOf": [{"type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991}, {"type": "null"}]
+					},
+					"default_auto_archive_duration": {
+						"description": "Default auto archive duration in minutes for new threads",
+						"anyOf": [{"type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991}, {"type": "null"}]
+					},
+					"flags": {
+						"description": "Channel flags",
+						"anyOf": [{"type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991}, {"type": "null"}]
 					}
 				},
 				"required": ["id", "type", "position"]
@@ -39585,7 +40048,6 @@
 					"ACCOUNT_TOO_NEW_FOR_GUILD",
 					"ACLS_MUST_BE_NON_EMPTY",
 					"ADMIN_API_KEY_NOT_FOUND",
-					"APPLICATION_NOT_OWNED",
 					"ALREADY_FRIENDS",
 					"BOTS_CANNOT_CREATE_GUILDS",
 					"BOTS_CANNOT_SEND_FRIEND_REQUESTS",
@@ -39611,7 +40073,6 @@
 					"CANNOT_SEND_MESSAGES_IN_NON_TEXT_CHANNEL",
 					"CANNOT_SEND_MESSAGES_TO_USER",
 					"CANNOT_TRANSFER_OWNERSHIP_TO_BOT",
-					"CANNOT_SHRINK_RESERVED_SLOTS",
 					"CAPTCHA_REQUIRED",
 					"CHANNEL_ALREADY_FOLLOWED",
 					"CHANNEL_HAS_FOLLOWED_CHANNELS",
@@ -39638,6 +40099,11 @@
 					"EMAIL_UNAVAILABLE_ON_INSTANCE",
 					"EMAIL_VERIFICATION_REQUIRED",
 					"DIRECT_MESSAGE_EMAIL_VERIFICATION_REQUIRED",
+					"ENFORCEMENT_ACCOUNT_CLOSED",
+					"ENFORCEMENT_DECISION_ENDED",
+					"ENFORCEMENT_DECISION_OWNS_STATE",
+					"ENFORCEMENT_DECISION_REPLACED",
+					"ENFORCEMENT_DELETION_STARTED",
 					"FOLLOW_TARGET_CONTENT_WARNING_REQUIRED",
 					"FOLLOW_TARGET_NOT_AGE_RESTRICTED",
 					"FRIEND_REQUEST_EMAIL_VERIFICATION_REQUIRED",
@@ -39655,6 +40121,7 @@
 					"REACTION_EMAIL_VERIFICATION_REQUIRED",
 					"REPORT_EMAIL_VERIFICATION_REQUIRED",
 					"REGISTRATION_CLOSED",
+					"REGISTRATION_CREDENTIALS_REQUIRED",
 					"REGISTRATION_PENDING_APPROVAL",
 					"REGISTRATION_REJECTED",
 					"REGISTRATION_URL_INVALID",
@@ -39714,6 +40181,7 @@
 					"GLOBAL_IP_BANNED",
 					"GLOBAL_IP_TEMPORARILY_BANNED",
 					"IP_BAN_DECLINED",
+					"IP_BAN_LINKED_TO_DECISION",
 					"MAX_APPLICATIONS",
 					"MAX_BOOKMARKS",
 					"MAX_ACTIVE_THREADS",
@@ -39725,6 +40193,7 @@
 					"MAX_GROUP_DM_RECIPIENTS",
 					"MAX_GROUP_DMS",
 					"GROUP_DM_RECIPIENTS_NOT_ADDABLE",
+					"GROUP_DM_MATURE_CONTENT_INELIGIBLE",
 					"MAX_GUILD_CHANNELS",
 					"MAX_GUILD_MEMBERS",
 					"MAX_GUILD_ROLES",
@@ -39762,6 +40231,7 @@
 					"REPORT_ALREADY_RESOLVED",
 					"REPORT_BANNED",
 					"REPORT_FLOW_OUTDATED",
+					"REPORT_UNDER_LEGAL_HOLD",
 					"RESPONSE_VALIDATION_ERROR",
 					"RESOURCE_LOCKED",
 					"SERVICE_UNAVAILABLE",
@@ -39826,6 +40296,7 @@
 					"UNCLAIMED_ACCOUNT_CANNOT_SUBMIT_REPORTS",
 					"UNKNOWN_CHANNEL",
 					"UNKNOWN_EMOJI",
+					"UNKNOWN_ENFORCEMENT_DECISION",
 					"UNKNOWN_FAVORITE_MEME",
 					"UNKNOWN_FORUM_TAG",
 					"UNKNOWN_GIFT_CODE",
@@ -39880,7 +40351,6 @@
 					"Your account is too new to send messages in this community.",
 					"ACLs must be non-empty.",
 					"Admin API key wasn't found.",
-					"You don't own this application.",
 					"You're already friends with this user.",
 					"Bots can't create communities.",
 					"Bots can't send friend requests.",
@@ -39906,7 +40376,6 @@
 					"You can't send messages in a non-text channel.",
 					"You can't send messages to this user.",
 					"Community ownership can't be transferred to a bot.",
-					"You can't shrink reserved slots.",
 					"Verification required. Try again.",
 					"This channel already receives updates from that announcement channel.",
 					"Remove the followed channels posting here before converting it to an announcement channel.",
@@ -39933,6 +40402,11 @@
 					"This instance doesn't use email.",
 					"Email verification is required for this action.",
 					"Email verification is required for this action.",
+					"This account is closed, so it can't be suspended.",
+					"This decision has already ended.",
+					"An enforcement decision owns this restriction. End the decision instead.",
+					"A later decision replaced this one, so it can no longer be ended.",
+					"The deletion of this account has already started, so the decision can no longer be ended.",
 					"Updates from a channel with a content warning can only go to a channel with a content warning or an age restriction.",
 					"Updates from an age-restricted channel can only go to an age-restricted channel.",
 					"Email verification is required for this action.",
@@ -39950,6 +40424,7 @@
 					"Email verification is required for this action.",
 					"Email verification is required for this action.",
 					"Registration is closed on this instance.",
+					"This instance reviews new accounts. Sign up from the sign-up page with a password so you can sign in once approved.",
 					"This registration is waiting for admin approval.",
 					"This registration request was rejected.",
 					"This registration link is invalid or has expired.",
@@ -40006,9 +40481,10 @@
 					"IP authorization is required.",
 					"IP authorization resend is on cooldown.",
 					"IP authorization resend limit exceeded.",
-					"Your IP address {ipAddress} has been permanently blocked from the {product_name} API by platform administrators. {appealEmail, select, null {If you believe this is a mistake, contact the administrators of this instance to appeal.} other {If you believe this is a mistake, contact {appealEmail} to appeal.}} Include this IP address in your appeal.",
-					"Your IP address {ipAddress} has been temporarily blocked from the {product_name} API. The block lifts on its own when it expires. {appealEmail, select, null {If you think this is a mistake, contact the administrators of this instance and include this IP address.} other {If you think this is a mistake, contact {appealEmail} and include this IP address.}}",
+					"{reason, select, shown {{product_name} blocked access from this network because of activity that broke its rules.} other {{product_name} blocked access from this network.}} If you share this network, for example at school, at work, on public Wi-Fi, through your mobile carrier or a VPN, this block may have nothing to do with you. The quickest fix is to switch networks, for example to mobile data instead of Wi-Fi, or to turn your VPN on or off.{appealEmail, select, null {} other { If you think this block is a mistake, email {appealEmail} and include your IP address, {ipAddress}.}}",
+					"{reason, select, shown {{product_name} blocked access from this network because of activity that broke its rules.} other {{product_name} blocked access from this network.}} The block ends on {expiresAt}. If you share this network, for example at school, at work, on public Wi-Fi, through your mobile carrier or a VPN, this block may have nothing to do with you. The quickest fix is to switch networks, for example to mobile data instead of Wi-Fi, or to turn your VPN on or off.{appealEmail, select, null {} other { If you think this block is a mistake, email {appealEmail} and include your IP address, {ipAddress}.}}",
 					"This IP address cannot be added to the blocklist.",
+					"This network block belongs to an enforcement decision. End the decision to remove it.",
 					"You've reached the maximum of {limit, plural, one {# application} other {# applications}}.",
 					"You've reached the maximum of {count, plural, one {# bookmark} other {# bookmarks}}.",
 					"This community has reached its active thread limit of {count}.",
@@ -40020,6 +40496,7 @@
 					"You've reached the maximum of {count, plural, one {# group DM recipient} other {# group DM recipients}}.",
 					"You've reached the maximum of {count, plural, one {# group DM} other {# group DMs}}.",
 					"One or more selected users can't be added to this group DM.",
+					"Not everyone in this group is eligible for mature content.",
 					"You've reached the maximum of {count, plural, one {# community channel} other {# community channels}}.",
 					"You've reached the maximum of {count, plural, one {# community member} other {# community members}}.",
 					"You've reached the maximum of {count, plural, one {# community role} other {# community roles}}.",
@@ -40057,6 +40534,7 @@
 					"Report already resolved.",
 					"You've been banned from submitting reports.",
 					"The report form changed while you were filling it in. Start the report again.",
+					"This report is under a legal hold and can't be deleted.",
 					"Response validation failed: {errors}.",
 					"This resource is being modified. Please try again shortly.",
 					"Service unavailable.",
@@ -40121,6 +40599,7 @@
 					"You need to complete your account setup before you can submit reports.",
 					"Channel wasn't found.",
 					"Unknown emoji.",
+					"Unknown enforcement decision.",
 					"Unknown saved media.",
 					"Tag wasn't found.",
 					"Unknown gift code.",

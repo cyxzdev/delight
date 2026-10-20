@@ -4,7 +4,6 @@ import {Routes} from '@app/app/Routes';
 
 import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import * as PremiumModalCommands from '@app/features/premium/commands/PremiumModalCommands';
-import PlutoniumPageRollout from '@app/features/premium/state/PlutoniumPageRollout';
 import {getPremiumProductFullName, shouldShowPremiumFeatures} from '@app/features/premium/utils/PremiumUtils';
 import FocusRing from '@app/features/ui/focus_ring/FocusRing';
 import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
@@ -13,8 +12,8 @@ import styles from '@app/features/user/components/popouts/UserProfileBadges.modu
 import type {Profile} from '@app/features/user/models/Profile';
 import type {User} from '@app/features/user/models/User';
 import DelightBadgeStore from '@app/features/user/state/DelightBadgeStore';
-import {delightBadgeImageUrl, getDelightBadge} from '@app/features/user/utils/DelightBadges';
 import * as DateUtils from '@app/features/user/utils/DateFormatting';
+import {delightBadgeImageUrl, getDelightBadge} from '@app/features/user/utils/DelightBadges';
 import bugHunterBadgeUrl from '@app/media/images/badges/bug-hunter.svg';
 import partnerBadgeUrl from '@app/media/images/badges/partner.svg';
 import plutoniumBadgeUrl from '@app/media/images/badges/plutonium.svg';
@@ -73,7 +72,7 @@ interface BaseBadge {
 interface IconBadge extends BaseBadge {
 	type: 'icon';
 	iconUrl: string;
-	/** Delight badges: bigger sticker art, and a two-line tooltip. */
+	/** Delight badges: larger artwork and a two-line tooltip. */
 	delight?: {name: string; description: string; srcSet: string};
 }
 
@@ -89,7 +88,7 @@ interface UserProfileBadgesProps {
 	profile: Profile | null;
 	isModal?: boolean;
 	isMobile?: boolean;
-	/** Delight: compact chip for the username line. */
+	/** Compact chip for the username line. */
 	inline?: boolean;
 }
 
@@ -99,11 +98,9 @@ export const UserProfileBadges: React.FC<UserProfileBadgesProps> = observer(
 		const selfHosted = RuntimeConfig.isSelfHosted();
 		const showPremium = shouldShowPremiumFeatures();
 		const premiumInfoUrl = RuntimeConfig.premiumInfoUrl;
-		const plutoniumPageEnabled = PlutoniumPageRollout.enabled;
 		const delightBadgeIds = DelightBadgeStore.getBadges(user.id);
 		const badges = useMemo(() => {
 			const result: Array<Badge> = [];
-			// Delight's own badges come first.
 			for (const id of delightBadgeIds) {
 				const badge = getDelightBadge(id);
 				if (!badge) continue;
@@ -146,8 +143,7 @@ export const UserProfileBadges: React.FC<UserProfileBadgesProps> = observer(
 			}
 			if (showPremium && profile?.premiumType && profile.premiumType !== UserPremiumTypes.NONE) {
 				let tooltipText = getPremiumProductFullName();
-				let badgeUrl: string | undefined =
-					premiumInfoUrl ?? (selfHosted || plutoniumPageEnabled ? undefined : Routes.plutonium());
+				let badgeUrl: string | undefined = premiumInfoUrl ?? undefined;
 				const badgeOnClick = badgeUrl ? undefined : () => PremiumModalCommands.open();
 				if (!selfHosted && profile.premiumType === UserPremiumTypes.LIFETIME) {
 					if (profile.premiumSince) {
@@ -196,7 +192,6 @@ export const UserProfileBadges: React.FC<UserProfileBadgesProps> = observer(
 			selfHosted,
 			showPremium,
 			premiumInfoUrl,
-			plutoniumPageEnabled,
 			user.flags,
 			profile?.premiumType,
 			profile?.premiumSince,

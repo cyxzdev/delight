@@ -2,7 +2,6 @@
 
 import {Resolver} from 'node:dns/promises';
 import {Config} from '@app/api/Config';
-import type {IEmailDnsValidationService} from '@app/api/infrastructure/IEmailDnsValidationService';
 import {Logger} from '@app/api/Logger';
 import {ms} from 'itty-time';
 
@@ -52,7 +51,7 @@ function createLookupTimeoutError(): NodeJS.ErrnoException {
 	return error;
 }
 
-export class EmailDnsValidationService implements IEmailDnsValidationService {
+export class EmailDnsValidationService {
 	private readonly resolver: IDnsResolver;
 	private readonly enforceInTestMode: boolean;
 	private readonly positiveTtlMs: number;
@@ -162,7 +161,7 @@ export class EmailDnsValidationService implements IEmailDnsValidationService {
 			}
 			return 'fallback';
 		} catch (error) {
-			return this.classifyResolverError(error, domain, true);
+			return this.classifyResolverError(error, domain, true, true);
 		}
 	}
 
@@ -205,10 +204,11 @@ export class EmailDnsValidationService implements IEmailDnsValidationService {
 		error: unknown,
 		domain: string,
 		allowFallbackForNoRecords: boolean,
+		allowFallbackForMissingDomain = false,
 	): DnsResolutionResult {
 		const code = this.extractErrorCode(error);
 		if (code && DOMAIN_NOT_FOUND_CODES.has(code)) {
-			return 'invalid';
+			return allowFallbackForMissingDomain ? 'fallback' : 'invalid';
 		}
 		if (code && DOMAIN_NO_RECORD_CODES.has(code)) {
 			return allowFallbackForNoRecords ? 'fallback' : 'invalid';

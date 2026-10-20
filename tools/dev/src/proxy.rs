@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use crate::manifest::{
-    ANY_HOST, DEV_PROXY_GATEWAY_PORTS_ENV, DEV_PROXY_PORT, GATEWAY_PORT, LOCAL_APP_URL,
-    PROXY_ROUTES, ProxyRoute,
+    DEV_PROXY_GATEWAY_PORTS_ENV, GATEWAY_PORT, LOCAL_APP_URL, PROXY_ROUTES, ProxyRoute,
 };
 use anyhow::{Context, Result, bail};
 use axum::{
@@ -663,11 +662,6 @@ pub fn rewrite_head(
     lines.push(String::new());
     lines.push(String::new());
     lines.join("\r\n").into_bytes()
-}
-
-#[allow(dead_code)]
-pub fn default_bind() -> (&'static str, u16) {
-    (ANY_HOST, DEV_PROXY_PORT)
 }
 
 #[cfg(test)]

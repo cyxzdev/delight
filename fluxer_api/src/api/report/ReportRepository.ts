@@ -10,12 +10,19 @@ import {
 	createUserID,
 	createWebhookID,
 } from '@app/api/BrandedTypes';
-import {executeConditional, fetchMany, fetchOne, upsertOne} from '@app/api/database/CassandraQueryExecution';
+import {
+	deleteOneOrMany,
+	executeConditional,
+	fetchMany,
+	fetchOne,
+	upsertOne,
+} from '@app/api/database/CassandraQueryExecution';
 import {Db} from '@app/api/database/CassandraTypes';
 import type {
 	DSAReportEmailVerificationRow,
 	DSAReportTicketRow,
 	GuildReportSubmissionByReporterRow,
+	IARReportNoteRow,
 	MessageReportSubmissionByReporterRow,
 	UserReportSubmissionByReporterRow,
 } from '@app/api/database/types/ReportTypes';
@@ -25,24 +32,30 @@ import {
 	type IARMessageContextRow,
 	type IARSubmission,
 	type IARSubmissionRow,
-	type IReportRepository,
 	ReportStatus,
-} from '@app/api/report/IReportRepository';
+	ReportType,
+} from '@app/api/report/ReportModels';
 import {
 	DSAReportEmailVerifications,
 	DSAReportTickets,
 	GuildReportSubmissionsByReporter,
+	IARReportNotes,
 	IARSubmissions,
 	MessageReportSubmissionsByReporter,
 	UserReportSubmissionsByReporter,
 } from '@app/api/Tables';
 import {ReportAlreadyResolvedError} from '@fluxer/errors/src/domains/moderation/ReportAlreadyResolvedError';
 import {UnknownReportError} from '@fluxer/errors/src/domains/moderation/UnknownReportError';
+import {type ReportItemOutcome, UpdateReportRequest} from '@fluxer/schema/src/domains/admin/AdminSchemas';
 import {parseReportProfileSnapshot} from '@fluxer/schema/src/domains/report/ReportProfileSnapshotSchemas';
 
 const GET_REPORT_QUERY = IARSubmissions.select({
 	where: IARSubmissions.where.eq('report_id'),
 	limit: 1,
+});
+const LIST_NOTES_QUERY = IARReportNotes.select({
+	where: IARReportNotes.where.eq('report_id'),
+	orderBy: {col: 'note_id', direction: 'ASC'},
 });
 const createFetchAllReportsPaginatedQuery = (limit: number) =>
 	IARSubmissions.select({
@@ -62,13 +75,14 @@ function createFetchAllReportsFirstPageQuery(limit: number) {
 	return IARSubmissions.select({limit});
 }
 
-export class ReportRepository implements IReportRepository {
+export class ReportRepository {
 	async createReport(data: IARSubmissionRow): Promise<IARSubmission> {
 		const row: IARSubmissionRow = {
 			...data,
 			reported_profile_snapshot: data.reported_profile_snapshot ?? null,
 			legal_hold_until: data.legal_hold_until ?? null,
 			legal_hold_reason: data.legal_hold_reason ?? null,
+			reporter_outcome: data.reporter_outcome ?? null,
 		};
 		await upsertOne(IARSubmissions.insert(row));
 		return this.mapRowToSubmission(row);
@@ -123,6 +137,7 @@ export class ReportRepository implements IReportRepository {
 		resolvedByAdminId: UserID,
 		publicComment: string | null,
 		auditLogReason: string | null,
+		reporterOutcome: ReportItemOutcome | null,
 	): Promise<IARSubmission> {
 		const report = await this.getReport(reportId);
 		if (!report) {
@@ -142,6 +157,7 @@ export class ReportRepository implements IReportRepository {
 					public_comment: Db.set(publicComment),
 					audit_log_reason: Db.set(auditLogReason),
 					status: Db.set(newStatus),
+					reporter_outcome: Db.set(reporterOutcome),
 				},
 				{status: ReportStatus.PENDING},
 			),
@@ -156,6 +172,7 @@ export class ReportRepository implements IReportRepository {
 			publicComment,
 			auditLogReason,
 			status: newStatus,
+			reporterOutcome,
 		};
 	}
 
@@ -181,6 +198,20 @@ export class ReportRepository implements IReportRepository {
 		return {...report, legalHoldUntil, legalHoldReason};
 	}
 
+	async clearCopiedContext(reportId: ReportID, reportType: number): Promise<boolean> {
+		return executeConditional(
+			IARSubmissions.conditionalPatchByPk(
+				{report_id: reportId},
+				{
+					message_context: Db.set(null),
+					reported_profile_snapshot: Db.set(null),
+					additional_info: Db.set(null),
+				},
+				{report_type: reportType},
+			),
+		);
+	}
+
 	async clearReporterEmail(reportId: ReportID, reporterId: UserID): Promise<boolean> {
 		return executeConditional(
 			IARSubmissions.conditionalPatchByPk(
@@ -196,9 +227,38 @@ export class ReportRepository implements IReportRepository {
 		if (!report) {
 			return;
 		}
+		await this.releaseReporterReservation(report);
+		await deleteOneOrMany(IARReportNotes.deletePartition({report_id: reportId}));
 		await executeConditional(
 			IARSubmissions.conditionalDeleteByPk({report_id: reportId}, {report_type: report.reportType}),
 		);
+	}
+
+	async addNote(note: IARReportNoteRow): Promise<void> {
+		await upsertOne(IARReportNotes.insert(note));
+	}
+
+	async listNotes(reportId: ReportID): Promise<Array<IARReportNoteRow>> {
+		return fetchMany<IARReportNoteRow>(LIST_NOTES_QUERY.bind({report_id: reportId}));
+	}
+
+	private async releaseReporterReservation(report: IARSubmission): Promise<void> {
+		const {reporterId, reportId, reportedAt} = report;
+		if (!reporterId) {
+			return;
+		}
+		const base = {reporter_id: reporterId, report_id: reportId, reported_at: reportedAt};
+		if (report.reportType === ReportType.MESSAGE && report.reportedChannelId && report.reportedMessageId) {
+			await this.releaseMessageReportByReporter({
+				...base,
+				channel_id: report.reportedChannelId,
+				message_id: report.reportedMessageId,
+			});
+		} else if (report.reportType === ReportType.USER && report.reportedUserId) {
+			await this.releaseUserReportByReporter({...base, reported_user_id: report.reportedUserId});
+		} else if (report.reportType === ReportType.GUILD && report.reportedGuildId) {
+			await this.releaseGuildReportByReporter({...base, reported_guild_id: report.reportedGuildId});
+		}
 	}
 
 	private mapRowToSubmission(row: IARSubmissionRow): IARSubmission {
@@ -265,6 +325,7 @@ export class ReportRepository implements IReportRepository {
 			reportedProfileSnapshot: parseReportProfileSnapshot(row.reported_profile_snapshot),
 			legalHoldUntil: row.legal_hold_until ?? null,
 			legalHoldReason: row.legal_hold_reason ?? null,
+			reporterOutcome: UpdateReportRequest.shape.outcome.safeParse(row.reporter_outcome ?? undefined).data ?? null,
 		};
 	}
 

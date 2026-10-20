@@ -422,12 +422,6 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
         cwd: ROOT.clone(),
         env: vec![
             (
-                "DISCOVERY_UPSTREAM_URL".to_owned(),
-                Some(format!(
-                    "http://{LOOPBACK_HOST}:{DEV_PROXY_PORT}/api/.well-known/fluxer"
-                )),
-            ),
-            (
                 "FLUXER_APP_PROXY_INDEX_UPSTREAM_URL".to_owned(),
                 Some(format!("http://{LOOPBACK_HOST}:{APP_PORT}/")),
             ),
@@ -915,7 +909,6 @@ fn check_startup_task_processes(
     }
     Ok(())
 }
-
 #[allow(dead_code)]
 fn _cwd_is_root(path: &Path) -> bool {
     path == ROOT.as_path()

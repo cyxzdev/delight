@@ -688,6 +688,12 @@ fn build_tailwind(manifest_dir: &Path, out_dir: &Path) {
     fs::create_dir_all(&output_dir).expect("failed to create generated static dir");
     let input = manifest_dir.join("src/styles/app.css");
     let output = output_dir.join("app.css");
+    #[cfg(windows)]
+    let candidates = [
+        manifest_dir.join("node_modules/.bin/tailwindcss.cmd"),
+        manifest_dir.join("../node_modules/.bin/tailwindcss.cmd"),
+    ];
+    #[cfg(not(windows))]
     let candidates = [
         manifest_dir.join("node_modules/.bin/tailwindcss"),
         manifest_dir.join("../node_modules/.bin/tailwindcss"),
@@ -699,7 +705,16 @@ fn build_tailwind(manifest_dir: &Path, out_dir: &Path) {
             candidates
         );
     };
-    let status = Command::new(cli)
+    #[cfg(windows)]
+    let mut command = {
+        let mut command = Command::new("cmd");
+        command.arg("/C").arg(cli);
+        command
+    };
+    #[cfg(not(windows))]
+    let mut command = Command::new(cli);
+
+    let status = command
         .arg("-i")
         .arg(&input)
         .arg("-o")

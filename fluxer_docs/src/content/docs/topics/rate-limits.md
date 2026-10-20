@@ -16,7 +16,7 @@ A request that resolves no account is keyed by the client IP address, exactly fo
 
 A request also counts against the global bucket, unless its route bucket is declared exempt. The global bucket is keyed by the same identity, so a request that resolves no account consumes the global allowance of its client IP address.
 
-These buckets are exempt, and each is the only bucket its route declares: `webhook:execute::webhook_id`, `webhook:message_get::webhook_id`, `webhook:message_edit::webhook_id`, `webhook:message_delete::webhook_id`, `webhook:github::webhook_id`, `webhook:instatus::webhook_id`, and `stripe:webhook`. Those routes draw on no global allowance. The `user:group_dm:create` and `user:group_dm:recipient:add` buckets are exempt as well. Each is a second bucket on a route whose first bucket is not exempt, so both routes still draw on the global allowance.
+These buckets are exempt, and each is the only bucket its route declares: `webhook:execute::webhook_id`, `webhook:message_get::webhook_id`, `webhook:message_edit::webhook_id`, `webhook:message_delete::webhook_id`, `webhook:github::webhook_id`, `webhook:instatus::webhook_id`, `webhook:libredesk::webhook_id`, and `stripe:webhook`. Those routes draw on no global allowance. The `user:group_dm:create` and `user:group_dm:recipient:add` buckets are exempt as well. Each is a second bucket on a route whose first bucket is not exempt, so both routes still draw on the global allowance.
 
 Every HTTP API and Admin API operation declares a bucket. A caller that sends no credential on a [Bluesky client document](/http-api/connections/#get-bluesky-client-metadata) is keyed by the client IP address.
 
@@ -208,7 +208,9 @@ Fluxer consumes every multi-factor allowance before it checks the code, so a cor
 
 Slowmode limits how often one account sends a message in one channel. Fluxer reports a denial as an ordinary request failure. A denied send returns 400 `SLOWMODE_RATE_LIMITED` with a top-level `retry_after` in fractional seconds and a `Retry-After` header in whole seconds. The response has no `X-RateLimit-*` header, so a client tells it apart from a bucket denial by the status and the code.
 
-The allowance is one message for each interval the channel configures in `rate_limit_per_user`, counted separately for each account and channel pair. Fluxer counts it only for a non-bot account sending in a guild channel whose configured interval is above zero. A caller holding [BYPASS_SLOWMODE](/http-api/permissions/) is exempt. [Get channel slowmode state](/http-api/channels/#get-channel-slowmode-state) reports the caller's remaining delay before a send is attempted.
+The allowance is one message for each interval the channel configures in `rate_limit_per_user`, counted separately for each account and channel pair. Fluxer counts it for a non-bot account in a guild channel whose configured interval is above zero. A caller holding [BYPASS_SLOWMODE](/http-api/permissions/) is exempt. [Get channel slowmode state](/http-api/channels/#get-channel-slowmode-state) reports the caller's remaining delay before a send is attempted.
+
+Starting a thread uses the parent slowmode on its own counter, as [Start thread from message](/http-api/threads/#start-thread-from-message) states. The same applies to a post in a forum or media channel, as [Forum channel fields](/http-api/forums/#forum-channel-fields) states. For a guild text or announcement channel, [Get channel slowmode state](/http-api/channels/#get-channel-slowmode-state) reports the message counter alone. [Indicate typing](/http-api/messages/#indicate-typing) returns the remaining delay of both counters to a user session that declares the [`channel_threads` client capability](/http-api/threads/#client-capability).
 
 ## Other surfaces
 

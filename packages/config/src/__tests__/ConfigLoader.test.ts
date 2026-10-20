@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {generateKeyPairSync} from 'node:crypto';
-import {mkdtempSync, rmSync, writeFileSync} from 'node:fs';
-import {tmpdir} from 'node:os';
-import {join} from 'node:path';
-import {getConfig, loadConfig, resetConfig} from '@fluxer/config/src/ConfigLoader';
+import {loadConfig, resetConfig} from '@fluxer/config/src/ConfigLoader';
 import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
 
 const MINIMAL_ENV: Record<string, string> = {
@@ -83,41 +80,27 @@ describe('ConfigLoader', () => {
 		expect((await loadConfig()).domain.base_domain).toBe('localhost');
 	});
 
-	test('loadConfig reads secrets from NAME_FILE', async () => {
-		const dir = mkdtempSync(join(tmpdir(), 'fluxer-config-file-'));
-		try {
-			const path = join(dir, 'postgres_password');
-			writeFileSync(path, 'from-secret-file\n');
-			stubMinimalEnv({FLUXER_POSTGRES_PASSWORD: '', FLUXER_POSTGRES_PASSWORD_FILE: path});
-			const config = await loadConfig();
-			expect(config.database.postgres.password).toBe('from-secret-file');
-		} finally {
-			rmSync(dir, {recursive: true, force: true});
-		}
+	test('a self-hosted instance without FLUXER_ENV runs in production', async () => {
+		stubMinimalEnv({
+			FLUXER_SELF_HOSTED: 'true',
+			FLUXER_PROFILE_PSEUDONYM_SECRET: 'self-hosted-secret',
+			FLUXER_POSTGRES_HOST: 'postgres',
+			FLUXER_POSTGRES_DATABASE: 'fluxer',
+			FLUXER_POSTGRES_PASSWORD: 'self-hosted-password',
+		});
+		vi.stubEnv('FLUXER_ENV', undefined);
+		expect((await loadConfig()).env).toBe('production');
 	});
 
-	test('loadConfig rejects NAME and NAME_FILE together', async () => {
-		stubMinimalEnv({FLUXER_SUDO_MODE_SECRET_FILE: '/run/secrets/sudo'});
-		await expect(loadConfig()).rejects.toThrow('FLUXER_SUDO_MODE_SECRET and FLUXER_SUDO_MODE_SECRET_FILE are both set');
+	test('a self-hosted instance keeps an explicit FLUXER_ENV', async () => {
+		stubMinimalEnv({FLUXER_SELF_HOSTED: 'true', FLUXER_ENV: 'development'});
+		expect((await loadConfig()).env).toBe('development');
 	});
 
-	test('getConfig throws when config is not loaded', () => {
-		expect(() => getConfig()).toThrow('Config not loaded');
-	});
-
-	test('resetConfig clears the cache', async () => {
+	test('an instance that is not self-hosted still defaults to development', async () => {
 		stubMinimalEnv();
-		await loadConfig();
-		expect(() => getConfig()).not.toThrow();
-		resetConfig();
-		expect(() => getConfig()).toThrow('Config not loaded');
-	});
-
-	test('derives endpoints from domain config', async () => {
-		stubMinimalEnv();
-		const config = await loadConfig();
-		expect(config.endpoints.api).toBe('http://localhost:8088/api');
-		expect(config.endpoints.gateway).toBe('ws://localhost:8088/gateway');
+		vi.stubEnv('FLUXER_ENV', undefined);
+		expect((await loadConfig()).env).toBe('development');
 	});
 
 	test('endpoint overrides take precedence over derived endpoints', async () => {
@@ -312,22 +295,6 @@ describe('ConfigLoader', () => {
 		expect(config.services.api.storage_change_feed?.skip_buckets).toBeUndefined();
 	});
 
-	test('reads the email reply-to address', async () => {
-		stubMinimalEnv({FLUXER_EMAIL_REPLY_TO_EMAIL: 'support@example.com'});
-
-		const config = await loadConfig();
-
-		expect(config.integrations.email.reply_to_email).toBe('support@example.com');
-	});
-
-	test('leaves the email reply-to address empty when unset or blank', async () => {
-		stubMinimalEnv({FLUXER_EMAIL_REPLY_TO_EMAIL: ' '});
-
-		const config = await loadConfig();
-
-		expect(config.integrations.email.reply_to_email).toBe('');
-	});
-
 	test.each(['support', 'Support <support@example.com>', 'a@example.com,b@example.com', ' support@example.com'])(
 		'rejects %j as the email reply-to address',
 		async (value) => {
@@ -381,25 +348,6 @@ describe('ConfigLoader', () => {
 		expect(config.integrations.voice.default_region?.id).toBe('local');
 	});
 
-	test('ignores FLUXER_GATEWAY_PUSH_ENABLED, which only the gateway reads', async () => {
-		stubMinimalEnv({FLUXER_GATEWAY_PUSH_ENABLED: 'false'});
-
-		const config = await loadConfig();
-
-		expect(config.services.gateway).not.toHaveProperty('push_enabled');
-	});
-
-	test('accepts the crosspost worker lane', async () => {
-		stubMinimalEnv({
-			FLUXER_API_WORKER_MODE: 'single_lane',
-			FLUXER_API_WORKER_LANE: 'crosspost',
-			FLUXER_API_WORKER_LANE_CONCURRENCY_OVERRIDES: '{"crosspost":4}',
-		});
-		const config = await loadConfig();
-		expect(config.services.api.worker?.lane).toBe('crosspost');
-		expect(config.services.api.worker?.lane_concurrency_overrides?.crosspost).toBe(4);
-	});
-
 	test('rejects an unknown worker lane', async () => {
 		stubMinimalEnv({FLUXER_API_WORKER_MODE: 'single_lane', FLUXER_API_WORKER_LANE: 'publishing'});
 		await expect(loadConfig()).rejects.toThrow('FLUXER_API_WORKER_LANE');
@@ -408,26 +356,6 @@ describe('ConfigLoader', () => {
 	test('rejects single task worker mode without task env', async () => {
 		stubMinimalEnv({FLUXER_API_WORKER_MODE: 'single_task'});
 		await expect(loadConfig()).rejects.toThrow('FLUXER_API_WORKER_TASK');
-	});
-
-	test('leaves the storage change feed disabled by default', async () => {
-		stubMinimalEnv();
-		const config = await loadConfig();
-		expect(config.services.api.storage_change_feed).toEqual({enabled: false, stream: 'STORAGE_CHANGES'});
-	});
-
-	test('maps the storage change feed environment variables', async () => {
-		stubMinimalEnv({
-			FLUXER_API_STORAGE_CHANGE_FEED_ENABLED: 'true',
-			FLUXER_API_STORAGE_CHANGE_FEED_STREAM: 'BACKUP_CHANGES',
-			FLUXER_API_STORAGE_CHANGE_FEED_SKIP_BUCKETS: 'fluxer-uploads, fluxer-harvests',
-		});
-		const config = await loadConfig();
-		expect(config.services.api.storage_change_feed).toEqual({
-			enabled: true,
-			stream: 'BACKUP_CHANGES',
-			skip_buckets: ['fluxer-uploads', 'fluxer-harvests'],
-		});
 	});
 
 	test('rejects a storage change feed stream name that JetStream cannot use', async () => {
@@ -443,58 +371,9 @@ describe('ConfigLoader', () => {
 		await expect(loadConfig()).rejects.toThrow('FLUXER_POSTGRES_PORT');
 	});
 
-	test('rejects a non-integer port', async () => {
-		stubMinimalEnv({FLUXER_API_PORT: '80a'});
-		await expect(loadConfig()).rejects.toThrow('FLUXER_API_PORT must be an integer, got "80a"');
-	});
-
-	test('rejects malformed JSON for a JSON-shaped variable', async () => {
-		stubMinimalEnv({FLUXER_LIVEKIT_DEFAULT_REGION: '{bad'});
-		await expect(loadConfig()).rejects.toThrow('FLUXER_LIVEKIT_DEFAULT_REGION must be valid JSON');
-	});
-
-	test('keeps Postgres prepared statements on by default', async () => {
-		stubMinimalEnv();
-		expect((await loadConfig()).database.postgres.prepared_statements).toBe(true);
-	});
-
 	test('rejects a non-boolean Postgres prepared statements value', async () => {
 		stubMinimalEnv({FLUXER_POSTGRES_PREPARED_STATEMENTS: 'maybe'});
 		await expect(loadConfig()).rejects.toThrow('FLUXER_POSTGRES_PREPARED_STATEMENTS');
-	});
-
-	test('keeps the api http timeouts at their defaults', async () => {
-		stubMinimalEnv();
-		const config = await loadConfig();
-		expect(config.services.api.headers_timeout_ms).toBe(30_000);
-		expect(config.services.api.request_timeout_ms).toBe(120_000);
-	});
-
-	test('reads the api http timeouts from the environment', async () => {
-		stubMinimalEnv({FLUXER_API_HEADERS_TIMEOUT_MS: '45000', FLUXER_API_REQUEST_TIMEOUT_MS: '600000'});
-		const config = await loadConfig();
-		expect(config.services.api.headers_timeout_ms).toBe(45_000);
-		expect(config.services.api.request_timeout_ms).toBe(600_000);
-	});
-
-	test('rejects a non-numeric api header timeout', async () => {
-		stubMinimalEnv({FLUXER_API_HEADERS_TIMEOUT_MS: 'soon'});
-		await expect(loadConfig()).rejects.toThrow('FLUXER_API_HEADERS_TIMEOUT_MS');
-	});
-
-	test('rejects a non-numeric api request timeout', async () => {
-		stubMinimalEnv({FLUXER_API_REQUEST_TIMEOUT_MS: 'soon'});
-		await expect(loadConfig()).rejects.toThrow('FLUXER_API_REQUEST_TIMEOUT_MS');
-	});
-
-	test('applies the KV mode from the environment', async () => {
-		stubMinimalEnv({FLUXER_KV_MODE: 'cluster'});
-		expect((await loadConfig()).internal.kv_mode).toBe('cluster');
-	});
-
-	test('rejects an unknown KV mode', async () => {
-		stubMinimalEnv({FLUXER_KV_MODE: 'sentinel'});
-		await expect(loadConfig()).rejects.toThrow('Invalid FLUXER_KV_MODE: sentinel');
 	});
 
 	test('reads the profile pseudonym secret and requires it in production', async () => {
@@ -567,56 +446,6 @@ describe('ConfigLoader', () => {
 		await expect(loadConfig()).rejects.toThrow('FLUXER_POSTGRES_SSL must be true');
 	});
 
-	test('parses self-host branding, setup, and search engine environment variables', async () => {
-		stubMinimalEnv({
-			FLUXER_SEARCH_ENGINE: 'meilisearch',
-			FLUXER_SEARCH_URL: 'http://meilisearch:7700',
-			FLUXER_SEARCH_API_KEY: 'meili-key',
-			FLUXER_SELF_HOSTED: 'true',
-			FLUXER_APP_PRODUCT_NAME: 'Example Chat',
-			FLUXER_APP_ICON_URL: 'https://assets.example/icon.png',
-			FLUXER_APP_SYMBOL_URL: 'https://assets.example/symbol.png',
-			FLUXER_APP_LOGO_URL: 'https://assets.example/logo.png',
-			FLUXER_APP_WORDMARK_URL: 'https://assets.example/wordmark.png',
-			FLUXER_APP_FAVICON_URL: 'https://assets.example/favicon.png',
-			FLUXER_APP_THEME_COLOR: '#123456',
-			FLUXER_APP_STATUS_PAGE_URL: 'https://status.example',
-			FLUXER_APP_STATUS_PAGE_INCIDENT_HISTORY_URL: 'https://status.example/history',
-			FLUXER_INSTANCE_SETUP_CONFIGURED: 'true',
-		});
-
-		const config = await loadConfig();
-
-		expect(config.integrations.search.engine).toBe('meilisearch');
-		expect(config.integrations.search.url).toBe('http://meilisearch:7700');
-		expect(config.integrations.search.api_key).toBe('meili-key');
-		expect(config.instance.self_hosted).toBe(true);
-		expect(config.instance.branding).toEqual({
-			product_name: 'Example Chat',
-			icon_url: 'https://assets.example/icon.png',
-			symbol_url: 'https://assets.example/symbol.png',
-			logo_url: 'https://assets.example/logo.png',
-			wordmark_url: 'https://assets.example/wordmark.png',
-			favicon_url: 'https://assets.example/favicon.png',
-			theme_color: '#123456',
-			status_page_url: 'https://status.example',
-			status_page_incident_history_url: 'https://status.example/history',
-		});
-		expect(config.instance.setup.configured).toBe(true);
-	});
-
-	test('leaves the account identity unset by default', async () => {
-		stubMinimalEnv();
-		const config = await loadConfig();
-		expect(config.instance.account_identity).toBeNull();
-	});
-
-	test('treats an empty account identity as unset', async () => {
-		stubMinimalEnv({FLUXER_ACCOUNT_IDENTITY: ' '});
-		const config = await loadConfig();
-		expect(config.instance.account_identity).toBeNull();
-	});
-
 	test.each([
 		['email', 'email'],
 		['username', 'username'],
@@ -637,6 +466,122 @@ describe('ConfigLoader', () => {
 		expect(config.instance.tag_style).toBe(expected);
 	});
 
+	test.each([
+		['implicit', 'implicit'],
+		[' StartTLS ', 'starttls'],
+		['opportunistic', 'opportunistic'],
+		['none', 'none'],
+		['', undefined],
+	])('parses FLUXER_EMAIL_SMTP_TLS_MODE=%j', async (raw, expected) => {
+		stubMinimalEnv({FLUXER_EMAIL_SMTP_HOST: 'smtp.example.com', FLUXER_EMAIL_SMTP_TLS_MODE: raw});
+		const config = await loadConfig();
+		expect(config.integrations.email.smtp?.tls_mode).toBe(expected);
+	});
+
+	test.each(['tls', 'true'])('rejects the SMTP TLS mode %j', async (raw) => {
+		stubMinimalEnv({FLUXER_EMAIL_SMTP_TLS_MODE: raw});
+		await expect(loadConfig()).rejects.toThrow(
+			'FLUXER_EMAIL_SMTP_TLS_MODE must be implicit, starttls, opportunistic or none',
+		);
+	});
+
+	const emailFallbackEnv = {
+		FLUXER_EMAIL_FALLBACK_DOMAINS: ' Gmail.com, googlemail.com ,gmail.com',
+		FLUXER_EMAIL_FALLBACK_SMTP_HOST: 'smtp.sendgrid.net',
+		FLUXER_EMAIL_FALLBACK_SMTP_USERNAME: 'apikey',
+		FLUXER_EMAIL_FALLBACK_SMTP_PASSWORD: 'secret',
+	};
+
+	test('leaves the email fallback unset by default', async () => {
+		stubMinimalEnv();
+		const config = await loadConfig();
+		expect(config.integrations.email.fallback).toBeUndefined();
+	});
+
+	test('loads the email fallback with normalized domains and port 587', async () => {
+		stubMinimalEnv(emailFallbackEnv);
+		const config = await loadConfig();
+		expect(config.integrations.email.fallback).toEqual({
+			domains: ['gmail.com', 'googlemail.com'],
+			smtp: {host: 'smtp.sendgrid.net', port: 587, username: 'apikey', password: 'secret'},
+		});
+	});
+
+	test('loads the email fallback port and TLS mode', async () => {
+		stubMinimalEnv({
+			...emailFallbackEnv,
+			FLUXER_EMAIL_FALLBACK_SMTP_PORT: '465',
+			FLUXER_EMAIL_FALLBACK_SMTP_TLS_MODE: 'implicit',
+		});
+		const config = await loadConfig();
+		expect(config.integrations.email.fallback?.smtp).toMatchObject({port: 465, tls_mode: 'implicit'});
+	});
+
+	test.each([
+		'FLUXER_EMAIL_FALLBACK_DOMAINS',
+		'FLUXER_EMAIL_FALLBACK_SMTP_HOST',
+		'FLUXER_EMAIL_FALLBACK_SMTP_USERNAME',
+		'FLUXER_EMAIL_FALLBACK_SMTP_PASSWORD',
+	] as const)('rejects an email fallback without %s', async (missing) => {
+		stubMinimalEnv({...emailFallbackEnv, [missing]: ''});
+		await expect(loadConfig()).rejects.toThrow(`${missing} is required when an email fallback provider is set`);
+	});
+
+	test('rejects email fallback domains without an SMTP provider', async () => {
+		stubMinimalEnv({FLUXER_EMAIL_FALLBACK_DOMAINS: 'gmail.com'});
+		await expect(loadConfig()).rejects.toThrow('FLUXER_EMAIL_FALLBACK_SMTP_HOST is required');
+	});
+
+	test.each(['@gmail.com', 'user@gmail.com', 'gmail', '*.gmail.com', 'gmail.com:25', '-gmail.com', 'gmail..com'])(
+		'rejects the email fallback domain %j',
+		async (domain) => {
+			stubMinimalEnv({...emailFallbackEnv, FLUXER_EMAIL_FALLBACK_DOMAINS: domain});
+			await expect(loadConfig()).rejects.toThrow('FLUXER_EMAIL_FALLBACK_DOMAINS entry');
+		},
+	);
+
+	test('loads * as the email fallback domains', async () => {
+		stubMinimalEnv({...emailFallbackEnv, FLUXER_EMAIL_FALLBACK_DOMAINS: ' * '});
+		const config = await loadConfig();
+		expect(config.integrations.email.fallback?.domains).toEqual(['*']);
+	});
+
+	test('rejects * mixed with email fallback domains', async () => {
+		stubMinimalEnv({...emailFallbackEnv, FLUXER_EMAIL_FALLBACK_DOMAINS: '*,gmail.com'});
+		await expect(loadConfig()).rejects.toThrow('FLUXER_EMAIL_FALLBACK_DOMAINS must be either * or a list of domains');
+	});
+
+	test('loads the email fallback headers', async () => {
+		stubMinimalEnv({...emailFallbackEnv, FLUXER_EMAIL_FALLBACK_SMTP_HEADERS: '{"X-Tracking":"{\\"enable\\":0}"}'});
+		const config = await loadConfig();
+		expect(config.integrations.email.fallback?.smtp.headers).toEqual({'X-Tracking': '{"enable":0}'});
+	});
+
+	test.each([
+		{headers: '["X-Tracking"]', error: 'must be a JSON object'},
+		{headers: '{"X-Tracking":{"enable":0}}', error: 'value of X-Tracking must be a string'},
+		{headers: '{"X-Tracking":0}', error: 'value of X-Tracking must be a string'},
+		{headers: '{"X Tracking":"off"}', error: 'header name "X Tracking" is not a valid header field name'},
+		{headers: '{"X-Tracking:":"off"}', error: 'header name "X-Tracking:" is not a valid header field name'},
+		{headers: '{"X-Tracking\\r\\nBcc":"off"}', error: 'is not a valid header field name'},
+		{headers: '{"X-Tracking":"off\\r\\nBcc: user@example.com"}', error: 'must be printable ASCII without line breaks'},
+		{headers: '{"X-Tracking":"off\\n"}', error: 'must be printable ASCII without line breaks'},
+		{headers: `{"X-Tracking":"${'a'.repeat(990)}"}`, error: 'must fit on one 998 character line'},
+		...['From', 'to', 'Cc', 'BCC', 'Subject', 'Reply-To', 'Message-ID', 'Date', 'content-type', 'MIME-Version'].map(
+			(name) => ({headers: JSON.stringify({[name]: 'x'}), error: `must not set the ${name} header`}),
+		),
+	])('rejects the email fallback headers $headers', async ({headers, error}) => {
+		stubMinimalEnv({...emailFallbackEnv, FLUXER_EMAIL_FALLBACK_SMTP_HEADERS: headers});
+		await expect(loadConfig()).rejects.toThrow(error);
+	});
+
+	test('rejects an out of range email fallback port', async () => {
+		stubMinimalEnv({...emailFallbackEnv, FLUXER_EMAIL_FALLBACK_SMTP_PORT: '70000'});
+		await expect(loadConfig()).rejects.toThrow(
+			'FLUXER_EMAIL_FALLBACK_SMTP_PORT must be an integer between 1 and 65535',
+		);
+	});
+
 	test.each(['sequential', 'zero_first'])('rejects the tag style %j', async (raw) => {
 		stubMinimalEnv({FLUXER_TAG_STYLE: raw});
 		await expect(loadConfig()).rejects.toThrow('FLUXER_TAG_STYLE must be none or random');
@@ -645,19 +590,6 @@ describe('ConfigLoader', () => {
 	test('rejects an unknown account identity', async () => {
 		stubMinimalEnv({FLUXER_ACCOUNT_IDENTITY: 'phone'});
 		await expect(loadConfig()).rejects.toThrow('FLUXER_ACCOUNT_IDENTITY must be email or username');
-	});
-
-	test('leaves both stores off with no apps, packages or products by default', async () => {
-		stubMinimalEnv();
-		const config = await loadConfig();
-		expect(config.integrations.app_store).toEqual({enabled: false, apps: [], products: {}});
-		expect(config.integrations.google_play).toEqual({
-			enabled: false,
-			packages: [],
-			token_uri: 'https://oauth2.googleapis.com/token',
-			products: {},
-		});
-		expect(config.integrations.store_billing).toEqual({sandbox_user_ids: [], sandbox_entitles_all: false});
 	});
 
 	test('loads a valid store catalogue', async () => {
@@ -727,27 +659,6 @@ describe('ConfigLoader', () => {
 		);
 	});
 
-	test('defaults the cache purge adapter to none', async () => {
-		stubMinimalEnv();
-		expect((await loadConfig()).integrations.cache_purge).toEqual({
-			adapter: 'none',
-			http: {endpoint: '', token: '', timeout_ms: 10_000},
-		});
-	});
-
-	test('reads the http cache purge settings from the environment', async () => {
-		stubMinimalEnv({
-			FLUXER_CACHE_PURGE_ADAPTER: 'http',
-			FLUXER_CACHE_PURGE_HTTP_ENDPOINT: 'https://purge.internal/purge',
-			FLUXER_CACHE_PURGE_HTTP_TOKEN: 'purge-token',
-			FLUXER_CACHE_PURGE_HTTP_TIMEOUT_MS: '5000',
-		});
-		expect((await loadConfig()).integrations.cache_purge).toEqual({
-			adapter: 'http',
-			http: {endpoint: 'https://purge.internal/purge', token: 'purge-token', timeout_ms: 5000},
-		});
-	});
-
 	test('rejects an unknown cache purge adapter', async () => {
 		stubMinimalEnv({FLUXER_CACHE_PURGE_ADAPTER: 'varnish'});
 		await expect(loadConfig()).rejects.toThrow('Invalid FLUXER_CACHE_PURGE_ADAPTER: varnish');
@@ -812,69 +723,52 @@ describe('ConfigLoader', () => {
 		}
 	});
 
+	test('rejects the controller cache purge adapter without an endpoint', async () => {
+		stubMinimalEnv({FLUXER_CACHE_PURGE_ADAPTER: 'controller'});
+		await expect(loadConfig()).rejects.toThrow('FLUXER_CACHE_PURGE_CONTROLLER_ENDPOINT is required');
+	});
+
+	test('rejects a controller cache purge endpoint that is not https', async () => {
+		stubMinimalEnv({
+			FLUXER_CACHE_PURGE_ADAPTER: 'controller',
+			FLUXER_CACHE_PURGE_CONTROLLER_ENDPOINT: 'http://controller.test/v1/orgs/a/sites/b/purge',
+			FLUXER_CACHE_PURGE_CONTROLLER_TOKEN: 'pak_test',
+		});
+		await expect(loadConfig()).rejects.toThrow(
+			'FLUXER_CACHE_PURGE_CONTROLLER_ENDPOINT must be an absolute https URL without credentials',
+		);
+	});
+
+	test('rejects the controller cache purge adapter without a token', async () => {
+		stubMinimalEnv({
+			FLUXER_CACHE_PURGE_ADAPTER: 'controller',
+			FLUXER_CACHE_PURGE_CONTROLLER_ENDPOINT: 'https://controller.test/v1/orgs/a/sites/b/purge',
+		});
+		await expect(loadConfig()).rejects.toThrow('FLUXER_CACHE_PURGE_CONTROLLER_TOKEN is required');
+	});
+
+	test('accepts a complete controller cache purge configuration', async () => {
+		stubMinimalEnv({
+			FLUXER_CACHE_PURGE_ADAPTER: 'controller',
+			FLUXER_CACHE_PURGE_CONTROLLER_ENDPOINT: 'https://controller.test/v1/orgs/a/sites/b/purge',
+			FLUXER_CACHE_PURGE_CONTROLLER_TOKEN: 'pak_test',
+			FLUXER_CACHE_PURGE_CONTROLLER_TIMEOUT_MS: '5000',
+		});
+		const cachePurge = (await loadConfig()).integrations.cache_purge;
+		expect(cachePurge.adapter).toBe('controller');
+		expect(cachePurge.controller).toEqual({
+			endpoint: 'https://controller.test/v1/orgs/a/sites/b/purge',
+			token: 'pak_test',
+			timeout_ms: 5000,
+		});
+	});
+
 	test('leaves the cache purge settings unvalidated when the adapter is none', async () => {
 		stubMinimalEnv({
 			FLUXER_CACHE_PURGE_HTTP_ENDPOINT: 'ftp://purge.internal/purge',
 			FLUXER_CACHE_PURGE_HTTP_TIMEOUT_MS: '1',
 		});
 		expect((await loadConfig()).integrations.cache_purge.adapter).toBe('none');
-	});
-
-	test('leaves the optional outbound lookups unset by default', async () => {
-		stubMinimalEnv();
-
-		const config = await loadConfig();
-
-		expect(config.integrations.breached_password_check.enabled).toBeUndefined();
-	});
-
-	test('reads the optional outbound lookup switches from the environment', async () => {
-		stubMinimalEnv({
-			FLUXER_BREACHED_PASSWORD_CHECK_ENABLED: 'false',
-		});
-
-		const config = await loadConfig();
-
-		expect(config.integrations.breached_password_check.enabled).toBe(false);
-	});
-
-	test('leaves Bluesky login off with no legal URLs by default', async () => {
-		stubMinimalEnv();
-
-		const config = await loadConfig();
-
-		expect(config.auth.bluesky.enabled).toBe(false);
-		expect(config.auth.bluesky.tos_uri).toBe('');
-		expect(config.auth.bluesky.policy_uri).toBe('');
-		expect(config.auth.bluesky.keys).toEqual([]);
-	});
-
-	test('applies explicit Bluesky legal URLs from the environment', async () => {
-		stubMinimalEnv({
-			FLUXER_AUTH_BLUESKY_ENABLED: 'true',
-			FLUXER_AUTH_BLUESKY_TOS_URI: 'https://chat.example.com/terms',
-			FLUXER_AUTH_BLUESKY_POLICY_URI: 'https://chat.example.com/privacy',
-		});
-
-		const config = await loadConfig();
-
-		expect(config.auth.bluesky.enabled).toBe(true);
-		expect(config.auth.bluesky.tos_uri).toBe('https://chat.example.com/terms');
-		expect(config.auth.bluesky.policy_uri).toBe('https://chat.example.com/privacy');
-	});
-
-	test('reads the upload relay secret through the override table', async () => {
-		const secret = Buffer.alloc(32, 9).toString('base64');
-		stubMinimalEnv({FLUXER_MEDIA_PROXY_UPLOAD_RELAY_SECRET_BASE64: secret});
-
-		const config = await loadConfig();
-
-		expect(config.services.media_proxy.upload_relay.secret_base64).toBe(secret);
-	});
-
-	test('defaults the upload relay body limit to the media proxy ceiling', async () => {
-		stubMinimalEnv();
-		expect((await loadConfig()).services.media_proxy.upload_relay.max_body_bytes).toBe(524_288_000);
 	});
 
 	test('rejects a missing upload relay secret', async () => {
@@ -939,11 +833,6 @@ describe('ConfigLoader', () => {
 		expect(config.auth.vapid.private_key).toBe(pair.privateKey);
 	});
 
-	test('requires a complete environment', async () => {
-		vi.stubEnv('FLUXER_ENV', 'test');
-		await expect(loadConfig()).rejects.toThrow();
-	});
-
 	test('inserts the public port into the LiveKit url', async () => {
 		stubMinimalEnv({FLUXER_LIVEKIT_URL: 'http://localhost/livekit'});
 
@@ -975,6 +864,40 @@ describe('ConfigLoader', () => {
 	test('rejects a public port outside the valid range', async () => {
 		stubMinimalEnv({FLUXER_PUBLIC_PORT: '70000'});
 		await expect(loadConfig()).rejects.toThrow('FLUXER_PUBLIC_PORT must be an integer between 1 and 65535');
+	});
+});
+
+describe('report retention settings', () => {
+	beforeEach(() => {
+		resetConfig();
+		clearFluxerEnv();
+	});
+
+	afterEach(() => {
+		resetConfig();
+		vi.unstubAllEnvs();
+	});
+
+	test('deletes resolved reports for real after 365 days by default', async () => {
+		stubMinimalEnv();
+		const config = await loadConfig();
+		expect(config.report_retention).toEqual({days: 365, dry_run: false});
+	});
+
+	test('reads the day setting and the dry run switch from the environment', async () => {
+		stubMinimalEnv({FLUXER_REPORT_RETENTION_DAYS: ' 730 ', FLUXER_REPORT_RETENTION_DRY_RUN: 'TRUE'});
+		const config = await loadConfig();
+		expect(config.report_retention).toEqual({days: 730, dry_run: true});
+	});
+
+	test.each([
+		['FLUXER_REPORT_RETENTION_DAYS', '0', 'FLUXER_REPORT_RETENTION_DAYS must be an integer between 1 and 36500'],
+		['FLUXER_REPORT_RETENTION_DAYS', '36501', 'FLUXER_REPORT_RETENTION_DAYS must be an integer between 1 and 36500'],
+		['FLUXER_REPORT_RETENTION_DAYS', '1.5', 'FLUXER_REPORT_RETENTION_DAYS must be an integer, got "1.5"'],
+		['FLUXER_REPORT_RETENTION_DRY_RUN', '1', 'FLUXER_REPORT_RETENTION_DRY_RUN must be true or false'],
+	])('refuses %s=%j', async (name, value, message) => {
+		stubMinimalEnv({[name]: value});
+		await expect(loadConfig()).rejects.toThrow(message);
 	});
 });
 

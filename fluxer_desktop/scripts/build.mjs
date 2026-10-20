@@ -22,6 +22,8 @@ const SPLASH_SRC_DIR = path.join(SRC_DIR, 'splash');
 const SPLASH_DIST_DIR = path.join(DIST_DIR, 'splash');
 const SPLASH_PRELOAD_FILE_NAME = 'splash.cjs';
 const REQUIRED_RENDERER_ENTRIES = Object.freeze(['index.html', 'assets']);
+const BUNDLED_RENDERER_ENTRIES = Object.freeze([...REQUIRED_RENDERER_ENTRIES, 'version.json']);
+const BUNDLED_RENDERER_VERSION_PATTERN = /^\d+\.\d+\.\d+$/u;
 const FORBIDDEN_RENDERER_ENTRIES = Object.freeze(['sw.js', 'sw.js.map']);
 const SUPPORTED_BUILD_ARGUMENTS = Object.freeze(['--shared-assets', '--use-shared-renderer']);
 const MAIN_BOOTSTRAP_ENTRY_NAME = 'index';
@@ -37,18 +39,20 @@ const isProduction =
 	process.env.FLUXER_DESKTOP_PRODUCTION === 'true' ||
 	process.env.GITHUB_ACTIONS === 'true';
 const skipNative = process.env.FLUXER_SKIP_NATIVE === 'true';
-const embeddedBuildVersion = process.env.PUBLIC_BUILD_VERSION || process.env.BUILD_VERSION || '';
+let embeddedBuildVersion = process.env.PUBLIC_BUILD_VERSION || process.env.BUILD_VERSION || '';
 const embeddedReleaseChannel = process.env.PUBLIC_RELEASE_CHANNEL || process.env.RELEASE_CHANNEL || '';
 const modulesEnabled = process.env.FLUXER_MODULES === '1' || process.env.FLUXER_MODULES === 'true';
 const offlineBuild = process.env.FLUXER_OFFLINE === '1' || process.env.FLUXER_OFFLINE === 'true';
-const publicBuildDefines = {
-	'process.env.PUBLIC_BUILD_VERSION': JSON.stringify(embeddedBuildVersion),
-	'process.env.BUILD_VERSION': JSON.stringify(embeddedBuildVersion),
-	'process.env.PUBLIC_RELEASE_CHANNEL': JSON.stringify(embeddedReleaseChannel),
-	'process.env.RELEASE_CHANNEL': JSON.stringify(embeddedReleaseChannel),
-	'process.env.FLUXER_MODULES': JSON.stringify(modulesEnabled ? '1' : ''),
-	'process.env.FLUXER_OFFLINE': JSON.stringify(offlineBuild ? '1' : ''),
-};
+function publicBuildDefines() {
+	return {
+		'process.env.PUBLIC_BUILD_VERSION': JSON.stringify(embeddedBuildVersion),
+		'process.env.BUILD_VERSION': JSON.stringify(embeddedBuildVersion),
+		'process.env.PUBLIC_RELEASE_CHANNEL': JSON.stringify(embeddedReleaseChannel),
+		'process.env.RELEASE_CHANNEL': JSON.stringify(embeddedReleaseChannel),
+		'process.env.FLUXER_MODULES': JSON.stringify(modulesEnabled ? '1' : ''),
+		'process.env.FLUXER_OFFLINE': JSON.stringify(offlineBuild ? '1' : ''),
+	};
+}
 const electronExternals = [
 	'electron',
 	'electron-log',
@@ -89,10 +93,38 @@ class RendererOutputIncompleteError extends Error {
 	}
 }
 
-class PackedRendererNotPrunedError extends Error {
-	constructor(location) {
-		super(`The renderer is a required module, so ${location} must be empty after the prune step.`);
-		this.name = 'PackedRendererNotPrunedError';
+class BundledRendererMissingError extends Error {
+	constructor(location, missing) {
+		super(`The shell bundles its renderer, so ${location} must still hold ${missing.join(', ')} after the prune step.`);
+		this.name = 'BundledRendererMissingError';
+	}
+}
+
+class BundledRendererVersionError extends Error {
+	constructor(bundledVersion, buildVersion) {
+		super(
+			`The bundled renderer reports version ${JSON.stringify(bundledVersion)} and this shell is ${JSON.stringify(buildVersion)}. A shell that loads modules must bundle the renderer built for the same numeric version, because it serves whichever of the two is newer.`,
+		);
+		this.name = 'BundledRendererVersionError';
+	}
+}
+
+function readBundledRendererVersion() {
+	try {
+		const parsed = JSON.parse(fs.readFileSync(path.join(RENDERER_DIST_DIR, 'version.json'), 'utf8'));
+		return typeof parsed?.version === 'string' ? parsed.version : '';
+	} catch {
+		return '';
+	}
+}
+
+function fallBackToBundledRendererVersion() {
+	if (embeddedBuildVersion !== '') {
+		return;
+	}
+	const bundledVersion = readBundledRendererVersion();
+	if (BUNDLED_RENDERER_VERSION_PATTERN.test(bundledVersion)) {
+		embeddedBuildVersion = bundledVersion;
 	}
 }
 
@@ -302,12 +334,12 @@ function expectedNativeRuntimeArtifactsForArch(platform, arch) {
 	artifacts.push({
 		label: '@fluxer/app-store',
 		relativePath: `app-store.${tag}.node`,
-		runtimeFiles: ['index.js', 'loader-diagnostics.cjs', 'pure.cjs'],
+		runtimeFiles: ['index.js', 'loader-diagnostics.cjs'],
 	});
 	artifacts.push({
 		label: '@fluxer/gateway-socket',
 		relativePath: `gateway-socket.${tag}.node`,
-		runtimeFiles: ['index.js', 'loader-diagnostics.cjs', 'pure.cjs'],
+		runtimeFiles: ['index.js', 'loader-diagnostics.cjs'],
 	});
 	if (platform === 'darwin') {
 		artifacts.push({
@@ -337,7 +369,7 @@ function expectedNativeRuntimeArtifactsForArch(platform, arch) {
 		artifacts.push({
 			label: '@fluxer/platform-info',
 			relativePath: `platform-info.${tag}.node`,
-			runtimeFiles: ['index.js', 'loader-diagnostics.cjs', 'pure.cjs'],
+			runtimeFiles: ['index.js', 'loader-diagnostics.cjs'],
 		});
 	} else if (platform === 'win32') {
 		artifacts.push({
@@ -360,16 +392,12 @@ function expectedNativeRuntimeArtifactsForArch(platform, arch) {
 		artifacts.push({
 			label: '@fluxer/platform-info',
 			relativePath: `platform-info.${tag}.node`,
-			runtimeFiles: ['index.js', 'loader-diagnostics.cjs', 'pure.cjs'],
+			runtimeFiles: ['index.js', 'loader-diagnostics.cjs'],
 		});
 	} else if (platform === 'linux') {
 		artifacts.push({
 			label: '@fluxer/linux-audio-capture',
 			relativePath: `linux-audio-capture.${tag}.node`,
-		});
-		artifacts.push({
-			label: '@fluxer/linux-screen-capture',
-			relativePath: `linux-screen-capture.${tag}.node`,
 		});
 		artifacts.push({
 			label: '@fluxer/linux-portals',
@@ -394,7 +422,7 @@ function expectedNativeRuntimeArtifactsForArch(platform, arch) {
 		artifacts.push({
 			label: '@fluxer/platform-info',
 			relativePath: `platform-info.${tag}.node`,
-			runtimeFiles: ['index.js', 'loader-diagnostics.cjs', 'pure.cjs'],
+			runtimeFiles: ['index.js', 'loader-diagnostics.cjs'],
 		});
 	}
 	return artifacts;
@@ -593,12 +621,6 @@ function buildNativeAddons() {
 			jsEntry: 'index.js',
 		});
 		buildNativeAddon({
-			label: '@fluxer/linux-screen-capture',
-			dirName: 'linux-screen-capture',
-			commands: [['pnpm', 'build']],
-			jsEntry: 'index.js',
-		});
-		buildNativeAddon({
 			label: '@fluxer/linux-portals',
 			dirName: 'linux-portals',
 			commands: [['pnpm', 'build']],
@@ -664,7 +686,7 @@ async function buildMain() {
 		define: {
 			'process.env.NODE_ENV': JSON.stringify(isProduction ? 'production' : 'development'),
 			[MAIN_APP_OUTPUT_FILE_DEFINE]: JSON.stringify(MAIN_APP_OUTPUT_FILE_NAME),
-			...publicBuildDefines,
+			...publicBuildDefines(),
 		},
 		banner: {
 			js: `import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);`,
@@ -796,7 +818,7 @@ function preloadBuildOptions(entryFileName, outputFileName) {
 		tsconfig: DESKTOP_TSCONFIG,
 		define: {
 			'process.env.NODE_ENV': JSON.stringify(isProduction ? 'production' : 'development'),
-			...publicBuildDefines,
+			...publicBuildDefines(),
 		},
 	};
 }
@@ -839,14 +861,18 @@ function ensureBuildChannelFile() {
 }
 
 function prunePackedRendererModules() {
-	console.log('Pruning module-owned assets from the packed renderer...');
+	console.log('Pruning on-demand module assets from the bundled renderer...');
 	const startedAt = Date.now();
-	runDesktopBuildStep('strip_shell_renderer');
-	const survivors = findMissingEntries(REQUIRED_RENDERER_ENTRIES, RENDERER_DIST_DIR);
-	if (survivors.length !== REQUIRED_RENDERER_ENTRIES.length) {
-		throw new PackedRendererNotPrunedError(RENDERER_DIST_DIR);
+	runDesktopBuildStep('prune_shell_renderer');
+	const missing = findMissingEntries(BUNDLED_RENDERER_ENTRIES, RENDERER_DIST_DIR);
+	if (missing.length > 0) {
+		throw new BundledRendererMissingError(RENDERER_DIST_DIR, missing);
 	}
-	console.log(`  Packed renderer pruned in ${Date.now() - startedAt}ms`);
+	const bundledVersion = readBundledRendererVersion();
+	if (!BUNDLED_RENDERER_VERSION_PATTERN.test(bundledVersion) || bundledVersion !== embeddedBuildVersion) {
+		throw new BundledRendererVersionError(bundledVersion, embeddedBuildVersion);
+	}
+	console.log(`  Bundled renderer pruned in ${Date.now() - startedAt}ms`);
 }
 
 async function build() {
@@ -873,6 +899,7 @@ async function build() {
 	if (!options.useSharedRenderer) {
 		copyRendererIntoDist();
 	}
+	fallBackToBundledRendererVersion();
 	if (modulesEnabled) {
 		prunePackedRendererModules();
 	}

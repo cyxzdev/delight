@@ -209,10 +209,6 @@ class NotificationState {
 		this.ttsNotificationMode = mode;
 	}
 
-	isFocused(): boolean {
-		return this.focused;
-	}
-
 	private isMessageMentionLike(channel: Channel, message: Message, currentUser: User, ignoreEveryone = false): boolean {
 		if (MessageUtils.isMentioned(currentUser, message, ignoreEveryone)) {
 			return true;
@@ -256,7 +252,7 @@ class NotificationState {
 		return Navigation.channelId ?? SelectedChannel.currentChannelId;
 	}
 
-	private isViewingChannel(channelId: string): boolean {
+	isViewingChannel(channelId: string): boolean {
 		return this.getVisibleChannelId() === channelId || Navigation.threadId === channelId;
 	}
 

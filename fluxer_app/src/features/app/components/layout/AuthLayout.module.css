@@ -87,10 +87,9 @@
 	justify-content: center;
 }
 
-.splashImage {
+.splashBackdrop {
 	position: fixed;
-	right: 0;
-	bottom: 0;
+	inset: 0;
 	pointer-events: none;
 	overflow: hidden;
 	z-index: 0;

@@ -3,16 +3,10 @@
 import type {WorkerTaskName} from '@app/api/worker/WorkerLaneConfig';
 import type {CachePurgeAdapterName, StoreProductSlotName} from '@fluxer/config/src/MasterConfig';
 import type {AccountIdentityMode, TagStyle} from '@fluxer/constants/src/AccountIdentityConstants';
+import type {SmtpTlsMode} from '@fluxer/constants/src/SmtpConstants';
 
 export type APIWorkerMode = 'all_lanes' | 'single_lane' | 'single_task';
 export type APIWorkerLaneName = 'realtime' | 'unfurl' | 'lifecycle' | 'batch' | 'crosspost';
-export type PushProviderEnvironment = 'production' | 'development';
-
-interface PushProviderAppConfig {
-	appId: string;
-	topic?: string;
-	environment?: PushProviderEnvironment;
-}
 
 export interface AppStoreAppConfig {
 	bundleId: string;
@@ -25,13 +19,24 @@ export interface TrustedCallerConfig {
 	buckets: Array<string>;
 }
 
+interface SmtpConfig {
+	host: string;
+	port: number;
+	username: string;
+	password: string;
+	tlsMode: SmtpTlsMode | null;
+}
+
+interface APICachePurgeTarget {
+	endpoint: string;
+	token: string;
+	timeoutMs: number;
+}
+
 export interface APICachePurgeConfig {
 	adapter: CachePurgeAdapterName;
-	http: {
-		endpoint: string;
-		token: string;
-		timeoutMs: number;
-	};
+	http: APICachePurgeTarget;
+	controller: APICachePurgeTarget;
 }
 
 interface APIGeoipFilesystemConfig {
@@ -165,12 +170,10 @@ export interface APIConfig {
 		fromName: string;
 		replyToEmail: string;
 		appBaseUrl: string;
-		smtp?: {
-			host: string;
-			port: number;
-			username: string;
-			password: string;
-			secure: boolean;
+		smtp?: SmtpConfig;
+		fallback?: {
+			domains: Array<string>;
+			smtp: SmtpConfig & {headers?: Record<string, string>};
 		};
 	};
 	blocklistFeeds: {
@@ -192,6 +195,7 @@ export interface APIConfig {
 			latitude: number;
 			longitude: number;
 		};
+		p2pStunUrls?: Array<string>;
 	};
 	stripe: {
 		enabled: boolean;
@@ -261,11 +265,6 @@ export interface APIConfig {
 			rpId: string;
 			allowedOrigins: Array<string>;
 		};
-		vapid: {
-			publicKey: string;
-			privateKey: string;
-			email?: string;
-		};
 		bluesky: BlueskyOAuthConfig;
 	};
 	klipy: {
@@ -293,6 +292,7 @@ export interface APIConfig {
 		};
 		setup: {
 			configured: boolean;
+			token: string | null;
 		};
 		accountIdentity: AccountIdentityMode | null;
 		tagStyle: TagStyle | null;
@@ -312,17 +312,13 @@ export interface APIConfig {
 	presignedHarvestDownloadsEnabled: boolean;
 	attachmentDecayEnabled: boolean;
 	deletionGracePeriodHours: number;
+	reportRetention: {
+		days: number;
+		dryRun: boolean;
+	};
 	inactivityDeletionThresholdDays?: number;
 	push: {
 		publicVapidKey?: string;
-		apns: {
-			enabled: boolean;
-			teamId?: string;
-			keyId?: string;
-			privateKey?: string;
-			privateKeyPath?: string;
-			apps: Array<PushProviderAppConfig>;
-		};
 	};
 	appStore: {
 		enabled: boolean;

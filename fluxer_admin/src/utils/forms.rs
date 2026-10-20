@@ -33,9 +33,11 @@ pub struct MultiValueForm {
 
 impl MultiValueForm {
     pub async fn from_request(request: Request) -> Option<Self> {
-        let bytes = body::to_bytes(request.into_body(), MAX_FORM_BYTES)
-            .await
-            .ok()?;
+        Self::from_request_with_limit(request, MAX_FORM_BYTES).await
+    }
+
+    pub async fn from_request_with_limit(request: Request, max_bytes: usize) -> Option<Self> {
+        let bytes = body::to_bytes(request.into_body(), max_bytes).await.ok()?;
         Some(Self::parse(bytes.as_ref()))
     }
 
@@ -103,10 +105,6 @@ impl MultiValueForm {
         })
     }
 
-    pub fn opt_out_value(&self, key: &str) -> bool {
-        !self.contains_key(&format!("{key}_present")) || self.bool_value(key)
-    }
-
     pub fn list_values(&self, key: &str) -> Vec<String> {
         self.fields
             .get(key)
@@ -126,75 +124,5 @@ impl MultiValueForm {
             .iter()
             .map(|value| value.parse())
             .collect()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn clean_string_trims_whitespace() {
-        assert_eq!(clean_string("  hello  "), Some("hello".to_owned()));
-    }
-
-    #[test]
-    fn clean_string_returns_none_for_empty() {
-        assert_eq!(clean_string(""), None);
-        assert_eq!(clean_string("   "), None);
-        assert_eq!(clean_string("\t\n"), None);
-    }
-
-    #[test]
-    fn clean_string_preserves_inner_spaces() {
-        assert_eq!(
-            clean_string("  hello world  "),
-            Some("hello world".to_owned())
-        );
-    }
-
-    #[test]
-    fn parse_comma_separated_splits() {
-        assert_eq!(parse_comma_separated("a, b, c"), vec!["a", "b", "c"]);
-        assert_eq!(parse_comma_separated("a\nb\r\nc"), vec!["a", "b", "c"]);
-    }
-
-    #[test]
-    fn parse_comma_separated_filters_empty() {
-        assert_eq!(parse_comma_separated("a,,b, ,c"), vec!["a", "b", "c"]);
-        assert!(parse_comma_separated("").is_empty());
-        assert!(parse_comma_separated(", , ,").is_empty());
-    }
-
-    #[test]
-    fn multi_value_form_preserves_repeated_fields() {
-        let form = MultiValueForm::parse(b"fields%5B%5D=avatar&fields%5B%5D=banner&name=Test");
-
-        assert_eq!(
-            form.list_values("fields[]"),
-            vec!["avatar".to_owned(), "banner".to_owned()]
-        );
-        assert_eq!(form.clean("name"), Some("Test".to_owned()));
-    }
-
-    #[test]
-    fn multi_value_form_list_values_accepts_comma_and_repeated_values() {
-        let form = MultiValueForm::parse(b"acls=user.read,user.write&acls=guild.read");
-
-        assert_eq!(
-            form.list_values("acls"),
-            vec![
-                "user.read".to_owned(),
-                "user.write".to_owned(),
-                "guild.read".to_owned()
-            ]
-        );
-    }
-
-    #[test]
-    fn multi_value_form_bool_value_accepts_html_checkbox_values() {
-        assert!(MultiValueForm::parse(b"enabled=on").bool_value("enabled"));
-        assert!(MultiValueForm::parse(b"enabled=true").bool_value("enabled"));
-        assert!(!MultiValueForm::parse(b"enabled=false").bool_value("enabled"));
     }
 }

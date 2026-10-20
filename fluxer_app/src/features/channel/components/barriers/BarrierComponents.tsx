@@ -1,23 +1,22 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {UserSettingsModal} from '@app/features/app/components/dialogs/LoadableSettingsModals';
 import {getActiveInstanceProductName} from '@app/features/app/state/ActiveInstanceProductName';
+import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import {openClaimAccountModal} from '@app/features/auth/components/modals/ClaimAccountModal';
+import {useVerifyEmailAction} from '@app/features/auth/hooks/useVerifyEmailAction';
 import styles from '@app/features/channel/components/barriers/BarrierComponents.module.css';
 import {openChannelFollowModal} from '@app/features/channel/components/modals/ChannelFollowModal';
 import wrapperStyles from '@app/features/channel/components/textarea/InputWrapper.module.css';
 import textareaStyles from '@app/features/channel/components/textarea/TextareaInput.module.css';
 import {FOLLOW_DESCRIPTOR} from '@app/features/channel/utils/ChannelFollowUtils';
-import {CLAIM_ACCOUNT_DESCRIPTOR, VERIFY_EMAIL_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
+import {CLAIM_ACCOUNT_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
 import {getCachedNumberFormat} from '@app/features/i18n/utils/IntlCache';
 import {unblockUser} from '@app/features/relationship/utils/RelationshipActionUtils';
 import {remFromPx} from '@app/features/theme/layout/RemFromPx';
 import {Button} from '@app/features/ui/button/Button';
-import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
-import {modal} from '@app/features/ui/commands/ModalCommands';
-import {BouncedEmailChangeModal} from '@app/features/user/components/modals/BouncedEmailChangeModal';
-import Users from '@app/features/user/state/Users';
+import {openMessagingPausedHelpModal} from '@app/features/user/components/modals/MessagingPausedHelpModal';
 import {ACCOUNT_LIMITED_NOTICE_DESCRIPTOR} from '@app/features/user/utils/AccountLimitUtils';
+import {TEXT_DID_NOT_GO_THROUGH_DESCRIPTOR} from '@app/features/user/utils/MessagingPausedHelpEmail';
 import {msg} from '@lingui/core/macro';
 import {Trans, useLingui} from '@lingui/react/macro';
 import {
@@ -137,7 +136,7 @@ const CountdownTimer = observer(({initialTime}: {initialTime: number}) => {
 		</div>
 	);
 });
-export const UnclaimedAccountBarrier = observer(({onAction}: BarrierProps) => {
+export const UnclaimedAccountBarrier = observer(() => {
 	const {i18n} = useLingui();
 	return (
 		<BarrierBase
@@ -153,7 +152,6 @@ export const UnclaimedAccountBarrier = observer(({onAction}: BarrierProps) => {
 				<Button
 					small={true}
 					onClick={() => {
-						onAction?.();
 						openClaimAccountModal({force: true});
 					}}
 					data-flx="channel.barriers.barrier-components.unclaimed-account-barrier.button.action"
@@ -165,8 +163,8 @@ export const UnclaimedAccountBarrier = observer(({onAction}: BarrierProps) => {
 		/>
 	);
 });
-export const UnverifiedEmailBarrier = observer(({onAction}: BarrierProps) => {
-	const {i18n} = useLingui();
+export const UnverifiedEmailBarrier = observer(() => {
+	const verifyEmailAction = useVerifyEmailAction();
 	return (
 		<BarrierBase
 			message={<Trans>You need to verify your email to send messages in this community.</Trans>}
@@ -180,27 +178,12 @@ export const UnverifiedEmailBarrier = observer(({onAction}: BarrierProps) => {
 			action={
 				<Button
 					small={true}
-					onClick={() => {
-						onAction?.();
-						const bounced = Users.currentUser?.emailBounced === true;
-						ModalCommands.push(
-							modal(
-								() =>
-									bounced ? (
-										<BouncedEmailChangeModal data-flx="channel.barriers.barrier-components.unverified-email-barrier.bounced-email-change-modal" />
-									) : (
-										<UserSettingsModal
-											initialTab="account_security"
-											data-flx="channel.barriers.barrier-components.unverified-email-barrier.user-settings-modal"
-										/>
-									),
-								bounced ? undefined : 'user-settings',
-							),
-						);
-					}}
+					onClick={verifyEmailAction.onClick}
+					disabled={verifyEmailAction.submitting}
+					submitting={verifyEmailAction.submitting}
 					data-flx="channel.barriers.barrier-components.unverified-email-barrier.button.action"
 				>
-					{i18n._(VERIFY_EMAIL_DESCRIPTOR)}
+					{verifyEmailAction.text}
 				</Button>
 			}
 			data-flx="channel.barriers.barrier-components.unverified-email-barrier.barrier-base"
@@ -265,7 +248,17 @@ export const AccountLimitedBarrier = observer(() => {
 					data-flx="channel.barriers.barrier-components.account-limited-barrier.info-icon"
 				/>
 			}
-			action={null}
+			action={
+				RuntimeConfig.isSelfHosted() ? null : (
+					<Button
+						small={true}
+						onClick={openMessagingPausedHelpModal}
+						data-flx="channel.barriers.barrier-components.account-limited-barrier.button.open-help"
+					>
+						{i18n._(TEXT_DID_NOT_GO_THROUGH_DESCRIPTOR)}
+					</Button>
+				)
+			}
 			data-flx="channel.barriers.barrier-components.account-limited-barrier.barrier-base"
 		/>
 	);
@@ -407,7 +400,7 @@ export const BlockedUserBarrier = observer(({userId, username, onAction}: Blocke
 		/>
 	);
 });
-export const UnclaimedDMBarrier = observer(({onAction}: BarrierProps) => {
+export const UnclaimedDMBarrier = observer(() => {
 	const {i18n} = useLingui();
 	return (
 		<BarrierBase
@@ -423,7 +416,6 @@ export const UnclaimedDMBarrier = observer(({onAction}: BarrierProps) => {
 				<Button
 					small={true}
 					onClick={() => {
-						onAction?.();
 						openClaimAccountModal({force: true});
 					}}
 					data-flx="channel.barriers.barrier-components.unclaimed-dm-barrier.button.action"

@@ -1,3 +1,4 @@
+import {isObjectLike as isRecord} from '@fluxer/record_utils/src/RecordGuards';
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import fs from 'node:fs';
@@ -147,10 +148,6 @@ function resolveUserDataChild(userDataPath: string, relativePath: string): strin
 	return null;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return value !== null && typeof value === 'object';
-}
-
 function splitChromiumFeatureList(value: string): Array<string> {
 	if (!value) return [];
 	return value
@@ -295,6 +292,11 @@ export function appendLinuxChromiumFlagsConfig(channel: BuildChannel): void {
 			log.warn('[ChromiumRuntime] Failed to load Linux Chromium flags config', {path: filePath, error});
 		}
 	}
+}
+
+export function addLinuxHardwareVideoDecodeFeatures(features: Set<string>): void {
+	if (process.platform !== 'linux') return;
+	features.add('VaapiOnNvidiaGPUs');
 }
 
 export function addLinuxHardwareVideoEncodeFeatures(features: Set<string>): void {

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {APP_PROTOCOL} from '@electron/common/Constants';
+import {updateFromCommandLine} from '@electron/main/DesktopUpdatePrompt';
 import {parseJumpListTaskFromArgv} from '@electron/main/JumpList';
-import {recordRecentDeepLink} from '@electron/main/RecentDocuments';
+import {isDesktopUpdateRequested} from '@electron/main/LaunchOptions';
 import {getMainWindow, isMainWindowTakenOver, onMainWindowTakeoverEnded, showWindow} from '@electron/main/Window';
 import {app, ipcMain} from 'electron';
 import log from 'electron-log';
@@ -215,6 +216,10 @@ function isSquirrelOrSyntheticArg(arg: string): boolean {
 }
 
 export function handleSecondInstance(argv: Array<string>): void {
+	if (isDesktopUpdateRequested(argv)) {
+		void updateFromCommandLine();
+		return;
+	}
 	const task = parseJumpListTaskFromArgv(argv);
 	if (task) {
 		dispatchJumpListTask(task);
@@ -233,4 +238,13 @@ export function handleSecondInstance(argv: Array<string>): void {
 
 export function consumeInitialJumpListTask(): 'open-settings' | 'new-dm' | null {
 	return parseJumpListTaskFromArgv(process.argv);
+}
+
+function recordRecentDeepLink(url: string): void {
+	if (process.platform !== 'win32' && process.platform !== 'darwin') return;
+	try {
+		app.addRecentDocument(url);
+	} catch (error) {
+		log.debug('addRecentDocument failed', {error});
+	}
 }

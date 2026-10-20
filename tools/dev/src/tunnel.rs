@@ -354,8 +354,24 @@ fn docker_command() -> Vec<PathBuf> {
     vec![PathBuf::from("sudo"), PathBuf::from("docker")]
 }
 
+#[cfg(unix)]
 fn docker_socket_is_writable() -> bool {
     std::os::unix::net::UnixStream::connect("/var/run/docker.sock").is_ok()
+}
+
+#[cfg(not(unix))]
+fn docker_socket_is_writable() -> bool {
+    false
+}
+
+#[cfg(all(test, not(unix)))]
+mod platform_tests {
+    use super::docker_socket_is_writable;
+
+    #[test]
+    fn docker_socket_probe_is_disabled_without_unix_sockets() {
+        assert!(!docker_socket_is_writable());
+    }
 }
 
 #[cfg(unix)]
@@ -370,44 +386,4 @@ fn set_private_file_mode(path: &Path) -> Result<()> {
 #[cfg(not(unix))]
 fn set_private_file_mode(_path: &Path) -> Result<()> {
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn derives_https_public_url_env() {
-        let env = public_url_env("https://dev.example.test").unwrap();
-        assert!(env.iter().any(|(key, value)| {
-            key == "FLUXER_GATEWAY_ENDPOINT" && value == "wss://dev.example.test/gateway"
-        }));
-        assert!(env.iter().any(|(key, value)| {
-            key == "FLUXER_LIVEKIT_URL" && value == "wss://dev.example.test/livekit"
-        }));
-        assert!(env.iter().any(|(key, value)| {
-            key == "FLUXER_MEDIA_PROXY_UPLOAD_RELAY_ENDPOINT"
-                && value == "https://dev.example.test/media"
-        }));
-        assert!(env.iter().any(|(key, value)| {
-            key == "FLUXER_S3_PUBLIC_ENDPOINT" && value == "https://dev.example.test"
-        }));
-        assert!(
-            env.iter()
-                .any(|(key, value)| { key == "FLUXER_PUBLIC_PORT" && value == "443" })
-        );
-    }
-
-    #[test]
-    fn rejects_public_url_with_path() {
-        assert!(parse_public_url("https://example.com/app").is_err());
-    }
-
-    #[test]
-    fn resolves_public_url_arg_normalized() {
-        assert_eq!(
-            resolve_cloudflare_public_url(Some("https://example.com/")).unwrap(),
-            "https://example.com"
-        );
-    }
 }

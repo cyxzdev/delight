@@ -11,7 +11,7 @@ import {LogoutModal} from '@app/features/app/components/dialogs/components/Logou
 import {SettingsModalHeader} from '@app/features/app/components/dialogs/components/SettingsModalHeader';
 import {SettingsSearch} from '@app/features/app/components/dialogs/components/SettingsSearch';
 import {SettingsCurrentTabProvider} from '@app/features/app/components/dialogs/shared/SettingsCurrentTabContext';
-import {SettingsSectionPills} from '@app/features/app/components/dialogs/shared/SettingsPillTabs';
+import {openDeveloperPortal} from '@app/features/developers/DeveloperPortalNavigation';
 import {
 	SettingsModalDesktopContent,
 	SettingsModalDesktopScroll,
@@ -24,14 +24,15 @@ import {
 	SettingsModalSidebarSubItem,
 	SettingsModalSidebarSubItems,
 	SettingsTreeProvider,
+	settingsModalStyles,
 } from '@app/features/app/components/dialogs/shared/SettingsModalLayout';
-import {openDeveloperPortal} from '@app/features/developers/DeveloperPortalNavigation';
-import {hasWhatsNewEntries} from '@app/features/app/components/whats_new/WhatsNewEntries';
-import {openWhatsNewModal} from '@app/features/app/components/whats_new/WhatsNewModal';
 import {
 	BACK_TO_SETTINGS_DESCRIPTOR,
+	OPENS_IN_BROWSER_DESCRIPTOR,
 	SEARCH_SETTINGS_PLACEHOLDER_DESCRIPTOR,
 	SIGN_OUT_DESCRIPTOR,
+	SUBMIT_FEEDBACK_DESCRIPTOR,
+	WHATS_NEW_DESCRIPTOR,
 } from '@app/features/i18n/utils/CommonMessageDescriptors';
 import {ComponentBus} from '@app/features/platform/utils/ComponentBus';
 import {remFromPx} from '@app/features/theme/layout/RemFromPx';
@@ -41,6 +42,7 @@ import {modal} from '@app/features/ui/commands/ModalCommands';
 import {MentionBadgeAnimated} from '@app/features/ui/components/MentionBadge';
 import {StatusAwareAvatar} from '@app/features/ui/components/StatusAwareAvatar';
 import SettingsSidebar from '@app/features/ui/state/SettingsSidebar';
+import {openExternalUrl} from '@app/features/ui/utils/NativeUtils';
 import {
 	ADVANCED_SETTINGS_TAG_LABELS,
 	ADVANCED_SETTINGS_TAG_ORDER,
@@ -56,6 +58,7 @@ import {
 	getSectionIdsForTab,
 	getSectionsForTab,
 	getUserSettingsTabLabel,
+	PRIVACY_REVIEW_NEEDED_DESCRIPTOR,
 	tabHasMultipleLinkableSections,
 	USER_SETTINGS_LABEL_DESCRIPTOR,
 } from '@app/features/user/components/settings_utils/SettingsConstants';
@@ -81,6 +84,7 @@ import {buildUserSettingsDeepLink} from '@app/features/user/components/settings_
 import {useSettingsContentKey} from '@app/features/user/hooks/useSettingsContentKey';
 import {useUnsavedChangesFlash} from '@app/features/user/hooks/useUnsavedChangesFlash';
 import {ScrollSpyProvider, useScrollSpyContext} from '@app/features/user/state/ScrollSpyContext';
+import UserSettings from '@app/features/user/state/UserSettings';
 import Users from '@app/features/user/state/Users';
 import {
 	collapseSettingsTreeTab,
@@ -96,9 +100,10 @@ import {
 	ArrowRightIcon,
 	ArrowSquareOutIcon,
 	CaretRightIcon,
+	ChatCircleDotsIcon,
 	CodeIcon,
-	MegaphoneIcon,
 	SignOutIcon,
+	SparkleIcon,
 } from '@phosphor-icons/react';
 import {clsx} from 'clsx';
 import {AnimatePresence, motion} from 'framer-motion';
@@ -108,10 +113,6 @@ import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 const BACK_TO_OVERRIDES_DESCRIPTOR = msg({
 	message: 'Back to overrides',
 	comment: 'Back-navigation label that returns from permission overrides to the main settings pane.',
-});
-const WHAT_S_NEW_DESCRIPTOR = msg({
-	message: "What's new",
-	comment: 'Sidebar item in settings that opens the app update notes modal.',
 });
 const SEARCH_RESULTS_DESCRIPTOR = msg({
 	message: 'Search results',
@@ -291,6 +292,28 @@ const BreadcrumbTitle: React.FC<BreadcrumbTitleProps> = ({parentLabel, currentLa
 		</span>
 	</span>
 );
+const ExternalSidebarItemLabel: React.FC<{label: React.ReactNode; hint: React.ReactNode; 'data-flx': string}> = ({
+	label,
+	hint,
+	'data-flx': dataFlx,
+}) => (
+	<span className={settingsModalStyles.externalTabLabel} data-flx={dataFlx}>
+		<span className={settingsModalStyles.externalTabLabelText} data-flx={`${dataFlx}-text`}>
+			{label}
+		</span>
+		<span className={settingsModalStyles.srOnly} data-flx={`${dataFlx}-screen-reader-hint`}>
+			{hint}
+		</span>
+		<ArrowSquareOutIcon
+			size={remFromPx(16)}
+			weight="bold"
+			className={settingsModalStyles.externalTabIcon}
+			aria-hidden="true"
+			data-flx={`${dataFlx}-external-icon`}
+		/>
+	</span>
+);
+
 export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 	({
 		groupedSettingsTabs,
@@ -355,6 +378,8 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 			if (checkUnsavedChanges()) return;
 			ModalCommands.push(modal(() => <LogoutModal data-flx="app.desktop-settings-view.handle-logout.logout-modal" />));
 		};
+		const patchNotesUrl = Routes.patchNotes();
+		const feedbackUrl = Routes.feedback();
 		const handleTabSelect = (tabType: UserSettingsTabType) => {
 			if (checkUnsavedChanges()) return;
 			onTabSelect(tabType);
@@ -389,7 +414,7 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 		const useOverride = SettingsSidebar.useOverride;
 		const activeTabPanelId = selectedTab ? `settings-tabpanel-${selectedTab}` : undefined;
 		const activeTabId = selectedTab ? `settings-tab-${selectedTab}` : undefined;
-		const shouldShowWhatsNew = hasWhatsNewEntries();
+		const privacySetupPending = UserSettings.isPrivacySetupPending();
 		const scrollKey = useMemo(() => {
 			const subtabKey = contentKey ?? initialSubtab ?? 'root';
 			if (isSearchActive) {
@@ -421,17 +446,6 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 		) : (
 			currentTab?.label || i18n._(USER_SETTINGS_LABEL_DESCRIPTOR)
 		);
-		const headerPillItems = useMemo(() => {
-			if (!selectedTab || isSearchActive || isApplicationsDetailTitle || !hasSections) return [];
-			return getSidebarSectionsForTab(selectedTab, i18n, currentUserCreatedAt).map((section) => ({
-				id: section.id,
-				label: section.label,
-			}));
-		}, [selectedTab, isSearchActive, isApplicationsDetailTitle, hasSections, i18n, currentUserCreatedAt]);
-		const headerTabs =
-			headerPillItems.length > 1 ? (
-				<SettingsSectionPills items={headerPillItems} data-flx="app.desktop-settings-view.section-pills" />
-			) : null;
 		const sidebarFooter = (
 			<AnimatePresence data-flx="app.desktop-settings-view.animate-presence">
 				{!useOverride && (
@@ -494,13 +508,8 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 				>
 					<div className={userSettingsStyles.userProfileInfo} data-flx="app.desktop-settings-view.div--3">
 						<StatusAwareAvatar size={32} user={currentUser!} data-flx="app.desktop-settings-view.status-aware-avatar" />
-						<div className={userSettingsStyles.userProfileText} data-flx="app.desktop-settings-view.user-profile-text">
-							<div className={userSettingsStyles.userProfileName} data-flx="app.desktop-settings-view.div--4">
-								{currentUser?.displayName}
-							</div>
-							<div className={userSettingsStyles.userProfileSubtitle} data-flx="app.desktop-settings-view.user-profile-subtitle">
-								<Trans>Edit profile</Trans>
-							</div>
+						<div className={userSettingsStyles.userProfileName} data-flx="app.desktop-settings-view.div--4">
+							{currentUser?.displayName}
 						</div>
 					</div>
 				</button>
@@ -603,12 +612,11 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 															data-flx="app.desktop-settings-view.settings-modal-sidebar-item.developer-portal"
 														/>
 													)}
-													{(category === 'developer' ? [] : tabs).map((tab) => {
+													{tabs.map((tab) => {
 														const tabId = `settings-tab-${tab.type}`;
 														const panelId = `settings-tabpanel-${tab.type}`;
 														const isSelected = tab.type === selectedTab;
-														// Delight: a tab's sections show as pill tabs in the page header instead.
-														const hasTabSections = false;
+														const hasTabSections = sidebarTabHasSections(tab.type, currentUserCreatedAt);
 														return (
 															<React.Fragment key={tab.type}>
 																<SettingsModalSidebarItem
@@ -631,6 +639,11 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 																		</div>
 																	}
 																	selected={isSelected}
+																	attentionLabel={
+																		tab.type === 'privacy_safety' && privacySetupPending
+																			? i18n._(PRIVACY_REVIEW_NEEDED_DESCRIPTOR)
+																			: undefined
+																	}
 																	onClick={() => handleTabSelect(tab.type)}
 																	onRequestContentFocus={focusContentPanel}
 																	id={tabId}
@@ -654,12 +667,32 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 													})}
 												</SettingsModalSidebarCategory>
 											))}
-											{shouldShowWhatsNew && (
+											{patchNotesUrl && (
 												<SettingsModalSidebarItem
-													icon={MegaphoneIcon}
-													label={i18n._(WHAT_S_NEW_DESCRIPTOR)}
-													onClick={openWhatsNewModal}
-													data-flx="app.desktop-settings-view.settings-modal-sidebar-item.open-whats-new-modal"
+													icon={SparkleIcon}
+													label={
+														<ExternalSidebarItemLabel
+															label={i18n._(WHATS_NEW_DESCRIPTOR)}
+															hint={i18n._(OPENS_IN_BROWSER_DESCRIPTOR)}
+															data-flx="app.desktop-settings-view.whats-new-label"
+														/>
+													}
+													onClick={() => void openExternalUrl(patchNotesUrl)}
+													data-flx="app.desktop-settings-view.settings-modal-sidebar-item.whats-new"
+												/>
+											)}
+											{feedbackUrl && (
+												<SettingsModalSidebarItem
+													icon={ChatCircleDotsIcon}
+													label={
+														<ExternalSidebarItemLabel
+															label={i18n._(SUBMIT_FEEDBACK_DESCRIPTOR)}
+															hint={i18n._(OPENS_IN_BROWSER_DESCRIPTOR)}
+															data-flx="app.desktop-settings-view.submit-feedback-label"
+														/>
+													}
+													onClick={() => void openExternalUrl(feedbackUrl)}
+													data-flx="app.desktop-settings-view.settings-modal-sidebar-item.submit-feedback"
 												/>
 											)}
 											<SettingsModalSidebarItem
@@ -689,7 +722,6 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 						flashBanner={flashBanner}
 						tabData={tabData}
 						onClose={handleClose}
-						tabs={headerTabs}
 						data-flx="app.desktop-settings-view.settings-modal-header"
 					/>
 					<SettingsModalDesktopScroll

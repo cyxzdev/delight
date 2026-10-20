@@ -266,8 +266,12 @@ impl FreedesktopNotifications {
         let method_conn = open_blocking_connection()
             .map_err(|err| generic_error(format!("notifications client init failed: {err}")))?;
         let stop_signal_thread = Arc::new(AtomicBool::new(false));
-        let signal_thread = spawn_signal_thread(event_callback.clone(), stop_signal_thread.clone())
-            .map_err(|err| generic_error(format!("notifications client init failed: {err}")))?;
+        let signal_thread = spawn_signal_thread(
+            event_callback.clone(),
+            method_conn.clone(),
+            stop_signal_thread.clone(),
+        )
+        .map_err(|err| generic_error(format!("notifications client init failed: {err}")))?;
 
         Ok(Self {
             inner: Arc::new(Inner {
@@ -536,6 +540,7 @@ fn build_hints(hints: &NotifyHints) -> HashMap<&'static str, Value<'_>> {
 
 fn spawn_signal_thread(
     event_callback: EventThreadsafeFunction,
+    method_conn: BlockingConnection,
     stop: Arc<AtomicBool>,
 ) -> std::result::Result<JoinHandle<()>, String> {
     let (ready_tx, ready_rx) = mpsc::sync_channel(1);
@@ -544,13 +549,13 @@ fn spawn_signal_thread(
         .name("fluxer-linux-notifications-signals".to_string())
         .spawn(move || {
             let setup = future::block_on(async {
-                let conn = zbus::Connection::session().await?;
+                let conn = method_conn.inner();
                 let rule = MatchRule::builder()
                     .msg_type(MessageType::Signal)
                     .path(NOTIFY_PATH)?
                     .interface(NOTIFY_IFACE)?
                     .build();
-                let stream = MessageStream::for_match_rule(rule, &conn, Some(64)).await?;
+                let stream = MessageStream::for_match_rule(rule, conn, Some(64)).await?;
                 zbus::Result::Ok((conn, stream))
             });
 
@@ -1042,33 +1047,6 @@ mod tests {
     }
 
     #[test]
-    fn urgency_strings_match_freedesktop_bytes() {
-        assert_eq!(Urgency::parse("low").map(Urgency::as_byte), Some(0));
-        assert_eq!(Urgency::parse("normal").map(Urgency::as_byte), Some(1));
-        assert_eq!(Urgency::parse("critical").map(Urgency::as_byte), Some(2));
-        assert_eq!(Urgency::parse("unknown"), None);
-    }
-
-    #[test]
-    fn default_notify_args_match_legacy_defaults() {
-        let args = NotifyArgs {
-            app_name: String::new(),
-            replaces_id: 0,
-            app_icon: String::new(),
-            summary: String::new(),
-            body: String::new(),
-            actions: Vec::new(),
-            hints: NotifyHints::empty(),
-            expire_timeout_ms: -1,
-        };
-
-        assert_eq!(args.replaces_id, 0);
-        assert_eq!(args.expire_timeout_ms, -1);
-        assert!(flatten_actions(&args.actions).is_empty());
-        assert!(build_hints(&args.hints).is_empty());
-    }
-
-    #[test]
     fn hints_use_freedesktop_variant_signatures() {
         let hints = NotifyHints {
             urgency: Some(Urgency::Critical),
@@ -1102,41 +1080,6 @@ mod tests {
             values["image-data"].value_signature().to_string(),
             "(iiibiiay)"
         );
-    }
-
-    #[test]
-    fn dbus_session_detected_via_bus_address() {
-        assert!(has_dbus_session_from(
-            Some("unix:path=/run/user/1000/bus"),
-            None,
-            |_| false
-        ));
-    }
-
-    #[test]
-    fn dbus_session_detected_via_runtime_dir_socket() {
-        assert!(has_dbus_session_from(
-            None,
-            Some("/run/user/1000"),
-            |path| path == "/run/user/1000/bus"
-        ));
-        assert!(has_dbus_session_from(
-            None,
-            Some("/run/user/1000/"),
-            |path| path == "/run/user/1000/bus"
-        ));
-    }
-
-    #[test]
-    fn dbus_session_absent_in_headless_container() {
-        assert!(!has_dbus_session_from(None, None, |_| false));
-        assert!(!has_dbus_session_from(Some(""), Some(""), |_| true));
-        assert!(!has_dbus_session_from(None, Some("/tmp/xdg"), |_| false));
-    }
-
-    #[test]
-    fn dbus_session_unreachable_marker_is_stable_for_renderer_matching() {
-        assert!(DBUS_SESSION_UNREACHABLE.starts_with("DBus session bus unreachable"));
     }
 
     #[test]

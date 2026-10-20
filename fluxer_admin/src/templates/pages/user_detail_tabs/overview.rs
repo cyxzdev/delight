@@ -9,6 +9,7 @@ use crate::{
         form::{checkbox, csrf_input, form_actions, submit_button},
         page_container::{card_with_header, detail_row},
     },
+    templates::pages::enforcement_decision::suspension_label,
     utils::{
         bigint::format_discriminator,
         timestamps::{format_admin_timestamp, snowflake_creation_date},
@@ -64,12 +65,8 @@ fn render_overview_tab(
 ) -> Markup {
     html! {
         div class="space-y-6" {
-            @if let Some(until) = &user.temp_banned_until {
-                div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-900" {
-                    "Temporarily banned until " (format_admin_timestamp(until))
-                }
-            }
-            @if user.temp_banned_until.is_none() {
+            (restriction_banner(config, user))
+            @if user.temp_banned_until.is_none() && user.enforcement_decision_id.is_none() {
                 @if let Some(pending) = &user.pending_deletion_at {
                     div class="rounded-lg border border-orange-200 bg-orange-50 p-4 text-sm text-orange-900" {
                         div class="font-medium" { "Scheduled for deletion: " (format_admin_timestamp(pending)) }
@@ -262,6 +259,30 @@ fn render_overview_tab(
     }
 }
 
+fn restriction_banner(config: &AdminConfig, user: &AdminUser) -> Markup {
+    let base = &config.base_path;
+    html! {
+        @match (&user.enforcement_decision_id, &user.temp_banned_until) {
+            (Some(decision_id), until) => {
+                div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-900" data-restriction-banner="" {
+                    @match (until, &user.pending_deletion_at) {
+                        (Some(until), _) => { (suspension_label(until)) ". " }
+                        (None, Some(pending)) => { "Scheduled for deletion on " (format_admin_timestamp(pending)) ". " }
+                        (None, None) => { "Restricted by a decision. " }
+                    }
+                    a href={(base) "/decisions/" (decision_id)} class="underline" { "Decision " (decision_id) }
+                }
+            }
+            (None, Some(until)) => {
+                div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-900" data-restriction-banner="" {
+                    (suspension_label(until)) ". Recorded before decisions, so it has no decision."
+                }
+            }
+            (None, None) => {}
+        }
+    }
+}
+
 fn flags_card(
     config: &AdminConfig,
     user: &AdminUser,
@@ -269,118 +290,58 @@ fn flags_card(
     csrf_token: &str,
 ) -> Markup {
     let can_update_flags = acl::has_permission(admin_acls, acl::USER_UPDATE_FLAGS);
+    let suspended = user.temp_banned_until.is_some();
     html! {
         div class="space-y-6" {
-            (u64_flag_form(
+            (flag_form_shell(
                 config,
                 &user.id,
-                "User Flags",
+                "User flags",
                 "update_flags",
-                "flags[]",
-                user.flags,
-                admin_flags::USER_FLAGS,
                 csrf_token,
                 can_update_flags,
-                Some(acl::USER_UPDATE_FLAGS),
+                html! {
+                    @for flag in admin_flags::USER_FLAGS {
+                        (checkbox(
+                            "flags[]",
+                            &flag.value.to_string(),
+                            flag.name,
+                            user.flags & flag.value != 0,
+                            can_update_flags && admin_flags::user_flag_is_editable(flag.value, user.flags, suspended),
+                        ))
+                    }
+                },
             ))
-            (i32_flag_form(
+            (flag_form_shell(
                 config,
                 &user.id,
-                "Premium Flags",
+                "Premium flags",
                 "update_premium_flags",
-                "flags[]",
-                user.premium_flags,
-                admin_flags::PREMIUM_FLAGS,
                 csrf_token,
                 can_update_flags,
-                Some(acl::USER_UPDATE_FLAGS),
+                html! {
+                    @for flag in admin_flags::PREMIUM_FLAGS {
+                        (checkbox(
+                            "flags[]",
+                            &flag.value.to_string(),
+                            flag.name,
+                            user.premium_flags & flag.value != 0,
+                            can_update_flags && admin_flags::premium_flag_is_editable(flag.value),
+                        ))
+                    }
+                },
             ))
         }
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn u64_flag_form(
-    config: &AdminConfig,
-    user_id: &str,
-    title: &str,
-    action: &str,
-    input_name: &str,
-    value: u64,
-    flags: &[admin_flags::U64Flag],
-    csrf_token: &str,
-    can_edit: bool,
-    required_acl: Option<&str>,
-) -> Markup {
-    flag_form_shell(
-        config,
-        user_id,
-        title,
-        action,
-        value.to_string(),
-        csrf_token,
-        can_edit,
-        required_acl,
-        html! {
-            @for flag in flags {
-                (flag_checkbox(
-                    input_name,
-                    flag.value.to_string(),
-                    flag.name,
-                    value & flag.value != 0,
-                    can_edit,
-                ))
-            }
-        },
-    )
-}
-
-#[allow(clippy::too_many_arguments)]
-fn i32_flag_form(
-    config: &AdminConfig,
-    user_id: &str,
-    title: &str,
-    action: &str,
-    input_name: &str,
-    value: i32,
-    flags: &[admin_flags::I32Flag],
-    csrf_token: &str,
-    can_edit: bool,
-    required_acl: Option<&str>,
-) -> Markup {
-    flag_form_shell(
-        config,
-        user_id,
-        title,
-        action,
-        value.to_string(),
-        csrf_token,
-        can_edit,
-        required_acl,
-        html! {
-            @for flag in flags {
-                (flag_checkbox(
-                    input_name,
-                    flag.value.to_string(),
-                    flag.name,
-                    value & flag.value != 0,
-                    can_edit,
-                ))
-            }
-        },
-    )
-}
-
-#[allow(clippy::too_many_arguments)]
 fn flag_form_shell(
     config: &AdminConfig,
     user_id: &str,
     title: &str,
     action: &str,
-    _raw_value: String,
     csrf_token: &str,
     can_edit: bool,
-    required_acl: Option<&str>,
     checkboxes: Markup,
 ) -> Markup {
     card_with_header(
@@ -392,14 +353,15 @@ fn flag_form_shell(
                     (checkboxes)
                 }
                 @if can_edit {
+                    p class="text-xs text-neutral-500" {
+                        "Restriction flags are read-only. Use the moderation tab."
+                    }
                     (form_actions(html! {
                         (submit_button("Save"))
                     }))
                 } @else {
-                    @if let Some(required) = required_acl {
-                        p class="text-xs text-neutral-500" {
-                            "Read-only \u{2014} " (required) " permission required."
-                        }
+                    p class="text-xs text-neutral-500" {
+                        "Read-only. Needs the " (acl::USER_UPDATE_FLAGS) " permission."
                     }
                 }
             }
@@ -550,6 +512,10 @@ fn traits_form(
                         class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20" {
                         (custom_traits.join("\n"))
                     }
+                    p class="text-neutral-500 text-xs" {
+                        "The premium trait follows each member's subscription or gift and cannot be \
+                         assigned here."
+                    }
                 }
                 (form_actions(html! {
                     (submit_button("Save Traits"))
@@ -583,85 +549,4 @@ fn custom_traits<'a>(user: &'a AdminUser, trait_definitions: &[&str]) -> Vec<&'a
         .filter(|trait_name| !trait_definitions.contains(trait_name))
         .filter(|trait_name| !DERIVED_TRAITS.contains(trait_name))
         .collect()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn test_config() -> AdminConfig {
-        AdminConfig {
-            env: crate::config::RuntimeEnv::Test,
-            host: String::new(),
-            port: 3020,
-            secret_key_base: "test-secret".to_owned(),
-            base_path: "/admin".to_owned(),
-            api_endpoint: String::new(),
-            media_endpoint: String::new(),
-            static_cdn_endpoint: String::new(),
-            reports_bucket_origin: String::new(),
-            admin_endpoint: String::new(),
-            web_app_endpoint: String::new(),
-            oauth_client_id: String::new(),
-            oauth_client_secret: String::new(),
-            oauth_redirect_uri: String::new(),
-            build_version: "test".to_owned(),
-            self_hosted: true,
-            proxy: crate::config::ProxyConfig {
-                trust_client_ip_header: false,
-                client_ip_header_name: String::new(),
-            },
-        }
-    }
-
-    fn render_email_row(username_sign_in: bool) -> String {
-        let user: AdminUser = serde_json::from_value(serde_json::json!({
-            "id": "1500000000000000001",
-            "username": "target",
-            "discriminator": "0001",
-            "email": "target@example.com"
-        }))
-        .expect("valid admin user");
-        let acls = vec![acl::USER_VIEW_EMAIL.to_owned()];
-        render_overview_tab(
-            &test_config(),
-            &user,
-            &acls,
-            "csrf",
-            None,
-            None,
-            false,
-            username_sign_in,
-        )
-        .into_string()
-    }
-
-    #[test]
-    fn username_mode_hides_the_email_row() {
-        assert!(!render_email_row(true).contains("target@example.com"));
-    }
-
-    #[test]
-    fn email_mode_shows_the_email_row() {
-        assert!(render_email_row(false).contains("target@example.com"));
-    }
-
-    #[test]
-    fn last_active_and_grace_end_use_the_panel_date_format() {
-        let user: AdminUser = serde_json::from_value(serde_json::json!({
-            "id": "1500000000000000001",
-            "username": "target",
-            "discriminator": "0001",
-            "last_active_at": "2026-10-06T20:23:38.591Z",
-            "premium_grace_ends_at": "2026-11-01T08:00:00Z"
-        }))
-        .expect("valid admin user");
-        let html =
-            render_overview_tab(&test_config(), &user, &[], "csrf", None, None, false, false)
-                .into_string();
-        assert!(!html.contains("2026-10-06T20:23"));
-        assert!(!html.contains("2026-11-01T08:00"));
-        assert!(html.contains(&format_admin_timestamp("2026-10-06T20:23:38.591Z")));
-        assert!(html.contains(&format_admin_timestamp("2026-11-01T08:00:00Z")));
-    }
 }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import Authentication from '@app/features/auth/state/Authentication';
+import SessionManager from '@app/features/platform/state/AuthSession';
 import {Logger} from '@app/features/platform/utils/AppLogger';
 import {delightServiceBaseUrl} from '@app/features/user/utils/DelightService';
 import {isProfileFrameId, type ProfileFrameChoice} from '@app/features/user/utils/ProfileFrameIds';
@@ -107,7 +108,7 @@ class ProfileFrameStore {
 	/** Save the current user's choice ('none' = no frame, null = clear). */
 	async saveOwnChoice(choice: ProfileFrameChoice | null): Promise<void> {
 		const me = Authentication.currentUserId;
-		const token = Authentication.authToken;
+		const token = SessionManager.token;
 		if (!me || !token) throw new Error('Not signed in');
 		const previous = this.choices.has(me) ? this.choices.get(me) : undefined;
 		runInAction(() => {

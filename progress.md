@@ -2,19 +2,15 @@
 
 ## Current state
 
-- Active repository: `D:\Haze\delight` (the user's actual project folder), branch `delight`.
-- The user confirmed: preserve Delight branding and design. The WARIF product-name instruction in the supplied task file does not override this.
-- Pinned source range: `f32356801d569afd570c5a8357d38fa932a44c69..b8d43af1919fa0e96382577899241535c71be694` (561 commits).
-- The local branch already shares 251 commits in the target history through the common base; 310 later upstream commits remain to integrate.
-- Checkpoint 1 is the first 50 of those 310 commits, ending at `6de6be23581c96b33c40584948c92788f4323d12`.
-- Checkpoint 2 integrates commits 51–54 through `0ef1cd14c3`; the user committed and pushed it as `9c149eefc`.
-- Checkpoint 3 (upstream commit 55, `7a4aa42d4b`) and the profile-effect/HMR fix were committed and pushed by the user as `be99c9db8`.
-- Checkpoint 4 (commits 56–70 through `4da8dec4ac251ddb0b92f213158995d93591e5df`) was committed and pushed by the user as `081140f4b`.
-- Checkpoint 5 applies commits 71–100 through `94f123905`: 212 upstream paths are staged, with zero unresolved conflicts; five updated progress files bring the staged total to 217.
-- `HEAD` and `origin/delight` are `081140f4b`; checkpoint 5 is staged, not committed. The agent has not committed or pushed.
-- 100 of 310 post-base commits are now applied or user-committed; 210 remain. Continue at commit 101 (`ae820ba4e`) after the user commits and pushes this checkpoint.
-- The original 11 staged user paths are preserved in `stash@{0}` with their staged state. Restore them after the upstream checkpoints and verify all overlaps; do not drop the stash.
-- No deployment has occurred. Local rollback ref: `backup/delight-before-fluxer-sync-2026-10`.
+- Active repository: `D:\Haze\delight` (the user's project checkout), branch `delight`.
+- Preserve the user's confirmed Delight identity and design; the WARIF label in the supplied task file was not applied.
+- Pinned upstream range: `f32356801d569afd570c5a8357d38fa932a44c69..b8d43af1919fa0e96382577899241535c71be694` (561 inventory commits). All entries are integrated; zero upstream commits remain.
+- The final 193 entries after source commit 117 were completed in three verified batches: 64 (`369–432`), 64 (`433–496`), and 65 (`497–561`). Their upstream path counts were 2,837, 3,271, and 788 respectively.
+- Batch 3 reviewed five conflicts and retained Delight's violet palette and Developer Portal behavior. See [conflict-resolution.md](docs/upstream-sync/conflict-resolution.md).
+- The full API suite passed 5,234 tests; 98 were skipped. Changed app suites passed 2,326 tests across 11 files; two voice suites could not load because the ignored WASM output is stale. Thirteen changed desktop test files and 678 tests across config/constants/i18n/errors passed. The supported Rust workspace and formatting checks passed.
+- Environment limits: stale WASM blocks two voice suites; Windows lacks the native Passkeys backend, libvips/pkg-config, and Erlang/rebar3. Database-backed tests are included in skipped results. Details are in the Batch 3 record below and `findings.md`.
+- The original 11 user edits have been restored into the working tree; the original `stash@{0}` remains intact as a backup. The real Git index has zero staged and zero unresolved paths. `HEAD` and `origin/delight` remain `9fc3400073bfffdcf75a5b19b5a6c6dd92782737`; Codex made no commit or push.
+- No deployment occurred. Local rollback ref: `backup/delight-before-fluxer-sync-2026-10`.
 
 ## Checkpoint 1 changes and decisions
 
@@ -164,5 +160,37 @@ Checkpoint 5 is staged for the user's review in D:\Haze\delight; later upstream 
 - Rust desktop CI tests passed 50/50. The complete `cargo test --workspace` passed with all test binaries and integration targets green; `cargo fmt --all -- --check` also passed. The workspace emitted existing deprecation warnings for `Atomic::fetch_update` but no test failures.
 - `fluxer_svc` tests passed 49/49 (45 unit, 3 schema-boot integration, 1 prepared-statements integration) with Docker-assigned ephemeral ports and `FLUXER_TEST_POSTGRES_HOST=host.docker.internal` / `FLUXER_TEST_POSTGRES_BIND_ADDRESS=0.0.0.0` for this devcontainer run.
 - The `fluxer_app_proxy` SPA index suite passed 32/32 after pinning `media_endpoint=None` in the shared test fixture and expecting Delight's shipped page title.
-- Current source range after commit 117 contains 193 first-parent commits. The next is 118 (`82abd03a371c85a5194deadcf0c1bdc0564dad0b`, `feat(reports): delete reports and configure retention (#3338)`). Per the user's instruction, wait at this boundary and do not begin it.
-- `HEAD` and `origin/delight` remain `79b499382`; Codex did not create a commit or push. At the final status check, Git showed 1,721 staged paths, 53 unstaged tracked paths, one untracked Delight-only tab, and zero unmerged paths. Do not alter the existing index or stash.
+- Current source range after commit 117 contains 193 first-parent commits. Batch 1 is now integrated and verified; Batch 2 is the next range.
+- At the start of this continuation, `HEAD` and `origin/delight` were both `9fc3400073bfffdcf75a5b19b5a6c6dd92782737`; the index was empty. The original 11 user paths remain in `stash@{0}`. Current integration changes are unstaged in the user's checkout; Codex did not create a commit or push.
+
+## Upstream batch 1 — commits 118–181 — verified with documented host caveats
+
+- Integrated 64 first-parent commits, `82abd03a371c85a5194deadcf0c1bdc0564dad0b..e87b593f46aa933232f33094ca4c31a6e8a74131`, covering 2,837 unique upstream paths. The patch had 39 conflicts: 34 locale catalogs and five TypeScript files. Reviewed each conflict and preserved Delight branding, local premium defaults, profile-modal layout, active local-only tests, and translations.
+- Resolved the 34 locale catalogs and passed strict Lingui compilation across all catalogs. Re-generated CSS module declarations; app, API, and desktop TypeScript checks passed. Theme variable, message layout, avatar-mask, and color-system generators passed; theme variable `--check` passed after making its input parser tolerate CRLF.
+- Rust checks passed: `cargo test -p fluxer-ci` 182/182, `cargo test -p fluxer_admin` 206/206, and `cargo test -p fluxer-dev` 15/15. `cargo fmt --all -- --check` and `git diff --check` passed.
+- API suite passed: 584 files / 5,108 tests; 4 files / 83 tests were skipped. The first run found a test-only Windows path separator assumption in the thread harvest test; using `path.join` fixed it, the isolated test passed, and the full suite then passed. API `tsc --noEmit` passed after the fix.
+- Desktop main/preload/common suite: 1,097 passed, 7 failed, 5 skipped. The failures are host-sensitive: the native Passkey backend is unavailable in this Windows environment and one test expects POSIX symlink behavior. Desktop TypeScript check passed.
+- App suite: 1,120 tests passed; 9 test files could not load, and focused changed app tests ran 360 tests successfully while two files could not load. These import failures come from the ignored, stale `fluxer_app/pkgs/libfluxcore` output referencing removed `fast-png`/`jpeg-js` packages after upstream's WASM refactor. WASM code generation could not be run because this host lacks the wasm target/clang toolchain; Docker is unavailable. Do not re-add removed package dependencies to disguise the stale generated output.
+- Added Windows build portability fixes discovered during verification: disable Unix Docker-socket probing on non-Unix hosts, invoke the admin Tailwind `.cmd` shim through `cmd /C`, normalize CRLF when checking generated theme variables, and use portable path joins in tests. These fixes are part of the unstaged project diff.
+- Checkpoint state after this batch: `HEAD` and `origin/delight` are unchanged at `9fc3400073bfffdcf75a5b19b5a6c6dd92782737`; 2,833 worktree paths are changed, with zero staged, zero unmerged, and no agent commit/push. Continue with commits 182–245 only after this checkpoint is recorded.
+
+## Upstream Batch 2 — source inventory entries 433–496 — verified
+
+- Source range: `e87b593f46aa933232f33094ca4c31a6e8a74131..e403fb6cce65241456ab9884f8a8efb6fec52d8a` (64 commits; 3,271 changed upstream paths). Applied in the actual project checkout and reconciled 15 overlapping paths. No commit/push; real index remains empty.
+- Preserved Delight's settings/developer portal, badges, profile effects/frames and layout, `/delight` sidecar route, and desktop regressions. Removed the empty What's New module and duplicate avatar utility as upstream did.
+- API full suite: 576 files passed / 5 skipped; 4,754 tests passed / 93 skipped. API TSC passed. Docker-backed Postgres cases were skipped because Docker is unavailable.
+- App full suite: 83 files and 1,116 tests passed; 12 files could not load because ignored generated `fluxer_app/pkgs/libfluxcore` still imports upstream-removed `fast-png`/`jpeg-js`. App TSC passed; focused changed app tests passed earlier in this batch.
+- Rust: `cargo test --workspace --exclude fluxer-media-proxy` passed; `cargo test -p fluxer_common` 52/52; `cargo test -p fluxer-ci` 127/127; `cargo fmt --all -- --check` passed. Full workspace cannot build `fluxer-media-proxy` on Windows without `pkg-config` and libvips.
+- Fixed the Windows monotonic clock path in `fluxer_common::now_ms` by using `Instant` on non-Unix targets and added a monotonicity test. Fixed the Delight SPA title assertion; `fluxer_app_proxy` passed 142/142. Helm parity 2/2, desktop/API TypeScript, and `git diff --check` passed.
+- Batch 3 is complete: source entries 497–561 (65 commits), `e403fb6cce65241456ab9884f8a8efb6fec52d8a..b8d43af1919fa0e96382577899241535c71be694`.
+
+## Batch 3 — final verification — 2026-10-20
+
+- Integrated the final 65 source commits across 788 upstream paths; all 561 inventory entries are integrated. Five conflicts were reviewed, retaining Delight's palette and Developer Portal behavior.
+- API full suite: 594 files passed, 5 skipped; 5,234 tests passed and 98 skipped. API TypeScript passed. Restored email DNS regression tests passed 13/13.
+- Changed app tests: 11 files / 2,326 tests passed. Two voice suites could not load because the ignored stale WASM output imports removed `jpeg-js`. App TypeScript passed after theme/CSS-type regeneration.
+- Changed desktop tests: 13 files passed. The broad Windows desktop test run remains blocked by native Passkeys initialization. Desktop TypeScript passed.
+- Package suites: config 278, constants 171, i18n 204, errors 25; 678 passed. The full supported Rust workspace passed with `cargo test --workspace --exclude fluxer-media-proxy -j 1`; `fluxer_admin` passed 134/134 after fixing CRLF parsing in its test helper. `cargo fmt --all -- --check` passed.
+- Compose config, JSON parsing, Node syntax, and `git diff --check` passed. `fluxer-media-proxy` needs Windows `pkg-config`/libvips; Gateway EUnit is unavailable without Erlang/rebar3; PostgreSQL tests account for skipped cases.
+- Restored the user's original 11 staged edits into the working tree and preserved `stash@{0}` as a backup. This restores the local Cargo launcher, workspace-local caches, Valkey port 16379, `LOG_LEVEL=info`, and DNS fallback behavior while retaining upstream services. No commit or push was made.
+- Final state: `HEAD` and `origin/delight` remain `9fc3400073bfffdcf75a5b19b5a6c6dd92782737`; the real index is empty and has zero unresolved paths. The user owns commit/push.

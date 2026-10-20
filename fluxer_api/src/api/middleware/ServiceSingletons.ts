@@ -13,9 +13,9 @@ import type {APIConfig} from '@app/api/config/APIConfig';
 import {ConnectionRepository} from '@app/api/connection/ConnectionRepository';
 import {DonationRepository} from '@app/api/donation/DonationRepository';
 import {createEmailProvider} from '@app/api/email/EmailProviderFactory';
+import {EnforcementDecisionRepository} from '@app/api/enforcement/EnforcementDecisionRepository';
 import {FavoriteMemeRepository} from '@app/api/favorite_meme/FavoriteMemeRepository';
 import {GatewayRequestService} from '@app/api/gateway/GatewayRequestService';
-import {GifService} from '@app/api/gif/GifService';
 import {createNatsGifProvider} from '@app/api/gif/NatsGifProvider';
 import {GuildAuditLogService} from '@app/api/guild/GuildAuditLogService';
 import {GuildDiscoveryRepository} from '@app/api/guild/repositories/GuildDiscoveryRepository';
@@ -44,11 +44,10 @@ import {UserCacheService} from '@app/api/infrastructure/UserCacheService';
 import {createUsersServiceClient} from '@app/api/infrastructure/UsersServiceClient';
 import {VirusScanService} from '@app/api/infrastructure/VirusScanService';
 import {type ContactEmails, resolveContactEmails} from '@app/api/instance/ContactEmails';
-import {GatewayRolloutConfigPublisher} from '@app/api/instance/GatewayRolloutConfigPublisher';
 import {InstanceConfigRepository} from '@app/api/instance/InstanceConfigRepository';
-import {type LegalUrls, resolveLegalUrls} from '@app/api/instance/LegalUrls';
+import {NatsConfigPublisher} from '@app/api/instance/NatsConfigPublisher';
 import {getInstanceProductName} from '@app/api/instance/ProductName';
-import {PushRelayConfigPublisher} from '@app/api/instance/PushRelayConfigPublisher';
+import {ensureSetupToken} from '@app/api/instance/SetupToken';
 import {InviteRepository} from '@app/api/invite/InviteRepository';
 import {Logger} from '@app/api/Logger';
 import {LimitConfigService} from '@app/api/limits/LimitConfigService';
@@ -90,12 +89,12 @@ import {UserActivityBuffer} from '@app/api/user/services/UserActivityBuffer';
 import {UserContactChangeLogService} from '@app/api/user/services/UserContactChangeLogService';
 import {awaitAll} from '@app/api/utils/ConcurrencyUtils';
 import {UserPermissionUtils} from '@app/api/utils/UserPermissionUtils';
+import {VoiceP2pConnectionReportRepository} from '@app/api/voice/VoiceP2pConnectionReportRepository';
 import {VoiceRepository} from '@app/api/voice/VoiceRepository';
 import {SweegoWebhookService} from '@app/api/webhook/SweegoWebhookService';
 import {WebhookRepository} from '@app/api/webhook/WebhookRepository';
 import type {ICacheService} from '@pkgs/cache/src/ICacheService';
 import {KVCacheProvider} from '@pkgs/cache/src/providers/KVCacheProvider';
-import {EmailI18nService} from '@pkgs/email/src/EmailI18nService';
 import type {EmailConfig, UserBouncedEmailChecker} from '@pkgs/email/src/EmailProviderTypes';
 import {EmailService} from '@pkgs/email/src/EmailService';
 import type {IEmailService} from '@pkgs/email/src/IEmailService';
@@ -114,6 +113,8 @@ export const getReadStateRepository = singleton(() => new ReadStateRepository())
 export const getFavoriteMemeRepository = singleton(() => new FavoriteMemeRepository());
 export const getConnectionRepository = singleton(() => new ConnectionRepository());
 export const getReportRepository = singleton(() => new ReportRepository());
+export const getEnforcementDecisionRepository = singleton(() => new EnforcementDecisionRepository());
+export const getVoiceP2pConnectionReportRepository = singleton(() => new VoiceP2pConnectionReportRepository());
 export const getAdminRepository = singleton(() => new AdminRepository());
 export const getAdminArchiveRepository = singleton(() => new AdminArchiveRepository());
 export const getVoiceRepository = singleton(() => new VoiceRepository());
@@ -151,24 +152,13 @@ export async function shutdownInstanceConfigRepository(): Promise<void> {
 	await instanceConfigRepositoryInstance?.shutdown();
 }
 
-export const getGatewayRolloutConfigPublisher = singleton(
+export const getNatsConfigPublisher = singleton(
 	() =>
-		new GatewayRolloutConfigPublisher(
+		new NatsConfigPublisher(
 			new NatsConnectionManager({
 				url: Config.nats.coreUrl,
 				token: Config.nats.authToken || undefined,
-				name: 'fluxer-api-gateway-rollout-config',
-			}),
-		),
-);
-
-export const getPushRelayConfigPublisher = singleton(
-	() =>
-		new PushRelayConfigPublisher(
-			new NatsConnectionManager({
-				url: Config.nats.coreUrl,
-				token: Config.nats.authToken || undefined,
-				name: 'fluxer-api-push-relay-config',
+				name: 'fluxer-api-config',
 			}),
 		),
 );
@@ -180,11 +170,9 @@ export const getEmailDnsValidationService = singleton(() => new EmailDnsValidati
 
 function createEmailServiceForConfig(
 	emailConfigSource: APIConfig['email'],
-	legalUrls: LegalUrls,
 	contactEmails: ContactEmails,
 	productName: string,
 	bouncedEmailChecker: UserBouncedEmailChecker,
-	emailI18n: EmailI18nService,
 ): IEmailService {
 	const emailConfig: EmailConfig = {
 		enabled: emailConfigSource.enabled,
@@ -192,33 +180,25 @@ function createEmailServiceForConfig(
 		fromName: emailConfigSource.fromName.trim() || productName,
 		replyTo: emailConfigSource.replyToEmail || null,
 		appBaseUrl: emailConfigSource.appBaseUrl,
-		termsUrl: legalUrls.termsUrl,
-		guidelinesUrl: legalUrls.guidelinesUrl,
 		appealsEmail: contactEmails.appealsEmail,
 		safetyEmail: contactEmails.safetyEmail,
 		supportEmail: contactEmails.supportEmail,
 		productName,
 	};
-	return new EmailService(emailConfig, emailI18n, createEmailProvider(emailConfigSource), bouncedEmailChecker);
+	return new EmailService(emailConfig, createEmailProvider(emailConfigSource), bouncedEmailChecker);
 }
 
 export function createRuntimeEmailService(bouncedEmailChecker: UserBouncedEmailChecker): IEmailService {
-	const emailI18n = new EmailI18nService();
 	return new Proxy({} as IEmailService, {
 		get(_target, property) {
 			return async (...args: Array<unknown>): Promise<boolean> => {
 				const instanceConfigRepository = getInstanceConfigRepository();
-				const [emailConfig, appPublic] = await Promise.all([
-					instanceConfigRepository.getEffectiveEmailConfig(),
-					instanceConfigRepository.getAppPublicConfig(),
-				]);
+				const emailConfig = await instanceConfigRepository.getEffectiveEmailConfig();
 				const delegate = createEmailServiceForConfig(
 					emailConfig,
-					resolveLegalUrls(appPublic.legal),
 					resolveContactEmails(),
 					getInstanceProductName(),
 					bouncedEmailChecker,
-					emailI18n,
 				);
 				const method = delegate[property as keyof IEmailService];
 				if (typeof method !== 'function') {
@@ -341,19 +321,11 @@ export function getKVAccountDeletionQueue(): KVAccountDeletionQueueService {
 export const getThemeService = singleton(() => new ThemeService(getStorageService()));
 export const getAttachmentUploadTraceRepository = singleton(() => new AttachmentUploadTraceRepository());
 
-let _virusScanInitPromise: Promise<void> | null = null;
-
 export const getVirusScanServiceInstance: () => IVirusScanService = singleton(() => {
 	const VirusScanServiceClass = Config.clamav.enabled ? VirusScanService : DisabledVirusScanService;
 	const service = new VirusScanServiceClass(getCacheService());
-	_virusScanInitPromise = service.initialize();
 	return service;
 });
-
-export async function ensureVirusScanInitialized(): Promise<void> {
-	getVirusScanServiceInstance();
-	await _virusScanInitPromise;
-}
 
 export const getEmailService: () => IEmailService = singleton(() => {
 	if (Config.dev.testModeEnabled) return new TestEmailService();
@@ -406,9 +378,7 @@ export const getBotMfaMirrorService = singleton(
 );
 export const getGifService = singleton(() => {
 	const instanceConfigRepository = getInstanceConfigRepository();
-	return new GifService(
-		createNatsGifProvider(async () => (await instanceConfigRepository.getEffectiveGifConfig()).klipy_api_key),
-	);
+	return createNatsGifProvider(async () => (await instanceConfigRepository.getEffectiveGifConfig()).klipy_api_key);
 });
 export const getGuildAuditLogService = singleton(
 	() => new GuildAuditLogService(getGuildRepository(), getSnowflakeService(), getWorkerService(), getGatewayService()),
@@ -507,6 +477,11 @@ export async function initializeServiceSingletons(): Promise<void> {
 			assertServiceSingletonInitializationActive(owner);
 			await getInstanceConfigRepository().ensureAccountIdentityMode();
 			assertServiceSingletonInitializationActive(owner);
+			await ensureSetupToken(
+				getInstanceConfigRepository(),
+				async (userId) => (await getUserRepository().findUnique(userId)) !== null,
+			);
+			assertServiceSingletonInitializationActive(owner);
 			await limitConfigService.initialize();
 			assertServiceSingletonInitializationActive(owner);
 			limitConfigService.setAsGlobalInstance();
@@ -568,7 +543,6 @@ export function resetServiceSingletonsForTesting(): void {
 	});
 	activityTracker?.shutdown();
 	clearSingletonsForTesting();
-	_virusScanInitPromise = null;
 	bulkMessageDeletionQueue = null;
 	bulkMessageDeletionQueueClient = null;
 	premiumStateQueue = null;

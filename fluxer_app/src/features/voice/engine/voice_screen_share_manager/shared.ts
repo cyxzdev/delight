@@ -13,8 +13,12 @@ import {
 	resolveVideoPublishCodecPolicy,
 	type VideoPublishCodecPolicy,
 } from '@app/features/voice/utils/CodecCapabilityDetector';
-import {loadGpuEncoderReport} from '@app/features/voice/utils/GpuEncoderCapabilities';
+import {
+	isSoftwareVideoEncodeExpectedSync,
+	loadGpuEncoderReport,
+} from '@app/features/voice/utils/GpuEncoderCapabilities';
 import {loadNativeHardwareEncoderCapabilities} from '@app/features/voice/utils/NativeHardwareEncoderCapabilities';
+import {getVideoCodecFromMimeType} from '@app/features/voice/utils/ScreenShareCodecDiagnostics';
 import {
 	buildScreenShareSenderParameters,
 	classifyScreenShareLimit,
@@ -22,7 +26,6 @@ import {
 	resolveScreenShareLayering,
 	resolveScreenShareSenderCodec,
 	resolveScreenShareTarget,
-	SCREEN_SHARE_MAX_VIDEO_BITRATE_BPS,
 	type ScreenShareContext,
 	type ScreenShareLayering,
 	type ScreenShareLimitClass,
@@ -51,7 +54,6 @@ const SCREEN_SHARE_MONITOR_TICK_MS = 2000;
 
 export interface DeviceScreenShareCaptureOptions {
 	videoDeviceId?: string;
-	previewVideoDeviceId?: string;
 	audioDeviceId?: string;
 	resolution?: ScreenShareCaptureOptions['resolution'];
 	sendUpdate?: boolean;
@@ -194,13 +196,11 @@ export async function releaseScreenShareCaptureCleanup(snapshot: ScreenShareCapt
 	}
 }
 
-function clampScreenShareEncoding(encoding: VideoEncoding): VideoEncoding {
+function clampScreenShareEncoding(encoding: VideoEncoding, ceilingBps: number): VideoEncoding {
 	return {
 		...encoding,
 		maxBitrate:
-			typeof encoding.maxBitrate === 'number'
-				? Math.min(encoding.maxBitrate, SCREEN_SHARE_MAX_VIDEO_BITRATE_BPS)
-				: encoding.maxBitrate,
+			typeof encoding.maxBitrate === 'number' ? Math.min(encoding.maxBitrate, ceilingBps) : encoding.maxBitrate,
 		priority: encoding.priority ?? 'high',
 	};
 }
@@ -221,6 +221,7 @@ export function resolveConfiguredScreenShareTarget(
 		context,
 		sourceDimensions,
 		hintSetting: VoiceSettings.getScreenShareContentHint(),
+		bitrate: VoiceSettings.getScreenShareBitrateBudget(),
 		codec: getPreferredScreenShareCodec(),
 		softwareEncoderClamp: ActiveScreenShareSource.isSoftwareEncoderClamped(),
 	});
@@ -260,7 +261,7 @@ function getStatsKind(
 
 function resolveScreenShareEncoding(target: ScreenShareTarget, publishOptions?: TrackPublishOptions): VideoEncoding {
 	if (publishOptions?.screenShareEncoding) {
-		return clampScreenShareEncoding(publishOptions.screenShareEncoding);
+		return clampScreenShareEncoding(publishOptions.screenShareEncoding, target.bitrate.ceilingBps);
 	}
 	return {maxBitrate: target.maxBitrate, maxFramerate: target.frameRate, priority: 'high'};
 }
@@ -339,7 +340,9 @@ export async function getEffectivePublishOptions(
 			resolution: target.resolution,
 			frameRate: target.frameRate,
 		});
-		SoftwareEncoderWarning.triggerWarning(preferredVideoCodec, UNKNOWN_ENCODER_IMPLEMENTATION);
+		if (!isSoftwareVideoEncodeExpectedSync()) {
+			SoftwareEncoderWarning.triggerWarning(preferredVideoCodec, UNKNOWN_ENCODER_IMPLEMENTATION);
+		}
 	}
 	return {
 		...publishOptions,
@@ -552,18 +555,6 @@ function codecMatchesTarget(mimeType: string | undefined, codec: VideoCodec | un
 	return lower === `video/${codec}`;
 }
 
-function getVideoCodecFromMimeType(mimeType: string | undefined): VideoCodec | null {
-	const lower = mimeType?.toLowerCase();
-	if (!lower?.startsWith('video/')) return null;
-	const codec = lower.slice('video/'.length);
-	if (codec === 'av1' || codec === 'av1x') return 'av1';
-	if (codec === 'h265' || codec === 'hevc') return 'h265';
-	if (codec === 'h264') return 'h264';
-	if (codec === 'vp9') return 'vp9';
-	if (codec === 'vp8') return 'vp8';
-	return null;
-}
-
 function finiteNumber(value: unknown): number | null {
 	return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
@@ -606,6 +597,7 @@ function shouldTriggerSoftwareEncoderWarning(codec: VideoCodec): boolean {
 	const encoderMode = VoiceSettings.getScreenShareEncoderMode();
 	if (encoderMode === 'software') return false;
 	if (encoderMode === 'hardware') return true;
+	if (isSoftwareVideoEncodeExpectedSync()) return false;
 	return getCodecCapabilityReport()[codec].hardwareAccelerated === 'hardware';
 }
 

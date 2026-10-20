@@ -7,8 +7,9 @@ pub struct NavItem {
     pub path: &'static str,
     pub active_key: &'static str,
     pub required_acls: &'static [&'static str],
-    pub hosted_only: bool,
 }
+
+pub const PENDING_REGISTRATIONS_KEY: &str = "pending-registrations";
 
 pub struct NavSection {
     pub title: &'static str,
@@ -17,10 +18,7 @@ pub struct NavSection {
 
 macro_rules! item {
     ($t:expr, $p:expr, $k:expr, [ $($a:expr),+ $(,)? ]) => {
-        NavItem { title: $t, path: $p, active_key: $k, required_acls: &[$($a),+], hosted_only: false }
-    };
-    ($t:expr, $p:expr, $k:expr, [ $($a:expr),+ $(,)? ], hosted) => {
-        NavItem { title: $t, path: $p, active_key: $k, required_acls: &[$($a),+], hosted_only: true }
+        NavItem { title: $t, path: $p, active_key: $k, required_acls: &[$($a),+] }
     };
 }
 
@@ -43,10 +41,22 @@ pub const NAV_SECTIONS: &[NavSection] = &[
         items: &[
             item!("Reports", "/reports", "reports", [acl::REPORT_VIEW]),
             item!(
+                "Decisions",
+                "/decisions",
+                "decisions",
+                [acl::ENFORCEMENT_VIEW]
+            ),
+            item!(
                 "Discovery Review",
                 "/discovery",
                 "discovery",
                 [acl::DISCOVERY_REVIEW]
+            ),
+            item!(
+                "Pending Registrations",
+                "/pending-registrations",
+                PENDING_REGISTRATIONS_KEY,
+                [acl::REGISTRATION_REVIEW]
             ),
             item!(
                 "Bulk Actions",
@@ -253,26 +263,3 @@ pub const NAV_SECTIONS: &[NavSection] = &[
         )],
     },
 ];
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn bulk_actions_nav_covers_every_acl_the_page_renders_a_section_for() {
-        let item = NAV_SECTIONS
-            .iter()
-            .flat_map(|section| section.items)
-            .find(|item| item.active_key == "bulk-actions")
-            .expect("bulk actions nav item");
-        for required in [
-            acl::BULK_UPDATE_USER_FLAGS,
-            acl::BULK_UPDATE_GUILD_FEATURES,
-            acl::BULK_ADD_GUILD_MEMBERS,
-            acl::BULK_DELETE_USERS,
-            acl::BULK_DELETE_USER_MESSAGES,
-        ] {
-            assert!(item.required_acls.contains(&required), "{required}");
-        }
-    }
-}

@@ -115,12 +115,12 @@ describe('EmailDnsValidationService', () => {
 			isEmailEnabled: async () => true,
 		});
 		expect(await service.hasValidDnsRecords('probe@asdf.asdf')).toBe(false);
-		expect(resolver.lookups).toEqual(['mx:asdf.asdf']);
+		expect(resolver.lookups).toEqual(['mx:asdf.asdf', 'a:asdf.asdf', 'aaaa:asdf.asdf']);
 	});
 
 	it('accepts a domain that publishes address records but no mail records', async () => {
 		const resolver = new FakeDnsResolver();
-		resolver.mxErrorCode = 'ENODATA';
+		resolver.mxErrorCode = 'ENOTFOUND';
 		resolver.addressErrorCode = null;
 		resolver.addresses = ['198.51.100.10'];
 		const service = new EmailDnsValidationService({
@@ -213,8 +213,31 @@ describe('EmailDnsValidationService', () => {
 		expect(await service.hasValidDnsRecords('probe@second.test')).toBe(false);
 		expect(await service.hasValidDnsRecords('probe@third.test')).toBe(false);
 		expect(await service.hasValidDnsRecords('probe@third.test')).toBe(false);
-		expect(resolver.lookups).toEqual(['mx:first.test', 'mx:second.test', 'mx:third.test']);
+		expect(resolver.lookups).toEqual([
+			'mx:first.test',
+			'a:first.test',
+			'aaaa:first.test',
+			'mx:second.test',
+			'a:second.test',
+			'aaaa:second.test',
+			'mx:third.test',
+			'a:third.test',
+			'aaaa:third.test',
+		]);
 		expect(await service.hasValidDnsRecords('probe@first.test')).toBe(false);
-		expect(resolver.lookups).toEqual(['mx:first.test', 'mx:second.test', 'mx:third.test', 'mx:first.test']);
+		expect(resolver.lookups).toEqual([
+			'mx:first.test',
+			'a:first.test',
+			'aaaa:first.test',
+			'mx:second.test',
+			'a:second.test',
+			'aaaa:second.test',
+			'mx:third.test',
+			'a:third.test',
+			'aaaa:third.test',
+			'mx:first.test',
+			'a:first.test',
+			'aaaa:first.test',
+		]);
 	});
 });

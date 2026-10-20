@@ -16,9 +16,11 @@ function harness({
 	shellResults = [],
 	installFails = false,
 	settled = true,
+	now = () => 0,
 } = {}) {
 	const steps = [];
 	const published = [];
+	const failures = [];
 	let probeIndex = 0;
 	let shellIndex = 0;
 	const quiet = () => undefined;
@@ -55,6 +57,9 @@ function harness({
 			reopen: (launchAttempt) => {
 				steps.push(launchAttempt == null ? 'reopen' : 'reopen-updated');
 			},
+			reloadInPlace: async () => {
+				steps.push('reload-in-place');
+			},
 		},
 		publish: (check) => {
 			published.push(check);
@@ -62,10 +67,14 @@ function harness({
 		openDownloadsPage: async () => {
 			steps.push('downloads-page');
 		},
+		reportFailure: (failure) => {
+			failures.push(failure);
+		},
 		logger: {info: quiet, warn: quiet, error: quiet},
+		now,
 	});
 	if (settled) run.markLaunchSettled();
-	return {run, steps, published};
+	return {run, steps, published, failures};
 }
 
 describe('DesktopUpdateRun', () => {
@@ -137,6 +146,36 @@ describe('DesktopUpdateRun', () => {
 		assert.deepEqual(steps, ['probe', 'takeover', 'close', 'shell-update', 'reopen', 'probe', 'probe']);
 	});
 
+	test('a manual check offers the shell again even after the platform feed said it had nothing', async () => {
+		const lagging = {shellLatestVersion: '2026.1012.154032', shellNewer: true, modulesChanged: false};
+		const {run} = harness({probes: [lagging], shellResults: [{reason: 'no-update', detail: null}]});
+		await run.start();
+		assert.deepEqual(await run.check(), {shellNewer: false, modulesChanged: false});
+
+		assert.deepEqual(
+			await run.check({manual: true}),
+			{shellNewer: true, modulesChanged: false},
+			'one stale answer from the platform feed must not make Check for updates say up to date for the rest of the session',
+		);
+		assert.deepEqual(await run.check(), {shellNewer: true, modulesChanged: false});
+	});
+
+	test('the background check offers a lagging shell again once the platform feed had time to catch up', async () => {
+		let clock = 0;
+		const lagging = {shellLatestVersion: '2026.1012.154032', shellNewer: true, modulesChanged: false};
+		const {run} = harness({
+			probes: [lagging],
+			shellResults: [{reason: 'no-update', detail: null}],
+			now: () => clock,
+		});
+		await run.start();
+
+		clock = 9 * 60_000;
+		assert.deepEqual(await run.check(), {shellNewer: false, modulesChanged: false});
+		clock = 10 * 60_000;
+		assert.deepEqual(await run.check(), {shellNewer: true, modulesChanged: false});
+	});
+
 	test('a shell update that failed on the network is retried by the next click', async () => {
 		const shell = {shellLatestVersion: '2026.1008.2', shellNewer: true, modulesChanged: false};
 		const {run, steps, published} = harness({
@@ -193,5 +232,68 @@ describe('DesktopUpdateRun', () => {
 		await run.start();
 
 		assert.deepEqual(steps, []);
+	});
+});
+
+describe('DesktopUpdateRun installing a renderer only update in place', () => {
+	const MODULES_ONLY = {shellLatestVersion: '2026.1008.2', shellNewer: false, modulesChanged: true};
+	const SHELL_TOO = {shellLatestVersion: '2026.1008.3', shellNewer: true, modulesChanged: true};
+
+	test('a click after the background check found only modules never shows the splash or closes a window', async () => {
+		const {run, steps, published, failures} = harness({probes: [MODULES_ONLY]});
+		await run.check();
+
+		await run.start();
+
+		assert.deepEqual(steps, ['probe', 'probe', 'install', 'reload-in-place']);
+		assert.deepEqual(published, [{shellNewer: false, modulesChanged: false}]);
+		assert.deepEqual(failures, []);
+	});
+
+	test('a shell that turned newer since the background check still updates behind the splash', async () => {
+		const {run, steps} = harness({
+			probes: [MODULES_ONLY, SHELL_TOO],
+			shellResults: [{reason: 'no-update', detail: null}],
+		});
+		await run.check();
+
+		await run.start();
+
+		assert.deepEqual(steps, ['probe', 'probe', 'takeover', 'close', 'shell-update', 'install', 'reopen-updated']);
+	});
+
+	test('a download that fails leaves the running app alone and says so', async () => {
+		const {run, steps, published, failures} = harness({probes: [MODULES_ONLY], installFails: true});
+		await run.check();
+
+		await run.start();
+
+		assert.deepEqual(steps, ['probe', 'probe', 'install']);
+		assert.deepEqual(published, [{shellNewer: false, modulesChanged: true}]);
+		assert.deepEqual(failures, [{reason: 'download-failed', detail: 'disk full'}]);
+	});
+
+	test('a click while offline changes nothing on screen', async () => {
+		const {run, steps, failures} = harness({probes: [MODULES_ONLY, new Error('offline')]});
+		await run.check();
+
+		await run.start();
+
+		assert.deepEqual(steps, ['probe', 'probe']);
+		assert.deepEqual(failures, [{reason: 'check-failed', detail: 'offline'}]);
+	});
+
+	test('a check works from the first window, a click only after the renderer confirmed its launch', async () => {
+		const {run, steps} = harness({probes: [MODULES_ONLY], settled: false});
+
+		assert.deepEqual(await run.check(), {shellNewer: false, modulesChanged: true});
+		await run.start();
+
+		assert.deepEqual(steps, ['probe']);
+
+		run.markLaunchSettled();
+		await run.start();
+
+		assert.deepEqual(steps, ['probe', 'probe', 'install', 'reload-in-place']);
 	});
 });

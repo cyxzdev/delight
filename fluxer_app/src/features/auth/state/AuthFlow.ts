@@ -2,8 +2,7 @@
 
 import type {RuntimeConfigSnapshot} from '@app/features/app/state/InstanceSnapshotStore';
 import * as AuthenticationCommands from '@app/features/auth/commands/AuthenticationCommands';
-import type {UserData} from '@app/features/auth/state/AccountStorage';
-import {type AuthRequestTarget, authRequestTargetFromSnapshot} from '@app/features/auth/state/AuthRequestTarget';
+import type {UserData} from '@app/features/auth/state/AccountStorageContract';
 import {isValidOAuthState, storeSsoPendingContext} from '@app/features/auth/state/SsoPendingContext';
 import {safeRedirectTarget} from '@app/features/auth/utils/SafeRedirect';
 import {type InstanceHTTPTarget, instanceTargetFromSnapshot} from '@app/features/platform/transport/InstanceHTTP';
@@ -11,10 +10,6 @@ import {Logger} from '@app/features/platform/utils/AppLogger';
 import type {AuthenticationResponseJSON, PublicKeyCredentialRequestOptionsJSON} from '@simplewebauthn/browser';
 
 const logger = new Logger('AuthFlow');
-
-export function authCommandTarget(runtimeSnapshot: RuntimeConfigSnapshot): InstanceHTTPTarget {
-	return instanceTargetFromSnapshot(runtimeSnapshot);
-}
 
 export interface LoginSuccessPayload {
 	token: string;
@@ -39,8 +34,7 @@ export interface IpAuthorizationChallenge {
 export type LoginResult =
 	| {type: 'success'; payload: LoginSuccessPayload}
 	| {type: 'mfa'; challenge: MfaChallenge}
-	| {type: 'ip_authorization'; challenge: IpAuthorizationChallenge}
-	| {type: 'suspended'; banViewToken: string};
+	| {type: 'ip_authorization'; challenge: IpAuthorizationChallenge};
 
 function mfaChallengeFromResponse(response: AuthenticationCommands.MfaLoginResponse): MfaChallenge {
 	return {
@@ -70,7 +64,7 @@ export async function loginWithPassword({
 }): Promise<LoginResult> {
 	const response = await AuthenticationCommands.login({
 		...params,
-		target: authRequestTargetFromSnapshot(runtimeSnapshot),
+		target: instanceTargetFromSnapshot(runtimeSnapshot),
 	});
 	if (AuthenticationCommands.isIpAuthorizationRequiredResponse(response)) {
 		return {
@@ -80,12 +74,6 @@ export async function loginWithPassword({
 				email: response.email,
 				resendAvailableIn: response.resend_available_in ?? 30,
 			},
-		};
-	}
-	if ('ban_view_token' in response) {
-		return {
-			type: 'suspended',
-			banViewToken: (response as {ban_view_token: string}).ban_view_token,
 		};
 	}
 	if (response.mfa) {
@@ -98,13 +86,6 @@ export async function loginWithPassword({
 		type: 'success',
 		payload: toLoginSuccessPayload(response),
 	};
-}
-
-export async function completeLoginSession(
-	payload: LoginSuccessPayload,
-	runtimeSnapshot: RuntimeConfigSnapshot,
-): Promise<void> {
-	await AuthenticationCommands.completeLogin({...payload, runtimeSnapshot});
 }
 
 export async function loginWithMfaCode({
@@ -122,7 +103,7 @@ export async function loginWithMfaCode({
 		code,
 		ticket,
 		inviteCode,
-		target: authCommandTarget(runtimeSnapshot),
+		target: instanceTargetFromSnapshot(runtimeSnapshot),
 	});
 	return toLoginSuccessPayload(response);
 }
@@ -131,7 +112,7 @@ export async function getWebAuthnMfaOptions(
 	ticket: string,
 	runtimeSnapshot: RuntimeConfigSnapshot,
 ): Promise<PublicKeyCredentialRequestOptionsJSON> {
-	return AuthenticationCommands.getWebAuthnMfaOptions({ticket, target: authCommandTarget(runtimeSnapshot)});
+	return AuthenticationCommands.getWebAuthnMfaOptions({ticket, target: instanceTargetFromSnapshot(runtimeSnapshot)});
 }
 
 export async function authenticateMfaWithWebAuthn({
@@ -152,7 +133,7 @@ export async function authenticateMfaWithWebAuthn({
 		challenge,
 		ticket,
 		inviteCode,
-		target: authCommandTarget(runtimeSnapshot),
+		target: instanceTargetFromSnapshot(runtimeSnapshot),
 	});
 	return toLoginSuccessPayload(result);
 }
@@ -160,7 +141,7 @@ export async function authenticateMfaWithWebAuthn({
 export async function getWebAuthnAuthenticationOptions(
 	runtimeSnapshot: RuntimeConfigSnapshot,
 ): Promise<PublicKeyCredentialRequestOptionsJSON> {
-	return AuthenticationCommands.getWebAuthnAuthenticationOptions({target: authCommandTarget(runtimeSnapshot)});
+	return AuthenticationCommands.getWebAuthnAuthenticationOptions({target: instanceTargetFromSnapshot(runtimeSnapshot)});
 }
 
 export async function authenticateWithWebAuthn({
@@ -178,7 +159,7 @@ export async function authenticateWithWebAuthn({
 		response,
 		challenge,
 		inviteCode,
-		target: authCommandTarget(runtimeSnapshot),
+		target: instanceTargetFromSnapshot(runtimeSnapshot),
 	});
 	return toLoginSuccessPayload(result);
 }
@@ -212,7 +193,7 @@ export async function startSsoLogin({
 	const result = await AuthenticationCommands.startSso({
 		redirectTo: safeRedirectTo ?? undefined,
 		redirectUri,
-		target: authCommandTarget(runtimeSnapshot),
+		target: instanceTargetFromSnapshot(runtimeSnapshot),
 	});
 	const state = result.state ?? ssoStateFromAuthorizationUrl(result.authorization_url);
 	if (state != null && isValidOAuthState(state)) {
@@ -240,71 +221,11 @@ export async function completeSsoLogin({
 	const result = await AuthenticationCommands.completeSso({
 		code,
 		state,
-		target: authCommandTarget(runtimeSnapshot),
+		target: instanceTargetFromSnapshot(runtimeSnapshot),
 	});
 	return {
 		...toLoginSuccessPayload(result),
 		redirect_to: result.redirect_to,
-	};
-}
-
-interface RegisterSuccessResult {
-	type: 'success';
-	payload: LoginSuccessPayload;
-}
-
-interface RegisterPendingApprovalResult {
-	type: 'pending_approval';
-	userId: string;
-}
-
-export type RegisterResult = RegisterSuccessResult | RegisterPendingApprovalResult;
-
-export async function registerAccount({
-	email,
-	globalName,
-	username,
-	password,
-	dateOfBirth,
-	consent,
-	inviteCode,
-	giftCode,
-	registrationUrlCode,
-	runtimeSnapshot,
-}: {
-	email: string;
-	globalName?: string;
-	username?: string;
-	password: string;
-	dateOfBirth: string;
-	consent: boolean;
-	inviteCode?: string;
-	giftCode?: string;
-	registrationUrlCode?: string;
-	runtimeSnapshot: RuntimeConfigSnapshot;
-}): Promise<RegisterResult> {
-	const response = await AuthenticationCommands.register(
-		{
-			email,
-			global_name: globalName,
-			username,
-			password,
-			date_of_birth: dateOfBirth,
-			consent,
-			invite_code: inviteCode ?? giftCode,
-			registration_url_code: registrationUrlCode,
-		},
-		authRequestTargetFromSnapshot(runtimeSnapshot),
-	);
-	if (AuthenticationCommands.isRegistrationPendingApprovalResponse(response)) {
-		return {
-			type: 'pending_approval',
-			userId: response.user_id,
-		};
-	}
-	return {
-		type: 'success',
-		payload: toLoginSuccessPayload(response),
 	};
 }
 
@@ -315,7 +236,7 @@ export type PasswordResetResult =
 export async function resetPassword(
 	token: string,
 	password: string,
-	target: AuthRequestTarget,
+	target: InstanceHTTPTarget,
 ): Promise<PasswordResetResult> {
 	const response = await AuthenticationCommands.resetPassword(token, password, target);
 	if ('token' in response) {
@@ -352,7 +273,7 @@ export async function recoverAccount({
 		login,
 		recoveryKey,
 		password,
-		target: authRequestTargetFromSnapshot(runtimeSnapshot),
+		target: instanceTargetFromSnapshot(runtimeSnapshot),
 	});
 	const kit = {recoveryKey: response.recovery_key, createdAt: response.recovery_kit_created_at};
 	if ('token' in response) {
@@ -368,15 +289,4 @@ export async function recoverAccount({
 		},
 		kit,
 	};
-}
-
-export async function resendIpAuthorization(ticket: string, runtimeSnapshot: RuntimeConfigSnapshot): Promise<void> {
-	return AuthenticationCommands.resendIpAuthorization({ticket, target: authCommandTarget(runtimeSnapshot)});
-}
-
-export async function pollIpAuthorization(
-	ticket: string,
-	runtimeSnapshot: RuntimeConfigSnapshot,
-): Promise<AuthenticationCommands.IpAuthorizationPollResult> {
-	return AuthenticationCommands.pollIpAuthorization({ticket, target: authCommandTarget(runtimeSnapshot)});
 }

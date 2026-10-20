@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {AdminRepository} from '@app/api/admin/AdminRepository';
-import type {AdminAuditLog} from '@app/api/admin/IAdminRepository';
+import {type AdminAuditLog, AdminRepository} from '@app/api/admin/AdminRepository';
 import {createTestAccount, setUserACLs, type TestAccount} from '@app/api/auth/tests/AuthTestUtils';
 import {ipBanCache} from '@app/api/middleware/IpBanMiddleware';
 import {getAdminRepository} from '@app/api/middleware/ServiceSingletons';
@@ -18,6 +17,7 @@ interface BlocklistEntryPage {
 interface BlocklistCheck {
 	banned: boolean;
 	expires_at: string | null;
+	decision_id: string | null;
 }
 
 const HOUR_MS = 3_600_000;
@@ -100,7 +100,7 @@ describe('Admin IP bans with an expiry', () => {
 
 		const entries = await listIpBans();
 		expect(entries.map((entry) => entry.expires_at)).toEqual([null, null]);
-		expect(await checkIpBan('198.51.100.9')).toEqual({banned: true, expires_at: null});
+		expect(await checkIpBan('198.51.100.9')).toEqual({banned: true, expires_at: null, decision_id: null});
 		const [log] = await banIpAuditLogs();
 		expect(log!.metadata.has('duration_hours')).toBe(false);
 	});
@@ -124,7 +124,7 @@ describe('Admin IP bans with an expiry', () => {
 	});
 
 	it('reports a check with no match as not banned with no expiry', async () => {
-		expect(await checkIpBan('198.51.100.13')).toEqual({banned: false, expires_at: null});
+		expect(await checkIpBan('198.51.100.13')).toEqual({banned: false, expires_at: null, decision_id: null});
 	});
 
 	it('stops applying an expiring ban once its expiry has passed', async () => {

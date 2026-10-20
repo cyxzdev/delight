@@ -20,7 +20,7 @@ A safety report tells moderators that a message or a user profile broke the rule
 Fluxer discards a body member that no schema here defines, so a misspelt member is dropped without an error. A body that is not parseable JSON returns 400 `INVALID_FORM_BODY` with the validation code `INVALID_FORMAT` at the `body` path.
 
 :::caution[A submitted report is durable evidence]
-Fluxer copies the reported content when the report is submitted. A message report also copies the surrounding conversation and the bytes of every attachment in it, and every report copies the reported profile with its images. Deleting the message, editing the profile, or leaving the guild afterwards does not remove that snapshot. The snapshot is kept until the report reaches the end of its [retention period](/admin-api/reports/#report-retention).
+Fluxer copies the reported content when the report is submitted. A message report also copies the surrounding conversation and the bytes of every attachment in it, and every report copies the reported profile with its images. Deleting the message, editing the profile, or leaving the guild afterwards does not remove that snapshot. The snapshot is kept until [report retention](/admin-api/reports/#report-retention) removes it, which happens no sooner than 184 days after the report is resolved.
 :::
 
 ## Access rules
@@ -47,7 +47,7 @@ Every accepted submission writes one report and returns it as a [report object](
 
 Two kinds of repeat are refused with 409 `CONFLICT`:
 
-- The same reporter reporting the same message again within 365 days of the earlier report.
+- The same reporter reporting the same message again within 365 days of the earlier report, unless that report was deleted.
 - The same reporter reporting the same user again within 24 hours of the earlier report.
 
 Nothing deduplicates a Digital Services Act notice.
@@ -84,9 +84,9 @@ An option's [outcome](#report-flow-outcome-object) says what choosing it does. A
 
 A flow has up to two variants, one for each [surface](#report-flow-surfaces). `in_app` is the variant a signed-in client shows. `dsa` is the variant the public Digital Services Act form shows before it calls [Create DSA report](#create-dsa-report).
 
-The two variants share their screens and differ in a few options. Only `in_app` has the options that end on the thank-you screen without a report, the options for a reporter worried about someone's safety, and the links to the Digital Services Act form, its copyright option among them. Its user flow also starts with an info screen. On `dsa` the copyright option files a report instead. The `guild` flow exists on the `dsa` surface alone.
+The two variants share their screens and differ in a few options. Only `in_app` has the options that end on the thank-you screen without a report, the options for a reporter worried about someone's safety, and a copyright option that links to the copyright help page. Its user flow also starts with an info screen. On `dsa` the copyright option files a report instead. The `guild` flow exists on the `dsa` surface alone.
 
-A self-hosted instance drops the links to the Digital Services Act form. It keeps the crisis line, and keeps the guidelines links only when its operator has set a [guidelines URL](/http-api/instance/#public-legal-configuration-object). Without one its flow has a null `guidelines_url`. Its `in_app` revision hashes therefore differ from those of the hosted instance, and differ again between a self-hosted instance with a guidelines URL and one without. Its `dsa` revision hashes match the hosted ones.
+A self-hosted instance drops the copyright link. It keeps the crisis line, and keeps the guidelines links only when its operator has set a [guidelines URL](/http-api/instance/#public-legal-configuration-object). Without one its flow has a null `guidelines_url`. Its `in_app` revision hashes therefore differ from those of the hosted instance, and differ again between a self-hosted instance with a guidelines URL and one without. Its `dsa` revision hashes match the hosted ones.
 
 ### Walking a flow
 
@@ -583,6 +583,7 @@ A message a bot sent is reported as the bot account, like any other account. A m
 - A reporter who authored the message receives 400 `CANNOT_REPORT_OWN_MESSAGE`.
 - A channel that does not exist and a direct message the reporter is not a recipient of both return 404 `UNKNOWN_CHANNEL`.
 - A guild channel the reporter is not a member of returns 403 `ACCESS_DENIED`, and a member without [VIEW_CHANNEL](/http-api/permissions/) receives 403 `MISSING_PERMISSIONS`.
+- A thread the reporter cannot view returns 403 `MISSING_ACCESS`, as [Channel resolution](/http-api/messages/#channel-resolution) describes. A thread, a forum channel, or a media channel returns 404 `UNKNOWN_CHANNEL` to a user request without the [`channel_threads` client capability](/http-api/threads/#client-capability).
 - An age-restricted guild channel returns 403 `NSFW_CONTENT_AGE_RESTRICTED` for an account that is not age verified.
 - A message not stored under `channel_id`, a message with neither an author account nor a webhook, and any message a reporter without [READ_MESSAGE_HISTORY](/http-api/permissions/) cannot reach all return 404 `UNKNOWN_MESSAGE`.
 - An author whose account no longer exists returns 404 `UNKNOWN_USER`.
@@ -619,12 +620,13 @@ A reporter without `READ_MESSAGE_HISTORY` can report a message sent at or after 
 | 403 | [error response](/http-api/#error-response) | Its email is unverified and the request returns `REPORT_EMAIL_VERIFICATION_REQUIRED` |
 | 403 | [error response](/http-api/#error-response) | The account is report banned and the request returns `REPORT_BANNED` |
 | 403 | [error response](/http-api/#error-response) | The reporter lacks `VIEW_CHANNEL` and the request returns `MISSING_PERMISSIONS` |
+| 403 | [error response](/http-api/#error-response) | The reporter cannot view the thread and the request returns `MISSING_ACCESS` |
 | 403 | [error response](/http-api/#error-response) | The channel is age restricted and the request returns `NSFW_CONTENT_AGE_RESTRICTED` |
 | 404 | [error response](/http-api/#error-response) | The channel, the message, or the message author is not visible to the reporter |
 | 409 | [error response](/http-api/#error-response) | The answers came from an outdated flow and do not fit the current one, returning `REPORT_FLOW_OUTDATED` |
 | 409<sup>1</sup> | [error response](/http-api/#error-response) | The reporter already reported this message, returning `CONFLICT` |
 
-<sup>1</sup> The reporter, the channel, and the message form a submission key that expires 365 days after the report. A second report of the same message by the same reporter within that time is refused whichever answers it sends. A submission that fails or is rate limited releases the key
+<sup>1</sup> The reporter, the channel, and the message form a submission key that expires 365 days after the report. A second report of the same message by the same reporter within that time is refused whichever answers it sends. A submission that fails or is rate limited releases the key, and so does [deleting the report](/admin-api/reports/#delete-report)
 
 ### Side effects
 
@@ -692,7 +694,7 @@ Fluxer checks the answers right after the claimed account and verified email che
 | 409 | [error response](/http-api/#error-response) | The answers came from an outdated flow and do not fit the current one, returning `REPORT_FLOW_OUTDATED` |
 | 409<sup>1</sup> | [error response](/http-api/#error-response) | The reporter already reported this user within 24 hours, returning `CONFLICT` |
 
-<sup>1</sup> The reporter and the reported user form a submission key that expires 24 hours after the report. A submission that fails or is rate limited releases the key
+<sup>1</sup> The reporter and the reported user form a submission key that expires 24 hours after the report. A submission that fails or is rate limited releases the key, and so does [deleting the report](/admin-api/reports/#delete-report)
 
 ### Side effects
 

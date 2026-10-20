@@ -8,7 +8,6 @@ import {DeveloperPortalPaths} from '@app/features/developers/DeveloperPortalPath
 import {SettingsModalContainer} from '@app/features/app/components/dialogs/shared/SettingsModalLayout';
 import {ComponentBus} from '@app/features/platform/utils/ComponentBus';
 import * as PlutoniumPageCommands from '@app/features/premium/commands/PlutoniumPageCommands';
-import PlutoniumPageRollout from '@app/features/premium/state/PlutoniumPageRollout';
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import * as UnsavedChangesCommands from '@app/features/ui/commands/UnsavedChangesCommands';
 import MobileLayout from '@app/features/ui/state/MobileLayout';
@@ -32,7 +31,7 @@ import {observer} from 'mobx-react-lite';
 import type React from 'react';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 
-// Delight: developer tabs live in the full-page developer portal.
+// Delight: developer settings sections are routed to the full-page developer portal.
 const DEVELOPER_PORTAL_TAB_PATHS: Partial<Record<UserSettingsTabType, string>> = {
 	applications: DeveloperPortalPaths.APPLICATIONS,
 	embed_debugger: DeveloperPortalPaths.EMBED_DEBUGGER,
@@ -117,32 +116,28 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = observer(
 				mobileNav.navigateBack();
 			}
 		}, [currentTab?.type, mobileNav, unsavedChangesState.unsavedChanges]);
-		const plutoniumPageEnabled = PlutoniumPageRollout.enabled;
 		const handleTabSelect = useCallback(
 			(tabType: string, title: string) => {
-				if (plutoniumPageEnabled && tabType === 'plutonium') {
+				if (tabType === 'plutonium') {
 					PlutoniumPageCommands.openPlutoniumPage();
 					return;
 				}
 				mobileNav.navigateTo(tabType as UserSettingsTabType, title);
 			},
-			[mobileNav, plutoniumPageEnabled],
+			[mobileNav],
 		);
-		const handleDesktopTabSelect = useCallback(
-			(tabType: UserSettingsTabType) => {
-				const portalPath = DEVELOPER_PORTAL_TAB_PATHS[tabType];
-				if (portalPath) {
-					openDeveloperPortal(portalPath);
-					return;
-				}
-				if (plutoniumPageEnabled && tabType === 'plutonium') {
-					PlutoniumPageCommands.openPlutoniumPage();
-					return;
-				}
-				setSelectedTab(tabType);
-			},
-			[plutoniumPageEnabled],
-		);
+		const handleDesktopTabSelect = useCallback((tabType: UserSettingsTabType) => {
+			const portalPath = DEVELOPER_PORTAL_TAB_PATHS[tabType];
+			if (portalPath) {
+				openDeveloperPortal(portalPath);
+				return;
+			}
+			if (tabType === 'plutonium') {
+				PlutoniumPageCommands.openPlutoniumPage();
+				return;
+			}
+			setSelectedTab(tabType);
+		}, []);
 		const handleClose = useCallback(() => {
 			const checkTabId = selectedTab;
 			if (checkTabId && unsavedChangesState.unsavedChanges[checkTabId]) {
@@ -174,7 +169,7 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = observer(
 		useEffect(() => {
 			const unsubscribe = ComponentBus.subscribe('USER_SETTINGS_TAB_SELECT', (args?: unknown) => {
 				const {tab, section} = (args ?? {}) as {tab?: string; section?: string};
-				if (plutoniumPageEnabled && tab === 'plutonium') {
+				if (tab === 'plutonium') {
 					PlutoniumPageCommands.openPlutoniumPage();
 					return;
 				}
@@ -203,7 +198,7 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = observer(
 				}
 			});
 			return unsubscribe;
-		}, [isMobile, mobileNav, plutoniumPageEnabled, resolveVisibleTab, visibleSettingsTabs]);
+		}, [isMobile, mobileNav, resolveVisibleTab, visibleSettingsTabs]);
 		return (
 			<SettingsContentKeyProvider data-flx="user.user-settings-modal.settings-content-key-provider">
 				<Modal.Root size="fullscreen" onClose={handleModalClose} data-flx="user.user-settings-modal.modal-root">

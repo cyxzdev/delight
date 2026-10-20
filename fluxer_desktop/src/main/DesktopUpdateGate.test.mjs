@@ -25,14 +25,14 @@ function deferred() {
 
 describe('DesktopUpdateGate', () => {
 	test('nothing is available and nothing starts before the bootstrap arms the gate', async () => {
-		assert.deepEqual(getDesktopUpdateState(), {available: false});
-		assert.deepEqual(await checkDesktopUpdateNow(), {available: false});
+		assert.deepEqual(getDesktopUpdateState(), {available: false, updating: false, replacesShell: false});
+		assert.deepEqual(await checkDesktopUpdateNow(), {available: false, updating: false, replacesShell: false});
 		assert.equal(startDesktopUpdate(), false);
 	});
 
 	test('a check publishes the update and one click runs it exactly once', async () => {
 		const states = [];
-		const stop = observeDesktopUpdateState((state) => states.push(state.available));
+		const stop = observeDesktopUpdateState((state) => states.push(state));
 		const running = deferred();
 		let starts = 0;
 		armDesktopUpdate({
@@ -44,19 +44,75 @@ describe('DesktopUpdateGate', () => {
 			},
 		});
 
-		assert.deepEqual(await checkDesktopUpdateNow(), {available: true});
+		assert.deepEqual(await checkDesktopUpdateNow(), {available: true, updating: false, replacesShell: false});
 		assert.equal(startDesktopUpdate(), true);
 		assert.equal(startDesktopUpdate(), false, 'a second click while the update runs is a no-op');
-		assert.deepEqual(getDesktopUpdateState(), {available: false}, 'the affordance hides the moment it is clicked');
-		assert.deepEqual(await checkDesktopUpdateNow(), {available: false}, 'a poll during the update changes nothing');
+		assert.deepEqual(
+			getDesktopUpdateState(),
+			{available: false, updating: true, replacesShell: false},
+			'the affordance hides the moment it is clicked',
+		);
+		assert.deepEqual(
+			await checkDesktopUpdateNow(),
+			{available: false, updating: true, replacesShell: false},
+			'a poll during the update changes nothing',
+		);
 
 		running.resolve();
 		await new Promise((resolve) => setImmediate(resolve));
 
 		assert.equal(starts, 1);
-		assert.deepEqual(getDesktopUpdateState(), {available: false});
-		assert.deepEqual(states, [true, false]);
+		assert.deepEqual(getDesktopUpdateState(), {available: false, updating: false, replacesShell: false});
+		assert.deepEqual(states, [
+			{available: true, updating: false, replacesShell: false},
+			{available: false, updating: true, replacesShell: false},
+			{available: false, updating: false, replacesShell: false},
+		]);
 		stop();
+	});
+
+	test('a background poll joins a check already running instead of starting another', async () => {
+		const pending = deferred();
+		const calls = [];
+		armDesktopUpdate({
+			check: async (manual) => {
+				calls.push(manual);
+				await pending.promise;
+				return {shellNewer: false, modulesChanged: false};
+			},
+			start: async () => {},
+		});
+
+		const first = checkDesktopUpdateNow();
+		const second = checkDesktopUpdateNow();
+		pending.resolve();
+		await Promise.all([first, second]);
+
+		assert.deepEqual(calls, [false]);
+	});
+
+	test('a manual check never settles for the answer of a background poll that was already running', async () => {
+		const pending = deferred();
+		const calls = [];
+		armDesktopUpdate({
+			check: async (manual) => {
+				calls.push(manual);
+				if (!manual) {
+					await pending.promise;
+					return {shellNewer: false, modulesChanged: false};
+				}
+				return {shellNewer: true, modulesChanged: false};
+			},
+			start: async () => {},
+		});
+
+		const background = checkDesktopUpdateNow();
+		const manual = checkDesktopUpdateNow({manual: true});
+		pending.resolve();
+		await background;
+
+		assert.deepEqual(await manual, {available: true, updating: false, replacesShell: true});
+		assert.deepEqual(calls, [false, true]);
 	});
 
 	test('a shell update that could not finish stays available for the next click', async () => {
@@ -71,7 +127,7 @@ describe('DesktopUpdateGate', () => {
 		assert.equal(startDesktopUpdate(), true);
 		await new Promise((resolve) => setImmediate(resolve));
 
-		assert.deepEqual(getDesktopUpdateState(), {available: true});
+		assert.deepEqual(getDesktopUpdateState(), {available: true, updating: false, replacesShell: true});
 		assert.equal(startDesktopUpdate(), true);
 	});
 });

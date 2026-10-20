@@ -441,6 +441,24 @@
 	width: 1.5rem;
 }
 
+.updateIconSpinning {
+	composes: updateIcon;
+	animation: updateIconSpin 1s linear infinite;
+}
+
+@keyframes updateIconSpin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.updateIconSpinning {
+		animation: none;
+		opacity: 0.6;
+	}
+}
+
 .iconButtonMobile {
 	display: flex;
 	align-items: center;
@@ -473,12 +491,7 @@
 	position: absolute;
 	bottom: 0.3rem;
 	right: 0.35rem;
-	width: 0.5rem;
-	height: 0.5rem;
-	border-radius: 624.9375rem;
-	background-color: var(--status-danger);
 	box-shadow: 0 0 0 0.08rem var(--channel-header-background);
-	pointer-events: none;
 }
 
 /* Delight: DM header shows the recipient's name over their presence/custom status (DM-only class). */

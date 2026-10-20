@@ -12,6 +12,7 @@ import {ProfileEffect, profileEffectHostClassName} from '@app/features/user/comp
 import {ProfileFrame} from '@app/features/user/components/profile_frames/ProfileFrame';
 import * as ProfileDisplayUtils from '@app/features/user/utils/ProfileDisplayUtils';
 import {resolveProfileGuildMembership, toProfileDisplayContext} from '@app/features/user/utils/ProfileGuildMembership';
+import {FLUXERBOT_ID} from '@fluxer/constants/src/AppConstants';
 import {
 	MEDIA_PROXY_AVATAR_SIZE_PROFILE,
 	MEDIA_PROXY_PROFILE_BANNER_SIZE_MODAL,
@@ -35,6 +36,7 @@ export const ProfileModalContent: React.FC<ProfileModalContentProps> = observer(
 		frame,
 	}) => {
 		const effectiveProfile = profile?.getEffectiveProfile() ?? null;
+		const isSystemUser = user.id === FLUXERBOT_ID;
 		const bannerColor = getUserAccentColor(user, effectiveProfile?.accent_color);
 		const membership = resolveProfileGuildMembership(profile);
 		const profileContext = useMemo<ProfileDisplayUtils.ProfileDisplayContext>(
@@ -92,8 +94,8 @@ export const ProfileModalContent: React.FC<ProfileModalContentProps> = observer(
 							profileContext={profileContext}
 							previewOverrides={previewOverrides}
 							bannerColor={bannerColor}
-							bannerUrl={bannerUrl}
-							hoverBannerUrl={hoverBannerUrl}
+							bannerUrl={isSystemUser ? null : bannerUrl}
+							hoverBannerUrl={isSystemUser ? null : hoverBannerUrl}
 							avatarUrl={avatarUrl}
 							hoverAvatarUrl={hoverAvatarUrl}
 							renderActionButtons={renderActionButtons}
